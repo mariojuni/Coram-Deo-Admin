@@ -41,7 +41,7 @@ const navItems = [
   { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
   { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
   { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
-  { name: 'Discipleship', path: '/admin/discipleship', icon: BookOpenCheck, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
+  { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader', 'viewer'] },
   { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'viewer'] },
   { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
   { name: 'Finance', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },

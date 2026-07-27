@@ -15,8 +15,8 @@ import DiscipleshipPlanFormModal from './DiscipleshipPlanFormModal';
 export default function DiscipleshipPlanDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const { userProfile, activeChurchId } = useAuth();
+  const CHURCH_ID = activeChurchId || userProfile?.churchId;
   
   const [plan, setPlan] = useState(null);
   const [weeks, setWeeks] = useState([]);
@@ -36,7 +36,7 @@ export default function DiscipleshipPlanDetail() {
       ]);
       
       if (!planData) {
-        navigate('/admin/discipleship');
+        navigate('/admin/discipleship/plans');
         return;
       }
       
@@ -88,7 +88,7 @@ export default function DiscipleshipPlanDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-full py-16">
         <div className="w-8 h-8 border-4 border-church-green border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -97,22 +97,45 @@ export default function DiscipleshipPlanDetail() {
   if (!plan) return null;
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/admin/discipleship')} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => navigate('/admin/discipleship/plans')} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
             <ArrowLeft size={20} />
           </button>
           <div>
             <h1 className="text-2xl font-bold text-church-navy">{plan.title}</h1>
-            {plan.subtitle && <p className="text-gray-500">{plan.subtitle}</p>}
+            {plan.subtitle && <p className="text-gray-500 text-sm mt-0.5">{plan.subtitle}</p>}
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setIsPlanModalOpen(true)} className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-50 text-church-navy">
+        <div className="flex gap-2 shrink-0">
+          <button onClick={() => setIsPlanModalOpen(true)} className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-50 text-church-navy transition-colors">
             Edit Plan
           </button>
         </div>
+      </div>
+
+      {/* Sub-Navigation Links */}
+      <div className="flex items-center space-x-2 border-b border-gray-200 pb-2">
+        <button
+          onClick={() => navigate('/admin/discipleship/groups')}
+          className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+        >
+          Groups
+        </button>
+        <button
+          onClick={() => navigate('/admin/discipleship/materials')}
+          className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+        >
+          Leader Materials
+        </button>
+        <button
+          onClick={() => navigate('/admin/discipleship/plans')}
+          className="px-4 py-2 text-xs font-bold rounded-xl bg-church-green text-white"
+        >
+          Discipleship Plans
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

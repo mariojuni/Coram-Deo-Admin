@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Calendar, BookOpen, Clock, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getDiscipleshipPlans, deleteDiscipleshipPlan } from './discipleshipService';
@@ -6,8 +7,9 @@ import DiscipleshipPlanFormModal from './DiscipleshipPlanFormModal';
 import DiscipleshipImportModal from './DiscipleshipImportModal';
 
 export default function DiscipleshipPlans() {
-  const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const navigate = useNavigate();
+  const { userProfile, activeChurchId } = useAuth();
+  const CHURCH_ID = activeChurchId || userProfile?.churchId;
   
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,8 +71,9 @@ export default function DiscipleshipPlans() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
         <div>
           <h1 className="text-2xl font-bold text-church-navy">Discipleship Plans</h1>
           <p className="text-gray-500 mt-1">Manage weekly discipleship study plans</p>
@@ -93,12 +96,34 @@ export default function DiscipleshipPlans() {
         </div>
       </div>
 
+      {/* Sub-Navigation Links */}
+      <div className="flex items-center space-x-2 border-b border-gray-200 pb-2">
+        <button
+          onClick={() => navigate('/admin/discipleship/groups')}
+          className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+        >
+          Groups
+        </button>
+        <button
+          onClick={() => navigate('/admin/discipleship/materials')}
+          className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+        >
+          Leader Materials
+        </button>
+        <button
+          onClick={() => navigate('/admin/discipleship/plans')}
+          className="px-4 py-2 text-xs font-bold rounded-xl bg-church-green text-white"
+        >
+          Discipleship Plans
+        </button>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-4 border-church-green border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-church-soft p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-church-soft p-12 text-center border border-gray-100">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen size={32} className="text-gray-400" />
           </div>
@@ -117,7 +142,7 @@ export default function DiscipleshipPlans() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {plans.map((plan) => (
-            <div key={plan.id} className="bg-white rounded-2xl shadow-church-soft overflow-hidden border border-gray-100 flex flex-col">
+            <div key={plan.id} className="bg-white rounded-2xl shadow-church-soft overflow-hidden border border-gray-100 flex flex-col hover:shadow-lg transition-all">
               {plan.coverImageUrl ? (
                 <div className="h-40 w-full relative">
                   <img src={plan.coverImageUrl} alt={plan.title} className="w-full h-full object-cover" />
@@ -127,7 +152,7 @@ export default function DiscipleshipPlans() {
                       plan.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
-                      {plan.status.toUpperCase()}
+                      {plan.status?.toUpperCase() || 'DRAFT'}
                     </span>
                   </div>
                 </div>
@@ -140,7 +165,7 @@ export default function DiscipleshipPlans() {
                       plan.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
-                      {plan.status.toUpperCase()}
+                      {plan.status?.toUpperCase() || 'DRAFT'}
                     </span>
                   </div>
                 </div>
@@ -183,10 +208,12 @@ export default function DiscipleshipPlans() {
                       <Trash2 size={18} />
                     </button>
                   </div>
-                  {/* Later this will be a link to details page */}
-                  <a href={`/admin/discipleship/${plan.id}`} className="text-sm font-bold text-church-green hover:text-church-green-dark">
+                  <button
+                    onClick={() => navigate(`/admin/discipleship/plans/${plan.id}`)}
+                    className="text-sm font-bold text-church-green hover:text-church-green-dark flex items-center gap-1 hover:underline"
+                  >
                     Manage Weeks →
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

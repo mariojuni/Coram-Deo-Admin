@@ -356,6 +356,7 @@ export function canViewStaffManagement(userProfile) {
 }
 
 export * from './ministryApplicationPermissions';
+export * from './discipleshipGroupPermissions';
 
 
 

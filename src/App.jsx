@@ -28,6 +28,9 @@ import ReportsDashboard from './features/reports/ReportsDashboard';
 import SchedulesDashboard from './features/schedules/SchedulesDashboard';
 import DiscipleshipPlans from './features/discipleship/DiscipleshipPlans';
 import DiscipleshipPlanDetail from './features/discipleship/DiscipleshipPlanDetail';
+import DiscipleshipGroupsPage from './features/discipleship/DiscipleshipGroupsPage';
+import DiscipleshipGroupDetailPage from './features/discipleship/DiscipleshipGroupDetailPage';
+import DiscipleshipGroupMaterialsPage from './features/discipleship/DiscipleshipGroupMaterialsPage';
 import SongsList from './features/worship/SongsList';
 import SetlistsList from './features/worship/SetlistsList';
 import SetlistDetails from './features/worship/SetlistDetails';
@@ -244,15 +247,42 @@ function AppRoutes() {
           
           <Route 
             path="discipleship" 
+            element={<Navigate to="/admin/discipleship/groups" replace />} 
+          />
+          <Route 
+            path="discipleship/groups" 
+            element={
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+                <DiscipleshipGroupsPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="discipleship/groups/:id" 
+            element={
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+                <DiscipleshipGroupDetailPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="discipleship/materials" 
+            element={
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+                <DiscipleshipGroupMaterialsPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="discipleship/plans" 
             element={
               <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
                 <DiscipleshipPlans />
               </RoleGuard>
             } 
           />
-
           <Route 
-            path="discipleship/:id" 
+            path="discipleship/plans/:id" 
             element={
               <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
                 <DiscipleshipPlanDetail />
