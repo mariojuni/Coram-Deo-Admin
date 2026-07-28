@@ -161,7 +161,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
     );
   };
 
-  const calculateAge = (birthday) => {
+  const calculateAge = (dateVal) => {
+    const birthday = dateVal || member?.birthDate || member?.birthday;
     if (!birthday) return 'N/A';
     const ageDifMs = Date.now() - new Date(birthday).getTime();
     const ageDate = new Date(ageDifMs);
@@ -290,8 +291,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
                   </h3>
                   <dl className="space-y-3">
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Gender</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.gender || 'Not specified'}</dd></div>
-                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Birthday</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.birthday || 'Not specified'}</dd></div>
-                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Age</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{calculateAge(member.birthday)}</dd></div>
+                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Birth Date</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.birthDate || member.birthday || 'Not specified'}</dd></div>
+                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Age</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{calculateAge(member.birthDate || member.birthday)}</dd></div>
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Address</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.address || 'Not specified'}</dd></div>
                   </dl>
                 </div>

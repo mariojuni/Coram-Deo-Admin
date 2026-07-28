@@ -62,11 +62,13 @@ function normalizeProfile(uid, data) {
 
   const rawPrimary = data.primaryRole ? data.primaryRole.toLowerCase() : systemRoles[0];
   const primaryRole = rawPrimary === 'viewer' ? 'member' : rawPrimary;
+  const birthDate = data.birthDate || data.birthday || '';
 
   return {
     uid,
     id: uid,
     ...data,
+    birthDate,
     systemRoles,
     primaryRole,
   };

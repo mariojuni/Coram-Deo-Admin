@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch, where } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch, where, deleteField } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { Search, Plus, MoreVertical, Filter, Edit, Archive, Eye, UploadCloud, Users } from 'lucide-react';
@@ -83,6 +83,26 @@ export default function MembersList() {
       docs.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
       setMembers(docs);
       setLoading(false);
+
+      // Auto-backfill birthDate & phoneNumber and remove legacy fields (birthday, phone) in Firestore
+      docs.forEach(async (d) => {
+        if ((d.birthday || d.phone) && d.id) {
+          try {
+            const updates = {};
+            if (d.birthday) {
+              updates.birthDate = d.birthDate || d.birthday;
+              updates.birthday = deleteField();
+            }
+            if (d.phone) {
+              updates.phoneNumber = d.phoneNumber || d.phone;
+              updates.phone = deleteField();
+            }
+            await updateDoc(doc(db, 'users', d.id), updates);
+          } catch (err) {
+            // Ignore permission failures for unpermitted docs
+          }
+        }
+      });
     });
 
     return () => unsubscribe();
@@ -234,7 +254,7 @@ export default function MembersList() {
         else parsedGender = sexVal.trim();
         
         // We set raw: false in sheet_to_json, so dates should come as formatted strings
-        let parsedBirthday = record.birthday || record.birthdate || record.dob || '';
+        let parsedBirthDate = record['birth date'] || record.birthdate || record.birthDate || record.birthday || record['birth day'] || record.dob || '';
 
         // Map common CSV headers to our schema
         const newMember = {
@@ -243,9 +263,9 @@ export default function MembersList() {
           lastName: lastName,
           name: computedName || record.name || record['full name'] || '',
           email: record.email || '',
-          phoneNumber: record.phonenumber || record['phone number'] || record.phone || record['contact number'] || record['contact #'] || record.mobile || record.contact || '',
+          phoneNumber: record['contact#'] || record['contact #'] || record['contact no.'] || record['contact no'] || record['contact number'] || record['phone number'] || record.phonenumber || record.phone || record.mobile || record.contact || '',
           gender: parsedGender,
-          birthday: parsedBirthday,
+          birthDate: parsedBirthDate,
           role: 'member',
           membershipStatus: parsedStatus,
           baptismStatus: parsedBaptism,
@@ -424,7 +444,7 @@ export default function MembersList() {
                         </div>
                         <div className="ml-4">
                           <p className="text-sm font-bold text-church-navy group-hover:text-church-green transition-colors">{member.displayName}</p>
-                          <p className="text-xs text-church-slate">{member.gender || 'Unknown'} • {member.birthday ? new Date(member.birthday).toLocaleDateString() : 'No birthday'}</p>
+                          <p className="text-xs text-church-slate">{member.gender || 'Unknown'} • {member.birthDate || member.birthday ? new Date(member.birthDate || member.birthday).toLocaleDateString() : 'No birth date'}</p>
                         </div>
                       </div>
                     </td>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteField, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
@@ -16,7 +16,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
     phoneNumber: '',
     role: 'member',
     familyGroup: '',
-    birthday: '',
+    birthDate: '',
     gender: 'Male',
     address: '',
     membershipStatus: 'Active',
@@ -41,7 +41,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
         phoneNumber: member.phoneNumber || member.phone || '',
         role: member.role || 'member',
         familyGroup: member.familyGroup || '',
-        birthday: member.birthday || '',
+        birthDate: member.birthDate || member.birthday || '',
         gender: member.gender || 'Male',
         address: member.address || '',
         membershipStatus: member.membershipStatus || 'Active',
@@ -58,7 +58,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
         phoneNumber: '',
         role: 'member',
         familyGroup: '',
-        birthday: '',
+        birthDate: '',
         gender: 'Male',
         address: '',
         membershipStatus: 'Active',
@@ -85,6 +85,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
       const computedName = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(' ');
       const dataToSave = {
         ...formData,
+        birthday: deleteField(),
+        phone: deleteField(),
         name: computedName
       };
 
@@ -148,10 +150,10 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Birthday</label>
+                  <label className="block text-sm font-medium text-church-navy mb-1">Birth Date</label>
                   <ModernDatePicker 
-                    name="birthday" 
-                    value={formData.birthday} 
+                    name="birthDate" 
+                    value={formData.birthDate} 
                     onChange={handleChange} 
                   />
                 </div>

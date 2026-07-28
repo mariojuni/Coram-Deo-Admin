@@ -89,7 +89,7 @@ export function MemberDetailModal({ isOpen, onClose, member, isStaff, onEdit }) 
               </div>
               <div className="detail-info">
                 <span className="detail-label">Birth Date</span>
-                <span className="detail-value">{formatDate(member.birthDate)}</span>
+                <span className="detail-value">{formatDate(member.birthDate || member.birthday)}</span>
               </div>
             </div>
             <div className="detail-row">
@@ -403,7 +403,7 @@ const Members = ({ members, loading, onSelectMember }) => {
   const filteredMembers = members.filter(m => {
     const nameMatch = m.name?.toLowerCase().includes(search.toLowerCase());
     const roleMatch = m.role?.toLowerCase().includes(search.toLowerCase());
-    const birthMatch = m.birthDate?.includes(search);
+    const birthMatch = (m.birthDate || m.birthday)?.includes(search);
     const ministryMatch = m.ministryAssignments?.toLowerCase().includes(search.toLowerCase());
     const matchesSearch = nameMatch || roleMatch || birthMatch || ministryMatch;
 
