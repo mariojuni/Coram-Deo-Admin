@@ -40,7 +40,7 @@ export default function NewMemberModal({ isOpen, onClose, showToast }) {
       await addDoc(collection(db, 'users'), {
         name: name.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phoneNumber: phone.trim(),
         role,
         status,
         birthDate: birthDate || 'None',

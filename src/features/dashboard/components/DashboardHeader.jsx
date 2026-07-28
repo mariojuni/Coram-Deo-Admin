@@ -13,7 +13,7 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
     secretary: 'Executive Secretary',
     finance_admin: 'Finance Administrator',
     ministry_leader: 'Ministry Leader',
-    viewer: 'Member / Viewer',
+    member: 'Member',
   };
 
   const getGreetingSummary = () => {

@@ -38,7 +38,7 @@ import ImportSettingsPage from './features/worship/ImportSettingsPage';
 import ImportSongPage from './features/worship/ImportSongPage';
 
 function AppRoutes() {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuth() || {};
   return (
     <Router>
       <Routes>
@@ -91,7 +91,7 @@ function AppRoutes() {
           <Route 
             path="schedules" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member']}>
                 <SchedulesDashboard />
               </RoleGuard>
             } 
@@ -148,7 +148,7 @@ function AppRoutes() {
           <Route 
             path="events/:id" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'secretary', 'pastor', 'viewer']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'secretary', 'pastor', 'member']}>
                 <EventDetails />
               </RoleGuard>
             } 
@@ -176,7 +176,7 @@ function AppRoutes() {
           <Route 
             path="prayer"  
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'finance_admin', 'ministry_leader', 'viewer']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'finance_admin', 'ministry_leader', 'member']}>
                 <PrayerModeration />
               </RoleGuard>
             } 
@@ -221,7 +221,7 @@ function AppRoutes() {
           <Route 
             path="worship/setlists" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member']}>
                 <SetlistsList />
               </RoleGuard>
             } 
@@ -230,7 +230,7 @@ function AppRoutes() {
           <Route 
             path="worship/setlists/:id" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member']}>
                 <SetlistDetails />
               </RoleGuard>
             } 

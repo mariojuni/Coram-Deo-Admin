@@ -13,7 +13,7 @@ System roles control access to the modules and features within the admin portal.
 - **secretary**: Has access to members, events, attendance, and announcements. Cannot assign system roles.
 - **finance_admin**: Has access to giving, giving campaigns, expenses, and reports. Cannot assign system roles.
 - **ministry_leader**: Has access to ministries, scheduling, songs & lyrics, and setlists. Cannot assign system roles. 
-- **viewer**: A baseline/fallback role that typically has read-only access to basic dashboards and public-facing content, but restricted from sensitive areas like attendance or detailed reports. Cannot assign system roles.
+- **member**: A baseline/fallback role for church members that has read-only/member access to church features, but is restricted from administrative area functions like attendance management or sensitive financial reports. Cannot assign system roles.
 
 ### Managing System Roles
 - Authorized admins (`super_admin` and `church_admin`) can assign or change roles via **Settings → Users & Roles** or from the **Access & Role** tab within a member's profile.

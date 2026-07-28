@@ -74,7 +74,7 @@ export function MemberDetailModal({ isOpen, onClose, member, isStaff, onEdit }) 
               </div>
               <div className="detail-info">
                 <span className="detail-label">Phone Number</span>
-                <span className="detail-value">{member.phone || 'N/A'}</span>
+                <span className="detail-value">{member.phoneNumber || member.phone || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -170,7 +170,7 @@ export function EditMemberModal({ isOpen, onClose, member, showToast }) {
     if (member) {
       setName(member.name || '');
       setEmail(member.email || '');
-      setPhone(member.phone || '');
+      setPhone(member.phoneNumber || member.phone || '');
       setRole(member.role || 'Member');
       setStatus(member.status || 'active');
       setBirthDate(member.birthDate || '');
@@ -202,7 +202,7 @@ export function EditMemberModal({ isOpen, onClose, member, showToast }) {
       await updateDoc(docRef, {
         name: name.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phoneNumber: phone.trim(),
         role,
         status,
         birthDate: birthDate || 'None',

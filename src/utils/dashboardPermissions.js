@@ -2,7 +2,7 @@ import { getSystemRoles, hasRole, hasAnyRole } from './permissions';
 
 /**
  * Returns true if user can access the main admin dashboard.
- * Viewers are blocked by default unless explicitly elevated.
+ * Regular members are blocked by default unless explicitly elevated.
  */
 export function canViewDashboard(userProfile) {
   if (!userProfile) return false;
@@ -13,7 +13,7 @@ export function canViewDashboard(userProfile) {
   if (roles.includes('super_admin')) return true;
   if (!userProfile.churchId) return false;
 
-  // Viewers are blocked by default from web admin dashboard
+  // Regular members are blocked by default from web admin dashboard
   return hasAnyRole(userProfile, [
     'super_admin',
     'church_admin',

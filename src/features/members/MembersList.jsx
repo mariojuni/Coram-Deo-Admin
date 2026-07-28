@@ -93,7 +93,7 @@ export default function MembersList() {
     const searchMatch = 
       (m.name || m.displayName || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
       m.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-      m.phone?.includes(debouncedSearchTerm);
+      (m.phoneNumber || m.phone || '')?.includes(debouncedSearchTerm);
       
     // Status match
     const statusMatch = filterStatus === 'All' 
@@ -243,7 +243,7 @@ export default function MembersList() {
           lastName: lastName,
           name: computedName || record.name || record['full name'] || '',
           email: record.email || '',
-          phone: record.phone || record['contact number'] || record['contact #'] || '',
+          phoneNumber: record.phonenumber || record['phone number'] || record.phone || record['contact number'] || record['contact #'] || record.mobile || record.contact || '',
           gender: parsedGender,
           birthday: parsedBirthday,
           role: 'member',
@@ -267,11 +267,12 @@ export default function MembersList() {
             // Update missing fields on existing member
             const updates = {};
             for (const [key, value] of Object.entries(newMember)) {
+              const existingValue = key === 'phoneNumber' ? (existingMember.phoneNumber || existingMember.phone) : existingMember[key];
               if (value && (
-                  !existingMember[key] || 
-                  existingMember[key] === 'Not Baptized' || 
-                  existingMember[key] === 'Unknown' ||
-                  existingMember[key] === 'Active' // Might update status if it changed
+                  !existingValue || 
+                  existingValue === 'Not Baptized' || 
+                  existingValue === 'Unknown' ||
+                  existingValue === 'Active' // Might update status if it changed
               )) {
                 // Prevent overwriting core fields
                 if (key !== 'createdAt' && key !== 'churchId' && key !== 'role' && key !== 'name' && key !== 'membershipStatus') {
@@ -313,7 +314,7 @@ export default function MembersList() {
       alert(`Successfully imported ${newRecords.length} new members and updated ${updateRecords.length} existing members!`);
     } catch (err) {
       console.error(err);
-      alert("Error parsing file. Please ensure it has a header row like: first name, middle name, last name, email, phone");
+      alert("Error parsing file. Please ensure it has a header row like: first name, middle name, last name, email, phone number");
     }
   };
 
@@ -429,7 +430,7 @@ export default function MembersList() {
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-medium text-church-navy">{member.email}</p>
-                      <p className="text-xs text-church-slate mt-0.5">{member.phone || '-'}</p>
+                      <p className="text-xs text-church-slate mt-0.5">{member.phoneNumber || member.phone || '-'}</p>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col items-start space-y-1">

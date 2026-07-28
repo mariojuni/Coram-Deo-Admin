@@ -31,23 +31,23 @@ import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
 
 const navItems = [
-  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary', 'viewer'] },
-  { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'viewer'] },
-  { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
-  { name: 'Events', path: '/admin/events', icon: Calendar, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'viewer'] },
-  { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
+  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary', 'member'] },
+  { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'member'] },
+  { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member'] },
+  { name: 'Events', path: '/admin/events', icon: Calendar, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'member'] },
+  { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member'] },
   { name: 'Attendance', path: '/admin/attendance', icon: ClipboardCheck, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-  { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
-  { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
-  { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'viewer'] },
-  { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
-  { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader', 'viewer'] },
-  { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'viewer'] },
-  { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor', 'viewer'] },
+  { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor', 'member'] },
+  { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member'] },
+  { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'member'] },
+  { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor', 'member'] },
+  { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader', 'member'] },
+  { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor', 'member'] },
+  { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor', 'member'] },
   { name: 'Finance', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },
   { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
   { name: 'Churches', path: '/admin/churches', icon: Building, roles: ['super_admin'] },
-  { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin', 'viewer'] },
+  { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin', 'member'] },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {

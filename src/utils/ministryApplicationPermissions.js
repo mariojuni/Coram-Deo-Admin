@@ -19,7 +19,7 @@ export function canViewMinistryApplications(userProfile) {
  * Checks if a user can review (approve or decline) a given application.
  * - super_admin, church_admin, pastor can review all applications for their church.
  * - ministry_leader can review only if application.ministryId is in managedMinistryIds.
- * - secretary, finance_admin, viewer return false.
+ * - secretary, finance_admin, member return false.
  */
 export function canReviewMinistryApplication(userProfile, application) {
   if (!userProfile || !application) return false;

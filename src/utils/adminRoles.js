@@ -26,14 +26,18 @@ export function isAdminRole(role) {
  * Helper to get normalized roles from a user account for checking admin access
  */
 function getNormalizedRoles(userAccount) {
-  if (!userAccount) return ['viewer'];
+  if (!userAccount) return ['member'];
   if (Array.isArray(userAccount.systemRoles) && userAccount.systemRoles.length > 0) {
-    return userAccount.systemRoles.map(r => r.toLowerCase());
+    return userAccount.systemRoles.map(r => {
+      const lower = r.toLowerCase();
+      return lower === 'viewer' ? 'member' : lower;
+    });
   }
   if (userAccount.role) {
-    return [userAccount.role.toLowerCase()];
+    const lower = userAccount.role.toLowerCase();
+    return [lower === 'viewer' ? 'member' : lower];
   }
-  return ['viewer'];
+  return ['member'];
 }
 
 /**
@@ -65,7 +69,7 @@ export function isAuthorizedAdminUser(userAccount) {
  * - true for super_admin, church_admin, pastor
  * - true for secretary only if allowed by permissions
  * - true for ministry_leader only if assigned to sermon/media ministry
- * - false for finance_admin, viewer, etc.
+ * - false for finance_admin, member, etc.
  */
 export function canManageSermons(userAccount) {
   if (!userAccount || userAccount.status === 'disabled') return false;

@@ -3,7 +3,7 @@ import { hasRole, hasAnyRole } from './permissions';
 /**
  * Checks if user can view the web Song Library.
  * Roles with access: super_admin, church_admin, pastor, ministry_leader, secretary (if allowed by existing policy).
- * finance_admin and viewer are denied web management access.
+ * finance_admin and member are denied web management access.
  */
 export function canViewSongLibrary(userProfile) {
   if (!userProfile || !userProfile.churchId) return false;
@@ -23,7 +23,7 @@ export function canViewSongLibrary(userProfile) {
  * - super_admin, church_admin: true for all songs in their church.
  * - ministry_leader: true only if song has a ministryId inside userProfile.managedMinistryIds (or true if song has no ministryId restriction).
  * - secretary: true if part of event/worship management policy.
- * - pastor, finance_admin, viewer: false by default for editing.
+ * - pastor, finance_admin, member: false by default for editing.
  */
 export function canEditSong(userProfile, song) {
   if (!userProfile || !userProfile.churchId) return false;
@@ -49,7 +49,7 @@ export function canEditSong(userProfile, song) {
  * Rules:
  * - super_admin, church_admin: true for all songs in church.
  * - ministry_leader: true only if song.ministryId is in managedMinistryIds (or unassigned).
- * - pastor, secretary, finance_admin, viewer: false.
+ * - pastor, secretary, finance_admin, member: false.
  */
 export function canManageSongDirectorySettings(userProfile, song) {
   if (!userProfile || !userProfile.churchId) return false;

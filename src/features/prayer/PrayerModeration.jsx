@@ -146,7 +146,7 @@ export default function PrayerModeration() {
 
   const filteredRequests = requests.filter(req => {
     // 1. Role-based visibility check
-    // "finance_admin, ministry_leader, secretary, and viewer cannot see leaders_only prayer requests unless they created the request"
+    // "finance_admin, ministry_leader, secretary, and member cannot see leaders_only prayer requests unless they created the request"
     if (req.visibility === 'leaders_only' && !isModerator) {
       if (req.createdBy !== currentUser?.uid) {
         return false;

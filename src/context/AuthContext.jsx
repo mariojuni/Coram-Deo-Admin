@@ -11,10 +11,27 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../firebase';
 import { isAuthorizedAdminUser } from '../utils/adminRoles';
 
-const AuthContext = createContext();
+const defaultAuthContext = {
+  currentUser: null,
+  userProfile: null,
+  userAccount: null,
+  originalUserProfile: null,
+  activeChurchId: null,
+  setActiveChurchId: () => {},
+  isLoading: true,
+  isAuthorizedAdmin: false,
+  signup: async () => {},
+  login: async () => {},
+  loginWithGoogle: async () => {},
+  logout: async () => {},
+  sendPasswordReset: async () => {},
+};
+
+const AuthContext = createContext(defaultAuthContext);
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  return context || defaultAuthContext;
 }
 
 /**
@@ -31,17 +48,20 @@ function normalizeProfile(uid, data) {
 
   let systemRoles;
   if (Array.isArray(data.systemRoles) && data.systemRoles.length > 0) {
-    systemRoles = data.systemRoles.map(r => r.toLowerCase());
+    systemRoles = data.systemRoles.map(r => {
+      const lower = r.toLowerCase();
+      return lower === 'viewer' ? 'member' : lower;
+    });
   } else if (data.role) {
     // Legacy: promote single role string to array
-    systemRoles = [data.role.toLowerCase()];
+    const lower = data.role.toLowerCase();
+    systemRoles = [lower === 'viewer' ? 'member' : lower];
   } else {
-    systemRoles = ['viewer'];
+    systemRoles = ['member'];
   }
 
-  const primaryRole = data.primaryRole
-    ? data.primaryRole.toLowerCase()
-    : systemRoles[0];
+  const rawPrimary = data.primaryRole ? data.primaryRole.toLowerCase() : systemRoles[0];
+  const primaryRole = rawPrimary === 'viewer' ? 'member' : rawPrimary;
 
   return {
     uid,

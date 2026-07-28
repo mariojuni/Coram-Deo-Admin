@@ -1,5 +1,5 @@
 /**
- * @typedef {"super_admin"|"church_admin"|"pastor"|"secretary"|"finance_admin"|"ministry_leader"|"viewer"} SystemRole
+ * @typedef {"super_admin"|"church_admin"|"pastor"|"secretary"|"finance_admin"|"ministry_leader"|"member"} SystemRole
  */
 
 /** All valid system roles in priority order. */
@@ -10,31 +10,35 @@ export const SYSTEM_ROLES = [
   'secretary',
   'finance_admin',
   'ministry_leader',
-  'viewer',
+  'member',
 ];
 
 /**
  * Normalise a user profile so it always has a `systemRoles` array.
- * - If `systemRoles` already exists, return as-is.
+ * - If `systemRoles` already exists, return as-is (with 'viewer' normalized to 'member').
  * - If legacy `role` string exists, wrap it: ["finance_admin"].
- * - Otherwise default to ["viewer"].
+ * - Otherwise default to ["member"].
  *
  * @param {object|null} userProfile
  * @returns {string[]}
  */
 export function getSystemRoles(userProfile) {
-  if (!userProfile) return ['viewer'];
+  if (!userProfile) return ['member'];
 
   if (Array.isArray(userProfile.systemRoles) && userProfile.systemRoles.length > 0) {
-    return userProfile.systemRoles.map(r => r.toLowerCase());
+    return userProfile.systemRoles.map(r => {
+      const lower = r.toLowerCase();
+      return lower === 'viewer' ? 'member' : lower;
+    });
   }
 
   // Legacy fallback: single role string
   if (userProfile.role) {
-    return [userProfile.role.toLowerCase()];
+    const lower = userProfile.role.toLowerCase();
+    return [lower === 'viewer' ? 'member' : lower];
   }
 
-  return ['viewer'];
+  return ['member'];
 }
 
 /**
@@ -45,14 +49,15 @@ export function getSystemRoles(userProfile) {
  * @returns {SystemRole}
  */
 export function getPrimaryRole(userProfile) {
-  if (!userProfile) return 'viewer';
+  if (!userProfile) return 'member';
 
   if (userProfile.primaryRole) {
-    return userProfile.primaryRole.toLowerCase();
+    const lower = userProfile.primaryRole.toLowerCase();
+    return lower === 'viewer' ? 'member' : lower;
   }
 
   const roles = getSystemRoles(userProfile);
-  return roles[0] || 'viewer';
+  return roles[0] || 'member';
 }
 
 // ---------------------------------------------------------------------------
@@ -129,8 +134,8 @@ export function canModeratePrayerRequests(userProfile) {
 }
 
 /**
- * Can access the admin portal (any non-viewer role).
- * viewer can use normal mobile features but not manage admin modules.
+ * Can access the admin portal (any non-member role).
+ * member can use normal mobile features but not manage admin modules.
  */
 export function canAccessAdminPortal(userProfile) {
   return hasAnyRole(userProfile, [
@@ -179,7 +184,7 @@ export function canManageEvents(userProfile) {
  * - Must belong to same church (churchId must match).
  * - super_admin, church_admin: true for all within church.
  * - ministry_leader: true ONLY if ministry.id is in userProfile.managedMinistryIds.
- * - pastor, secretary, finance_admin, viewer: false.
+ * - pastor, secretary, finance_admin, member: false.
  */
 export function canManageMinistrySettings(userProfile, ministry) {
   if (!userProfile || !userProfile.churchId || !ministry) return false;
@@ -344,7 +349,7 @@ export function canViewStaffManagement(userProfile) {
   if (!userProfile || !userProfile.churchId) return false;
   if (userProfile.status && userProfile.status.toLowerCase() === 'disabled') return false;
 
-  // Regular members/viewers do not have staff management access
+  // Regular members do not have staff management access
   return hasAnyRole(userProfile, [
     'super_admin',
     'church_admin',

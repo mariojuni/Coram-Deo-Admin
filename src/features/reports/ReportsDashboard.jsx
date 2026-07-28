@@ -59,7 +59,8 @@ export default function ReportsDashboard() {
         
         csvContent = "Name,Email,Phone,Status,Role,Family Group\n";
         data.forEach(m => {
-          csvContent += `"${m.name}","${m.email}","${m.phone}","${m.membershipStatus}","${m.role}","${m.familyGroup}"\n`;
+          const phoneVal = m.phoneNumber || m.phone || '';
+          csvContent += `"${m.name}","${m.email}","${phoneVal}","${m.membershipStatus}","${m.role}","${m.familyGroup}"\n`;
         });
       }
       else if (reportType === 'giving') {

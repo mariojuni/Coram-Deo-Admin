@@ -13,7 +13,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
     middleName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     role: 'member',
     familyGroup: '',
     birthday: '',
@@ -38,7 +38,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
         middleName: member.middleName || '',
         lastName: member.lastName || fallbackLast,
         email: member.email || '',
-        phone: member.phone || '',
+        phoneNumber: member.phoneNumber || member.phone || '',
         role: member.role || 'member',
         familyGroup: member.familyGroup || '',
         birthday: member.birthday || '',
@@ -55,7 +55,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
         middleName: '',
         lastName: '',
         email: '',
-        phone: '',
+        phoneNumber: '',
         role: 'member',
         familyGroup: '',
         birthday: '',
@@ -181,7 +181,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
                 
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Phone Number</label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
                 </div>
 
                 <div className="md:col-span-2">

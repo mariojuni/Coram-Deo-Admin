@@ -236,7 +236,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
               <h1 className="text-3xl font-bold">{member.name}</h1>
               <div className="flex items-center text-church-slate mt-1 space-x-3">
                 <span className="flex items-center"><Mail size={14} className="mr-1"/> {member.email}</span>
-                {member.phone && <span className="flex items-center"><Phone size={14} className="mr-1"/> {member.phone}</span>}
+                {(member.phoneNumber || member.phone) && <span className="flex items-center"><Phone size={14} className="mr-1"/> {member.phoneNumber || member.phone}</span>}
               </div>
             </div>
           </div>
