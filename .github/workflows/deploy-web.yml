@@ -11,6 +11,7 @@ jobs:
     name: Build & Deploy Staging Web App
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - uses: actions/checkout@v4
       
@@ -38,6 +39,7 @@ jobs:
     name: Build & Deploy Production Web App
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
       
