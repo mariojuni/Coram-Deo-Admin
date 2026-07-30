@@ -17,3 +17,4 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+export const APP_ENV = import.meta.env.VITE_APP_ENV || 'development';

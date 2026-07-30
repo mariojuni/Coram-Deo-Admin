@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "nazarenechurch-9c030"
-  }
+    "default": "nazarenechurch-9c030",
+    "staging": "nazarenechurch-9c030",
+    "production": "coramdeo-prod"
+  },
+  "targets": {},
+  "etags": {}
 }

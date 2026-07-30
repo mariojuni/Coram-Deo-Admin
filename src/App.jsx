@@ -6,6 +6,30 @@ import Register from './components/Auth/Register';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import RoleGuard from './components/Auth/RoleGuard';
 import AdminLayout from './components/layout/AdminLayout';
+import { APP_ENV } from './firebase';
+
+const StagingBadge = () => {
+  if (APP_ENV !== 'staging') return null;
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: '#f59e0b',
+      color: 'white',
+      textAlign: 'center',
+      padding: '4px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      zIndex: 9999,
+      pointerEvents: 'none',
+      letterSpacing: '0.1em'
+    }}>
+      STAGING ENVIRONMENT
+    </div>
+  );
+};
 
 import DashboardOverview from './features/dashboard/DashboardOverview';
 import MembersList from './features/members/MembersList';
@@ -321,6 +345,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppRoutes />
+      <StagingBadge />
     </AuthProvider>
   );
 }
