@@ -33,9 +33,4 @@ jobs:
         run: npm run build:production
         
       - name: Deploy to Firebase Hosting (Production)
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PRODUCTION }}'
-          projectId: '${{ secrets.FIREBASE_PROJECT_ID_PRODUCTION }}'
-          channelId: live
+        run: npx firebase-tools deploy --only hosting --project coramdeo-prod --token "${{ secrets.FIREBASE_TOKEN_PRODUCTION }}"
