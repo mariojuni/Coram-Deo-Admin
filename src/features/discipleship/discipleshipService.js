@@ -212,43 +212,67 @@ export const unmarkWeekCompleted = async (churchId, progressId) => {
 export const importDiscipleshipPlanJSON = async (churchId, userId, jsonData) => {
   if (!churchId) throw new Error("churchId is required");
   
-  const { weeks, ...planData } = jsonData;
-  
-  // Remove id from planData if present so it doesn't conflict
-  delete planData.id;
+  // Check if data is array (bulk import)
+  const plansToImport = Array.isArray(jsonData) ? jsonData : [jsonData];
+  const importedPlanIds = [];
 
-  const batch = writeBatch(db);
-  
-  // Create Plan
-  const planRef = doc(getPlansRef());
-  batch.set(planRef, {
-    ...planData,
-    churchId,
-    status: 'draft', // Force draft
-    createdBy: userId,
-    updatedBy: userId,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
-  
-  // Create Weeks
-  if (weeks && Array.isArray(weeks)) {
-    weeks.forEach(week => {
-      // Remove id from week if present
-      delete week.id;
-      
-      const weekRef = doc(getWeeksRef());
-      batch.set(weekRef, {
-        ...week,
-        churchId,
-        planId: planRef.id,
-        status: 'draft',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
+  for (const singlePlanData of plansToImport) {
+    const { weeks, ...planData } = singlePlanData;
+    delete planData.id;
+
+    const batch = writeBatch(db);
+    
+    // Create Plan
+    const planRef = doc(getPlansRef());
+    batch.set(planRef, {
+      ...planData,
+      churchId,
+      status: planData.status || 'draft',
+      createdBy: userId,
+      updatedBy: userId,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     });
+    
+    // Create Weeks
+    if (weeks && Array.isArray(weeks)) {
+      weeks.forEach(week => {
+        delete week.id;
+        const weekRef = doc(getWeeksRef());
+        batch.set(weekRef, {
+          ...week,
+          churchId,
+          planId: planRef.id,
+          status: week.status || 'draft',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      });
+    }
+    
+    await batch.commit();
+    importedPlanIds.push(planRef.id);
   }
-  
-  await batch.commit();
-  return planRef.id;
+
+  return importedPlanIds;
 };
+
+export const exportDiscipleshipPlanJSON = async (churchId, planId) => {
+  const plan = await getDiscipleshipPlan(churchId, planId);
+  if (!plan) throw new Error('Plan not found');
+  const weeks = await getDiscipleshipWeeks(churchId, planId);
+  return {
+    ...plan,
+    weeks: weeks || []
+  };
+};
+
+export const exportDiscipleshipPlansBulkJSON = async (churchId, planIds = []) => {
+  const result = [];
+  for (const planId of planIds) {
+    const fullPlan = await exportDiscipleshipPlanJSON(churchId, planId);
+    result.push(fullPlan);
+  }
+  return result;
+};
+

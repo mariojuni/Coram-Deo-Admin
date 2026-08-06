@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical } from 'lucide-react';
+import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical, Upload, Download, CheckSquare, Square } from 'lucide-react';
 import BiblePlanFormModal from './BiblePlanFormModal';
+import BiblePlanImportModal from './BiblePlanImportModal';
+import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
 
 const CHURCH_ID = 'YmEc6C69Xz4DKRQaQZBV';
 
 export default function BiblePlans() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPlanIds, setSelectedPlanIds] = useState([]);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
   
   // Action menu state
@@ -54,6 +58,41 @@ export default function BiblePlans() {
     }
   };
 
+  const handleSingleExport = (plan) => {
+    setActiveMenuId(null);
+    const envelope = buildJSONExportEnvelope('bible_plan', plan);
+    const safeTitle = plan.title ? plan.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'bible-plan';
+    downloadJSONFile(envelope, `${safeTitle}-bible-plan.json`);
+  };
+
+  const handleBulkExport = () => {
+    const targetPlans = selectedPlanIds.length > 0
+      ? plans.filter(p => selectedPlanIds.includes(p.id))
+      : plans;
+
+    if (targetPlans.length === 0) {
+      alert('No plans available to export');
+      return;
+    }
+
+    const envelope = buildJSONExportEnvelope('bible_plans_bulk', targetPlans);
+    downloadJSONFile(envelope, `bible-plans-bulk-${targetPlans.length}.json`);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPlanIds.length === plans.length) {
+      setSelectedPlanIds([]);
+    } else {
+      setSelectedPlanIds(plans.map(p => p.id));
+    }
+  };
+
+  const toggleSelectPlan = (id) => {
+    setSelectedPlanIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
   const toggleMenu = (id) => {
     setActiveMenuId(activeMenuId === id ? null : id);
   };
@@ -80,19 +119,52 @@ export default function BiblePlans() {
 
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-church-navy">Bible Reading Plans</h1>
           <p className="text-sm text-church-slate mt-1">Manage guided scripture reading plans for members.</p>
         </div>
-        <button 
-          onClick={handleAddClick}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
-        >
-          <Plus size={18} className="mr-2" />
-          Create Plan
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={handleBulkExport}
+            disabled={plans.length === 0}
+            className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-opacity disabled:opacity-50"
+          >
+            <Download size={18} className="mr-2" />
+            {selectedPlanIds.length > 0 ? `Export Selected (${selectedPlanIds.length})` : 'Export All JSON'}
+          </button>
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-opacity"
+          >
+            <Upload size={18} className="mr-2" />
+            Import JSON
+          </button>
+          <button 
+            onClick={handleAddClick}
+            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+          >
+            <Plus size={18} className="mr-2" />
+            Create Plan
+          </button>
+        </div>
       </div>
+
+      {plans.length > 0 && (
+        <div className="flex justify-end border-b border-gray-200 pb-2">
+          <button
+            onClick={toggleSelectAll}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-church-navy px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
+          >
+            {selectedPlanIds.length === plans.length ? (
+              <CheckSquare size={16} className="text-church-green" />
+            ) : (
+              <Square size={16} />
+            )}
+            {selectedPlanIds.length === plans.length ? 'Deselect All' : 'Select All for Export'}
+          </button>
+        </div>
+      )}
       
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
@@ -114,83 +186,108 @@ export default function BiblePlans() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {plans.map(plan => (
-            <div key={plan.id} className="bg-white rounded-3xl overflow-hidden shadow-church-soft border border-gray-100 flex flex-col relative group transition-all hover:shadow-md">
-              
-              {/* Header Banner */}
-              <div className="h-28 bg-church-green/10 relative border-b border-gray-100 flex items-center justify-center">
-                <BookOpen size={48} className="text-church-green/30" />
+          {plans.map(plan => {
+            const isSelected = selectedPlanIds.includes(plan.id);
+            return (
+              <div 
+                key={plan.id} 
+                className={`bg-white rounded-3xl overflow-hidden shadow-church-soft border flex flex-col relative group transition-all hover:shadow-md ${
+                  isSelected ? 'border-church-green ring-2 ring-church-green/20' : 'border-gray-100'
+                }`}
+              >
                 
-                {/* Actions Dropdown */}
-                <div className="absolute top-4 right-4 relative">
-                  <button 
-                    onClick={() => toggleMenu(plan.id)}
-                    className="p-2 text-gray-500 hover:text-church-navy bg-white/80 hover:bg-white rounded-full transition-colors backdrop-blur-sm shadow-sm border border-gray-100"
+                {/* Header Banner */}
+                <div className="h-28 bg-church-green/10 relative border-b border-gray-100 flex items-center justify-center">
+                  <div 
+                    onClick={() => toggleSelectPlan(plan.id)}
+                    className="absolute top-4 left-4 bg-white/90 p-1.5 rounded-lg cursor-pointer hover:bg-white shadow-sm"
                   >
-                    <MoreVertical size={18} />
-                  </button>
+                    {isSelected ? (
+                      <CheckSquare size={18} className="text-church-green" />
+                    ) : (
+                      <Square size={18} className="text-gray-400" />
+                    )}
+                  </div>
+
+                  <BookOpen size={48} className="text-church-green/30" />
                   
-                  {activeMenuId === plan.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
-                      <div className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
-                        <button 
-                          onClick={() => handleEditClick(plan)}
-                          className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
-                        >
-                          <Edit size={14} className="mr-2" /> Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteClick(plan.id, plan.title)}
-                          className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 size={14} className="mr-2" /> Delete
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              {/* Content */}
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-church-navy line-clamp-2 pr-2">{plan.title}</h3>
-                  {renderStatusBadge(plan.status)}
+                  {/* Actions Dropdown */}
+                  <div className="absolute top-4 right-4">
+                    <button 
+                      onClick={() => toggleMenu(plan.id)}
+                      className="p-2 text-gray-500 hover:text-church-navy bg-white/80 hover:bg-white rounded-full transition-colors backdrop-blur-sm shadow-sm border border-gray-100"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+                    
+                    {activeMenuId === plan.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
+                        <div className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
+                          <button 
+                            onClick={() => handleSingleExport(plan)}
+                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
+                          >
+                            <Download size={14} className="mr-2 text-blue-600" /> Export JSON
+                          </button>
+                          <button 
+                            onClick={() => handleEditClick(plan)}
+                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
+                          >
+                            <Edit size={14} className="mr-2" /> Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteClick(plan.id, plan.title)}
+                            className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={14} className="mr-2" /> Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 
-                <p className="text-sm text-church-slate line-clamp-3 mb-6 flex-1">
-                  {plan.description || 'No description provided.'}
-                </p>
-
-                <div className="flex flex-col space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  
-                  <div className="flex justify-between items-center">
-                    {plan.durationDays > 0 && (
-                      <div className="flex items-center text-sm font-medium text-church-navy">
-                        <Clock size={16} className="text-church-green mr-2" />
-                        {plan.durationDays} Days Total
-                      </div>
-                    )}
-                    
-                    <div className="text-xs font-bold text-church-green bg-church-green/10 px-2 py-1 rounded-md">
-                      {plan.readings?.length || 0} Readings Loaded
-                    </div>
+                {/* Content */}
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-xl font-bold text-church-navy line-clamp-2 pr-2">{plan.title}</h3>
+                    {renderStatusBadge(plan.status)}
                   </div>
                   
-                  {(plan.startDate || plan.endDate) && (
-                    <div className="flex items-center text-sm font-medium text-church-slate">
-                      <Calendar size={16} className="text-gray-400 mr-2 shrink-0" />
-                      <span className="truncate">
-                        {plan.startDate ? formatDate(plan.startDate) : 'TBD'}
-                        {plan.endDate && ` - ${formatDate(plan.endDate)}`}
-                      </span>
+                  <p className="text-sm text-church-slate line-clamp-3 mb-6 flex-1">
+                    {plan.description || 'No description provided.'}
+                  </p>
+
+                  <div className="flex flex-col space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    
+                    <div className="flex justify-between items-center">
+                      {plan.durationDays > 0 && (
+                        <div className="flex items-center text-sm font-medium text-church-navy">
+                          <Clock size={16} className="text-church-green mr-2" />
+                          {plan.durationDays} Days Total
+                        </div>
+                      )}
+                      
+                      <div className="text-xs font-bold text-church-green bg-church-green/10 px-2 py-1 rounded-md">
+                        {plan.readings?.length || 0} Readings Loaded
+                      </div>
                     </div>
-                  )}
+                    
+                    {(plan.startDate || plan.endDate) && (
+                      <div className="flex items-center text-sm font-medium text-church-slate">
+                        <Calendar size={16} className="text-gray-400 mr-2 shrink-0" />
+                        <span className="truncate">
+                          {plan.startDate ? formatDate(plan.startDate) : 'TBD'}
+                          {plan.endDate && ` - ${formatDate(plan.endDate)}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -199,6 +296,13 @@ export default function BiblePlans() {
         onClose={() => setIsModalOpen(false)}
         plan={editingPlan}
       />
+
+      <BiblePlanImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={() => {}}
+      />
     </div>
   );
 }
+

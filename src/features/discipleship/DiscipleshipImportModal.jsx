@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { importDiscipleshipPlanJSON } from './discipleshipService';
+import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
 
 export default function DiscipleshipImportModal({ isOpen, onClose, onImportSuccess }) {
   const { userProfile, currentUser } = useAuth();
@@ -24,130 +25,141 @@ export default function DiscipleshipImportModal({ isOpen, onClose, onImportSucce
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const rawParsed = JSON.parse(event.target.result);
-          
-          // Support JSON where the plan is wrapped in a "plan" key
-          let actualPlan = rawParsed.plan ? rawParsed.plan : rawParsed;
+          const rawString = event.target.result;
+          const envelopeResult = parseAndValidateJSONEnvelope(rawString, [
+            'discipleship_plan', 
+            'discipleship_plans_bulk'
+          ]);
 
-          // Normalize plan keys to camelCase/lowercase for flexibility
-          actualPlan = Object.keys(actualPlan).reduce((acc, key) => {
-            const normalizedKey = key.charAt(0).toLowerCase() + key.slice(1);
-            acc[normalizedKey] = actualPlan[key];
-            return acc;
-          }, {});
-
-          // Normalize keys inside the weeks array as well
-          if (Array.isArray(actualPlan.weeks)) {
-            actualPlan.weeks = actualPlan.weeks.map(week => {
-              if (typeof week !== 'object' || !week) return week;
-              
-              // Safely un-nest known containers
-              const weekData = { ...week };
-              if (weekData.content && typeof weekData.content === 'object') {
-                Object.assign(weekData, weekData.content);
-                delete weekData.content;
-              }
-              if (weekData.leaderGuide && typeof weekData.leaderGuide === 'object') {
-                Object.assign(weekData, weekData.leaderGuide);
-                delete weekData.leaderGuide;
-              }
-              
-              return Object.keys(weekData).reduce((acc, key) => {
-                const flatKey = key.replace(/[\s_-]/g, '').toLowerCase();
-                
-                const keyMap = {
-                  'story': 'storyText',
-                  'storytext': 'storyText',
-                  'retell': 'retellActivity',
-                  'retellactivity': 'retellActivity',
-                  'discussion': 'discussionQuestions',
-                  'discussionquestions': 'discussionQuestions',
-                  'keytruths': 'keyTruths',
-                  'application': 'applicationQuestions',
-                  'applicationquestions': 'applicationQuestions',
-                  'memoryverse': 'memoryVerse',
-                  'chaptertitle': 'chapterTitle',
-                  'scripturereference': 'scriptureReference',
-                  'scripture': 'scriptureReference',
-                  'suggestedflow': 'suggestedFlow',
-                  'retellinstruction': 'retellInstruction',
-                  'duration': 'estimatedDurationMinutes',
-                  'estimateddurationminutes': 'estimatedDurationMinutes',
-                  'weeknumber': 'weekNumber',
-                  'chapternumber': 'chapterNumber'
-                };
-
-                let finalVal = weekData[key];
-                if (typeof finalVal === 'object' && finalVal !== null) {
-                  try {
-                    // Try to format arrays as clean bullet points or newlines if simple
-                    if (Array.isArray(finalVal)) {
-                      if (finalVal.every(item => typeof item === 'string')) {
-                        finalVal = finalVal.join('\n\n');
-                      } else {
-                        // It's an array of objects (like {order: 1, question: "..."}). Format it cleanly.
-                        const textArray = finalVal.map(item => {
-                          if (typeof item === 'object' && item !== null) {
-                            // Find meaningful content keys
-                            const contentKey = Object.keys(item).find(k => 
-                              ['question', 'truth', 'text', 'activity', 'application', 'content', 'verse'].includes(k.toLowerCase())
-                            );
-                            
-                            if (contentKey && typeof item[contentKey] === 'string') {
-                               if (item.order) return `${item.order}. ${item[contentKey]}`;
-                               return item[contentKey];
-                            } else {
-                               // Fallback: extract all string values
-                               const strings = Object.values(item).filter(v => typeof v === 'string');
-                               if (item.order && strings.length > 0) return `${item.order}. ${strings.join(' - ')}`;
-                               if (strings.length > 0) return strings.join('\n');
-                               return JSON.stringify(item); // absolute fallback
-                            }
-                          }
-                          return String(item);
-                        });
-                        finalVal = textArray.join('\n\n');
-                      }
-                    } else {
-                      // It's a single object! Like additionalStudy: { text: "..." }
-                      const contentKey = Object.keys(finalVal).find(k => 
-                        ['question', 'truth', 'text', 'activity', 'application', 'content', 'verse'].includes(k.toLowerCase())
-                      );
-                      if (contentKey && typeof finalVal[contentKey] === 'string') {
-                        finalVal = finalVal[contentKey];
-                      } else {
-                        const strings = Object.values(finalVal).filter(v => typeof v === 'string');
-                        if (strings.length > 0) {
-                          finalVal = strings.join('\n');
-                        } else {
-                          finalVal = JSON.stringify(finalVal, null, 2);
-                        }
-                      }
-                    }
-                  } catch (e) {
-                    finalVal = String(finalVal);
-                  }
-                }
-
-                if (keyMap[flatKey]) {
-                  acc[keyMap[flatKey]] = finalVal;
-                } else {
-                  let camelKey = key.replace(/[\s_-]+(.)/g, (m, g1) => g1.toUpperCase());
-                  camelKey = camelKey.charAt(0).toLowerCase() + camelKey.slice(1);
-                  acc[camelKey] = finalVal;
-                }
-                return acc;
-              }, {});
-            });
+          if (!envelopeResult.success) {
+            setError(envelopeResult.error);
+            setPreviewData(null);
+            return;
           }
 
-          // Simple validation
-          if (!actualPlan.title || !actualPlan.weeks || !Array.isArray(actualPlan.weeks)) {
-            const foundKeys = Object.keys(actualPlan).join(', ');
-            setError(`Invalid JSON structure. Missing 'title' or 'weeks' array. Found keys: ${foundKeys || 'none'}`);
-            setPreviewData(null);
+          let dataPayload = envelopeResult.data;
+          
+          // Normalize function for a single plan
+          const normalizePlan = (rawPlan) => {
+            let actualPlan = rawPlan.plan ? rawPlan.plan : rawPlan;
+
+            actualPlan = Object.keys(actualPlan).reduce((acc, key) => {
+              const normalizedKey = key.charAt(0).toLowerCase() + key.slice(1);
+              acc[normalizedKey] = actualPlan[key];
+              return acc;
+            }, {});
+
+            if (Array.isArray(actualPlan.weeks)) {
+              actualPlan.weeks = actualPlan.weeks.map(week => {
+                if (typeof week !== 'object' || !week) return week;
+                
+                const weekData = { ...week };
+                if (weekData.content && typeof weekData.content === 'object') {
+                  Object.assign(weekData, weekData.content);
+                  delete weekData.content;
+                }
+                if (weekData.leaderGuide && typeof weekData.leaderGuide === 'object') {
+                  Object.assign(weekData, weekData.leaderGuide);
+                  delete weekData.leaderGuide;
+                }
+                
+                return Object.keys(weekData).reduce((acc, key) => {
+                  const flatKey = key.replace(/[\s_-]/g, '').toLowerCase();
+                  
+                  const keyMap = {
+                    'story': 'storyText',
+                    'storytext': 'storyText',
+                    'retell': 'retellActivity',
+                    'retellactivity': 'retellActivity',
+                    'discussion': 'discussionQuestions',
+                    'discussionquestions': 'discussionQuestions',
+                    'keytruths': 'keyTruths',
+                    'application': 'applicationQuestions',
+                    'applicationquestions': 'applicationQuestions',
+                    'memoryverse': 'memoryVerse',
+                    'chaptertitle': 'chapterTitle',
+                    'scripturereference': 'scriptureReference',
+                    'scripture': 'scriptureReference',
+                    'suggestedflow': 'suggestedFlow',
+                    'retellinstruction': 'retellInstruction',
+                    'duration': 'estimatedDurationMinutes',
+                    'estimateddurationminutes': 'estimatedDurationMinutes',
+                    'weeknumber': 'weekNumber',
+                    'chapternumber': 'chapterNumber'
+                  };
+
+                  let finalVal = weekData[key];
+                  if (typeof finalVal === 'object' && finalVal !== null) {
+                    try {
+                      if (Array.isArray(finalVal)) {
+                        if (finalVal.every(item => typeof item === 'string')) {
+                          finalVal = finalVal.join('\n\n');
+                        } else {
+                          const textArray = finalVal.map(item => {
+                            if (typeof item === 'object' && item !== null) {
+                              const contentKey = Object.keys(item).find(k => 
+                                ['question', 'truth', 'text', 'activity', 'application', 'content', 'verse'].includes(k.toLowerCase())
+                              );
+                              
+                              if (contentKey && typeof item[contentKey] === 'string') {
+                                 if (item.order) return `${item.order}. ${item[contentKey]}`;
+                                 return item[contentKey];
+                              } else {
+                                 const strings = Object.values(item).filter(v => typeof v === 'string');
+                                 if (item.order && strings.length > 0) return `${item.order}. ${strings.join(' - ')}`;
+                                 if (strings.length > 0) return strings.join('\n');
+                                 return JSON.stringify(item);
+                              }
+                            }
+                            return String(item);
+                          });
+                          finalVal = textArray.join('\n\n');
+                        }
+                      } else {
+                        const contentKey = Object.keys(finalVal).find(k => 
+                          ['question', 'truth', 'text', 'activity', 'application', 'content', 'verse'].includes(k.toLowerCase())
+                        );
+                        if (contentKey && typeof finalVal[contentKey] === 'string') {
+                          finalVal = finalVal[contentKey];
+                        } else {
+                          const strings = Object.values(finalVal).filter(v => typeof v === 'string');
+                          if (strings.length > 0) {
+                            finalVal = strings.join('\n');
+                          } else {
+                            finalVal = JSON.stringify(finalVal, null, 2);
+                          }
+                        }
+                      }
+                    } catch (e) {
+                      finalVal = String(finalVal);
+                    }
+                  }
+
+                  if (keyMap[flatKey]) {
+                    acc[keyMap[flatKey]] = finalVal;
+                  } else {
+                    let camelKey = key.replace(/[\s_-]+(.)/g, (m, g1) => g1.toUpperCase());
+                    camelKey = camelKey.charAt(0).toLowerCase() + camelKey.slice(1);
+                    acc[camelKey] = finalVal;
+                  }
+                  return acc;
+                }, {});
+              });
+            }
+            return actualPlan;
+          };
+
+          if (Array.isArray(dataPayload)) {
+            const normalizedList = dataPayload.map(p => normalizePlan(p));
+            setPreviewData(normalizedList);
           } else {
-            setPreviewData(actualPlan);
+            const normalizedSingle = normalizePlan(dataPayload);
+            if (!normalizedSingle.title) {
+              setError("Invalid JSON format. Missing title field.");
+              setPreviewData(null);
+            } else {
+              setPreviewData(normalizedSingle);
+            }
           }
         } catch (err) {
           setError('Failed to parse JSON file.');
@@ -227,9 +239,22 @@ export default function DiscipleshipImportModal({ isOpen, onClose, onImportSucce
           {previewData && (
             <div className="mt-6 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
               <h3 className="text-sm font-bold text-church-navy mb-2">Preview</h3>
-              <p className="text-sm text-gray-600"><strong>Title:</strong> {previewData.title}</p>
-              <p className="text-sm text-gray-600"><strong>Subtitle:</strong> {previewData.subtitle || 'N/A'}</p>
-              <p className="text-sm text-gray-600"><strong>Total Weeks:</strong> {previewData.weeks.length}</p>
+              {Array.isArray(previewData) ? (
+                <div>
+                  <p className="text-sm text-gray-600"><strong>Bulk Import:</strong> {previewData.length} Discipleship Plans found.</p>
+                  <ul className="mt-2 text-xs text-gray-600 space-y-1 max-h-32 overflow-y-auto pl-4 list-disc">
+                    {previewData.map((plan, idx) => (
+                      <li key={idx}><strong>{plan.title || 'Untitled'}</strong> ({plan.weeks?.length || 0} weeks)</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-gray-600"><strong>Title:</strong> {previewData.title}</p>
+                  <p className="text-sm text-gray-600"><strong>Subtitle:</strong> {previewData.subtitle || 'N/A'}</p>
+                  <p className="text-sm text-gray-600"><strong>Total Weeks:</strong> {previewData.weeks?.length || 0}</p>
+                </div>
+              )}
               <p className="text-xs text-blue-600 font-medium mt-2">
                 This plan will be imported as Draft and assigned to your current active church workspace.
               </p>

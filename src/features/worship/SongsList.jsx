@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Music, Edit, Trash2, Search, Filter, Upload, Settings, Eye, EyeOff, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Music, Edit, Trash2, Search, Filter, Upload, Settings, Eye, EyeOff, FileText, CheckCircle, XCircle, Download, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getSongs, deleteSong, updateSong } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import { canManageSongDirectorySettings, canEditSong, canViewSongLibrary } from '../../utils/songDirectoryPermissions';
 import SongFormModal from './SongFormModal';
+import SongImportModal from './SongImportModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
 
 export default function SongsList() {
   const navigate = useNavigate();
@@ -13,7 +15,9 @@ export default function SongsList() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState(null);
+  const [selectedSongIds, setSelectedSongIds] = useState([]);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,6 +66,40 @@ export default function SongsList() {
       await deleteSong(id);
       fetchSongs();
     }
+  };
+
+  const handleSingleExport = (song) => {
+    const envelope = buildJSONExportEnvelope('song', song);
+    const safeTitle = song.title ? song.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'song';
+    downloadJSONFile(envelope, `${safeTitle}-song.json`);
+  };
+
+  const handleBulkExport = () => {
+    const targetSongs = selectedSongIds.length > 0
+      ? filteredSongs.filter(s => selectedSongIds.includes(s.id))
+      : filteredSongs;
+
+    if (targetSongs.length === 0) {
+      alert('No songs available to export');
+      return;
+    }
+
+    const envelope = buildJSONExportEnvelope('songs_bulk', targetSongs);
+    downloadJSONFile(envelope, `songs-bulk-${targetSongs.length}.json`);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedSongIds.length === filteredSongs.length) {
+      setSelectedSongIds([]);
+    } else {
+      setSelectedSongIds(filteredSongs.map(s => s.id));
+    }
+  };
+
+  const toggleSelectSong = (id) => {
+    setSelectedSongIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
   };
 
   // Quick Action Handlers
@@ -114,12 +152,27 @@ export default function SongsList() {
 
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-church-navy">Songs & Lyrics</h1>
           <p className="text-sm text-church-slate mt-1">Manage worship songs, arrangements, and mobile directory visibility.</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={handleBulkExport}
+            disabled={filteredSongs.length === 0}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <Download size={18} className="mr-2" />
+            {selectedSongIds.length > 0 ? `Export Selected (${selectedSongIds.length})` : 'Export All JSON'}
+          </button>
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            <Upload size={18} className="mr-2 text-purple-600" />
+            Import JSON
+          </button>
           <button 
             onClick={() => navigate('/admin/worship/songs/import/settings')}
             className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -233,6 +286,15 @@ export default function SongsList() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-left">
+                  <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded">
+                    {selectedSongIds.length === filteredSongs.length && filteredSongs.length > 0 ? (
+                      <CheckSquare size={18} className="text-church-green" />
+                    ) : (
+                      <Square size={18} className="text-gray-400" />
+                    )}
+                  </button>
+                </th>
                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider text-xs">Title / Artist</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider text-xs">Language</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider text-xs">Category</th>
@@ -246,9 +308,19 @@ export default function SongsList() {
               {filteredSongs.map((song) => {
                 const canManageDir = canManageSongDirectorySettings(userProfile, song);
                 const canEdit = canEditSong(userProfile, song);
+                const isSelected = selectedSongIds.includes(song.id);
 
                 return (
-                  <tr key={song.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={song.id} className={`hover:bg-gray-50 transition-colors ${isSelected ? 'bg-green-50/40' : ''}`}>
+                    <td className="px-4 py-4">
+                      <button onClick={() => toggleSelectSong(song.id)} className="p-1 hover:bg-gray-200 rounded">
+                        {isSelected ? (
+                          <CheckSquare size={18} className="text-church-green" />
+                        ) : (
+                          <Square size={18} className="text-gray-400" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
@@ -310,6 +382,14 @@ export default function SongsList() {
 
                     {/* Actions & Quick Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2">
+                      <button 
+                        onClick={() => handleSingleExport(song)}
+                        className="text-purple-600 hover:text-purple-900 bg-purple-50 px-2 py-1 rounded-md inline-flex items-center"
+                        title="Export JSON"
+                      >
+                        <Download size={14} className="mr-1" /> JSON
+                      </button>
+
                       {canManageDir && (
                         <>
                           {song.directoryVisibility === 'hidden' ? (
@@ -378,6 +458,14 @@ export default function SongsList() {
           onSaved={fetchSongs}
         />
       )}
+
+      <SongImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        churchId={userProfile?.churchId}
+        onImportSuccess={fetchSongs}
+      />
     </div>
   );
 }
+

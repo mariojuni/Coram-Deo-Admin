@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ListMusic, Edit, Trash2, Search, Filter, Calendar } from 'lucide-react';
-import { getSetlists, deleteSetlist } from './worshipService';
+import { Plus, ListMusic, Edit, Trash2, Search, Filter, Calendar, Upload, Download } from 'lucide-react';
+import { getSetlists, deleteSetlist, getSetlistItems } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import SetlistFormModal from './SetlistFormModal';
+import SongImportModal from './SongImportModal';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
 
 export default function SetlistsList() {
   const { userProfile } = useAuth();
@@ -14,6 +16,7 @@ export default function SetlistsList() {
   const [events, setEvents] = useState({});
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingSetlist, setEditingSetlist] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -72,6 +75,45 @@ export default function SetlistsList() {
     }
   };
 
+  const handleSingleExport = async (e, setlist) => {
+    e.stopPropagation();
+    try {
+      const items = await getSetlistItems(setlist.id);
+      const fullSetlist = {
+        ...setlist,
+        items: items || []
+      };
+      const envelope = buildJSONExportEnvelope('setlist', fullSetlist);
+      const safeTitle = setlist.title ? setlist.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'setlist';
+      downloadJSONFile(envelope, `${safeTitle}-setlist.json`);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to export setlist: ' + err.message);
+    }
+  };
+
+  const handleBulkExport = async () => {
+    if (filteredSetlists.length === 0) {
+      alert('No setlists available to export');
+      return;
+    }
+    try {
+      const bulkPayload = [];
+      for (const sl of filteredSetlists) {
+        const items = await getSetlistItems(sl.id);
+        bulkPayload.push({
+          ...sl,
+          items: items || []
+        });
+      }
+      const envelope = buildJSONExportEnvelope('setlists_bulk', bulkPayload);
+      downloadJSONFile(envelope, `setlists-bulk-${bulkPayload.length}.json`);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to bulk export setlists: ' + err.message);
+    }
+  };
+
   const handleRowClick = (id) => {
     navigate(`/admin/worship/setlists/${id}`);
   };
@@ -83,18 +125,35 @@ export default function SetlistsList() {
 
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-church-navy">Worship Setlists</h1>
           <p className="text-sm text-church-slate mt-1">Manage setlists for upcoming worship services.</p>
         </div>
-        <button 
-          onClick={handleAddClick}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
-        >
-          <Plus size={18} className="mr-2" />
-          Create Setlist
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={handleBulkExport}
+            disabled={filteredSetlists.length === 0}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <Download size={18} className="mr-2" />
+            Export All JSON
+          </button>
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            <Upload size={18} className="mr-2 text-purple-600" />
+            Import JSON
+          </button>
+          <button 
+            onClick={handleAddClick}
+            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+          >
+            <Plus size={18} className="mr-2" />
+            Create Setlist
+          </button>
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center">
@@ -148,29 +207,32 @@ export default function SetlistsList() {
                   </span>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-bold text-church-navy truncate">
-                      {setlist.title}
-                    </h3>
-                    {setlist.status === 'published' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase font-bold rounded">Published</span>}
-                    {setlist.status === 'draft' && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">Draft</span>}
-                    {setlist.status === 'archived' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] uppercase font-bold rounded">Archived</span>}
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-church-slate">
-                    <div className="flex items-center">
-                      <Calendar size={14} className="mr-1.5 opacity-70" />
-                      <span className="truncate max-w-[150px]">{relatedEvent ? relatedEvent.title : 'No Event Linked'}</span>
-                    </div>
+                <div className="flex-1 min-w-0 pr-4">
+                  <h3 className="text-lg font-bold text-church-navy truncate">{setlist.title}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    {relatedEvent ? (
+                      <span className="inline-flex items-center text-xs font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-100 truncate">
+                        <Calendar size={12} className="mr-1.5 shrink-0" />
+                        {relatedEvent.title}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">Standalone Setlist</span>
+                    )}
                   </div>
                 </div>
                 
-                <div className="ml-4 flex items-center space-x-2">
-                  <button onClick={(e) => handleEditClick(e, setlist)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100">
+                  <button 
+                    onClick={(e) => handleSingleExport(e, setlist)}
+                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    title="Export JSON"
+                  >
+                    <Download size={18} />
+                  </button>
+                  <button onClick={(e) => handleEditClick(e, setlist)} className="p-2 text-gray-400 hover:text-church-navy hover:bg-gray-100 rounded-lg transition-colors" title="Edit Setlist">
                     <Edit size={18} />
                   </button>
-                  <button onClick={(e) => handleDeleteClick(e, setlist.id, setlist.title)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <button onClick={(e) => handleDeleteClick(e, setlist.id, setlist.title)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Setlist">
                     <Trash2 size={18} />
                   </button>
                 </div>
@@ -185,10 +247,16 @@ export default function SetlistsList() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           setlist={editingSetlist}
-          events={events}
           onSaved={fetchSetlists}
         />
       )}
+
+      <SongImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        churchId={userProfile?.churchId}
+        onImportSuccess={fetchSetlists}
+      />
     </div>
   );
 }
