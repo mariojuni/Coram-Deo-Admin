@@ -276,14 +276,22 @@ export default function MembersList() {
 
         if (newMember.name) {
           // Duplicate Check
-          const existingMember = members.find(m => 
+          const isDuplicateInState = members.find(m => 
             (m.email && newMember.email && m.email.toLowerCase() === newMember.email.toLowerCase()) ||
             (m.name && m.name.toLowerCase() === newMember.name.toLowerCase())
           );
           
-          if (!existingMember) {
+          // Also check if we already added them in THIS csv import
+          const isDuplicateInNewRecords = newRecords.find(m => 
+            (m.email && newMember.email && m.email.toLowerCase() === newMember.email.toLowerCase()) ||
+            (m.name && m.name.toLowerCase() === newMember.name.toLowerCase())
+          );
+          
+          const existingMember = isDuplicateInState;
+          
+          if (!existingMember && !isDuplicateInNewRecords) {
             newRecords.push(newMember);
-          } else {
+          } else if (existingMember) {
             // Update missing fields on existing member
             const updates = {};
             for (const [key, value] of Object.entries(newMember)) {
@@ -527,6 +535,7 @@ export default function MembersList() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         member={selectedMember}
+        existingMembers={members}
       />
       
       <MemberProfileModal 

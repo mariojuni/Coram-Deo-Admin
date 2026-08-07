@@ -247,6 +247,7 @@ export default function SetlistsList() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           setlist={editingSetlist}
+          events={events}
           onSaved={fetchSetlists}
         />
       )}

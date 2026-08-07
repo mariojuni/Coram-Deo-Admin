@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 
-export default function MemberFormModal({ isOpen, onClose, member = null }) {
+export default function MemberFormModal({ isOpen, onClose, member = null, existingMembers = [] }) {
   const { userProfile, currentUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -83,6 +83,20 @@ export default function MemberFormModal({ isOpen, onClose, member = null }) {
 
     try {
       const computedName = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(' ');
+      
+      if (!member) {
+        const isDuplicate = existingMembers.find(m => 
+          (m.email && formData.email && m.email.toLowerCase() === formData.email.toLowerCase()) ||
+          (m.name && computedName && m.name.toLowerCase() === computedName.toLowerCase())
+        );
+        
+        if (isDuplicate) {
+          setError('A member with this name or email already exists.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const dataToSave = {
         ...formData,
         birthday: deleteField(),

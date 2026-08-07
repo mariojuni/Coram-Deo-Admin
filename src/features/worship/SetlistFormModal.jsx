@@ -99,7 +99,7 @@ export default function SetlistFormModal({ isOpen, onClose, setlist, events, onS
                 onChange={(val) => handleChange({ target: { name: 'eventId', value: val } })}
                 options={[
                   { value: '', label: '-- Select an Event --' },
-                  ...Object.values(events)
+                  ...Object.values(events || {})
                     .sort((a, b) => {
                       const now = new Date();
                       const dateA = a.date ? new Date(a.date + 'T00:00:00') : null;
