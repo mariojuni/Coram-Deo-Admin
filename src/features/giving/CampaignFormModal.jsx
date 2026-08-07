@@ -180,9 +180,18 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
     setError(null);
 
     try {
+      let campaignId = campaign?.id;
+      let campaignRef = null;
+      if (mode === 'create') {
+        campaignRef = doc(collection(db, 'givingCampaigns'));
+        campaignId = campaignRef.id;
+      } else {
+        campaignRef = doc(db, 'givingCampaigns', campaignId);
+      }
+
       let imageUrl = formData.coverImageUrl;
       if (coverImageFile) {
-        const storageRef = ref(storage, `images/campaign/${CHURCH_ID}/${Date.now()}_${coverImageFile.name}`);
+        const storageRef = ref(storage, `churches/${CHURCH_ID}/campaign/${campaignId}/${Date.now()}_${coverImageFile.name}`);
         const uploadTask = uploadBytesResumable(storageRef, coverImageFile);
         
         await new Promise((resolve, reject) => {
@@ -211,7 +220,6 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
       }
 
       if (mode === 'create') {
-        const campaignRef = doc(collection(db, 'givingCampaigns'));
         await setDoc(campaignRef, {
           ...formData,
           fundType: finalFundType,
@@ -226,7 +234,6 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
           updatedAt: serverTimestamp(),
         });
       } else if (mode === 'edit') {
-        const campaignRef = doc(db, 'givingCampaigns', campaign.id);
         await updateDoc(campaignRef, {
           ...formData,
           fundType: finalFundType,

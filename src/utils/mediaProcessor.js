@@ -58,15 +58,15 @@ export const generateThumbnail = (videoSource, timeInSeconds) => {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+
     if (typeof videoSource === 'string') {
       video.src = videoSource;
     } else {
       video.src = URL.createObjectURL(videoSource);
     }
-    
-    video.crossOrigin = 'anonymous';
-    video.muted = true;
-    video.playsInline = true;
     
     // Once metadata is loaded, we can seek to the desired time
     video.onloadedmetadata = () => {

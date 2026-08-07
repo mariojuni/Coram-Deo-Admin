@@ -67,7 +67,15 @@ export default function SermonsList() {
 
   const handleDeleteClick = async (sermon) => {
     setActiveMenuId(null);
-    if (!window.confirm(`Are you sure you want to delete "${sermon.title}"? This will permanently delete the media files too.`)) return;
+    
+    const confirmation = window.prompt(`To permanently delete this sermon and its media files, please type the title exactly:\n\n"${sermon.title}"`);
+    
+    if (confirmation !== sermon.title) {
+      if (confirmation !== null) {
+        alert("The title did not match. Deletion cancelled.");
+      }
+      return;
+    }
 
     try {
       // Delete associated Storage files first
@@ -85,7 +93,7 @@ export default function SermonsList() {
       await deleteDoc(doc(db, 'sermons', sermon.id));
     } catch (error) {
       console.error('Error deleting sermon:', error);
-      alert('Failed to delete sermon. Please try again.');
+      alert('Failed to delete sermon: ' + error.message);
     }
   };
 

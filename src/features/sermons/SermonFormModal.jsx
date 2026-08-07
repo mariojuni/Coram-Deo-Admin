@@ -6,6 +6,7 @@ import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { trimMedia, compressAudio, compressVideo, generateThumbnail } from '../../utils/mediaProcessor';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import ModernDropdown from '../../components/ui/ModernDropdown';
 
 const STEPS = ['Details', 'Upload', 'Trim', 'Thumbnail', 'Optimize', 'Review'];
 const EDIT_STEPS = ['Details', 'Thumbnail', 'Review'];
@@ -28,7 +29,8 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   const ACTIVE_STEPS = isEditMode ? EDIT_STEPS : STEPS;
 
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const activeStep = ACTIVE_STEPS[activeStepIndex];
+  const [activeEditTab, setActiveEditTab] = useState('Details');
+  const activeStep = isEditMode ? activeEditTab : ACTIVE_STEPS[activeStepIndex];
   
   const [loading, setLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -44,6 +46,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     scriptureReference: '',
     seriesTitle: '',
     mediaType: 'audio',
+    visibility: 'public',
   });
 
   // Media State
@@ -80,6 +83,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         scriptureReference: sermon.scriptureReference || '',
         seriesTitle: sermon.seriesTitle || '',
         mediaType: sermon.mediaType || 'audio',
+        visibility: sermon.visibility || 'public',
       });
       setThumbnailPreviewUrl(sermon.thumbnailUrl || '');
       setUploadStatus(sermon.status || 'draft');
@@ -92,11 +96,13 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         scriptureReference: '',
         seriesTitle: '',
         mediaType: 'audio',
+        visibility: 'public',
       });
       setUploadStatus('draft');
     }
     resetMediaState();
     setActiveStepIndex(0);
+    setActiveEditTab('Details');
     setError('');
   }, [sermon, isOpen]);
   
@@ -233,6 +239,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         sermonDate: formData.sermonDate,
         scriptureReference: formData.scriptureReference,
         seriesTitle: formData.seriesTitle,
+        visibility: formData.visibility,
         status: statusOverride,
         mediaType: formData.mediaType,
         durationSeconds: (trimEnd - trimStart) || duration || 0,
@@ -290,11 +297,22 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   };
 
 
-  // Save details-only edit (no file re-upload needed)
+  // Save details and optionally new thumbnail
   const handleSaveDetails = async (statusOverride) => {
     setIsPublishing(true);
     setError('');
     try {
+      let updatedThumbnailUrl = sermon.thumbnailUrl;
+      
+      // If a new thumbnail was generated or uploaded during edit
+      if (thumbnailFile) {
+        setPublishStep('uploading_thumb');
+        const thumbRes = await uploadFileToStorage(sermon.id, thumbnailFile, 'thumbnails', 'thumbnail');
+        if (thumbRes?.url) {
+          updatedThumbnailUrl = thumbRes.url;
+        }
+      }
+
       const docRef = doc(db, 'sermons', sermon.id);
       await updateDoc(docRef, {
         title: formData.title,
@@ -303,7 +321,9 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         sermonDate: formData.sermonDate,
         scriptureReference: formData.scriptureReference,
         seriesTitle: formData.seriesTitle,
+        visibility: formData.visibility,
         status: statusOverride || uploadStatus,
+        thumbnailUrl: updatedThumbnailUrl,
         updatedAt: serverTimestamp(),
       });
       setUploadStatus(statusOverride || uploadStatus);
@@ -324,23 +344,45 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     if (activeStepIndex > 0) setActiveStepIndex(prev => prev - 1);
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex justify-between mb-8 relative">
-      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10 -translate-y-1/2"></div>
-      <div className="absolute top-1/2 left-0 h-0.5 bg-church-green -z-10 -translate-y-1/2 transition-all" style={{ width: `${(activeStepIndex / (ACTIVE_STEPS.length - 1)) * 100}%` }}></div>
-      
-      {ACTIVE_STEPS.map((step, idx) => (
-        <div key={step} className="flex flex-col items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
-            idx <= activeStepIndex ? 'bg-church-green border-church-green text-white' : 'bg-white border-gray-300 text-gray-400'
-          }`}>
-            {idx < activeStepIndex ? <CheckCircle2 size={16} /> : idx + 1}
-          </div>
-          <span className={`text-xs mt-1 font-medium ${idx <= activeStepIndex ? 'text-church-navy' : 'text-gray-400'}`}>{step}</span>
+  const renderStepIndicator = () => {
+    if (isEditMode) {
+      return (
+        <div className="flex space-x-2 border-b border-gray-200 mb-8">
+          {['Details', 'Thumbnail'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveEditTab(tab)}
+              className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
+                activeEditTab === tab 
+                  ? 'border-church-green text-church-navy' 
+                  : 'border-transparent text-gray-400 hover:text-church-navy hover:bg-gray-50 rounded-t-lg'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
+
+    return (
+      <div className="flex justify-between mb-8 relative">
+        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10 -translate-y-1/2"></div>
+        <div className="absolute top-1/2 left-0 h-0.5 bg-church-green -z-10 -translate-y-1/2 transition-all" style={{ width: `${(activeStepIndex / (ACTIVE_STEPS.length - 1)) * 100}%` }}></div>
+        
+        {ACTIVE_STEPS.map((step, idx) => (
+          <div key={step} className="flex flex-col items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
+              idx <= activeStepIndex ? 'bg-church-green border-church-green text-white' : 'bg-white border-gray-300 text-gray-400'
+            }`}>
+              {idx < activeStepIndex ? <CheckCircle2 size={16} /> : idx + 1}
+            </div>
+            <span className={`text-xs mt-1 font-medium ${idx <= activeStepIndex ? 'text-church-navy' : 'text-gray-400'}`}>{step}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -381,7 +423,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Date Preached *</label>
                   <ModernDatePicker 
@@ -397,6 +439,17 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Series</label>
                   <input type="text" name="seriesTitle" value={formData.seriesTitle} onChange={handleTextChange} placeholder="e.g. The Gospel" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-church-navy mb-1">Visibility</label>
+                  <ModernDropdown 
+                    options={[
+                      { value: 'public', label: 'Public' },
+                      { value: 'members', label: 'Church members' }
+                    ]}
+                    value={formData.visibility} 
+                    onChange={(val) => setFormData(prev => ({ ...prev, visibility: val }))} 
+                  />
                 </div>
               </div>
 
@@ -586,13 +639,13 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                 <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
                   <Globe size={40} />
                 </div>
-                <h3 className="text-xl font-bold text-church-navy mb-2">Cloud Optimization Ready</h3>
+                <h3 className="text-xl font-bold text-church-navy mb-2">Video Recommendation</h3>
                 <p className="text-sm text-church-slate mb-6">
-                  We've upgraded our system! Videos are now automatically optimized to 720p on our fast cloud servers after upload. This prevents your browser from crashing on large files.
+                  For the best experience and faster streaming, we highly recommend compressing your videos to 720p or lower before uploading.
                 </p>
                 <button
                   onClick={handleOptimize}
-                  className="px-6 py-3 bg-church-blue text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+                  className="px-6 py-3 bg-church-navy text-white font-medium rounded-xl hover:bg-church-navy/90 transition-colors shadow-sm"
                 >
                   Continue to Review
                 </button>
@@ -698,69 +751,75 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
-          <div>
-            {activeStepIndex > 0 && activeStep !== 'Review' && (
-              <button 
-                type="button" 
-                onClick={prevStep}
-                disabled={isPublishing || isOptimizing}
-                className="px-4 py-2 text-sm font-medium text-church-slate hover:text-church-navy"
-              >
-                ← Back
-              </button>
-            )}
+        {isEditMode ? (
+          <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0 rounded-b-3xl">
+            <button 
+              type="button" 
+              onClick={onClose}
+              disabled={isPublishing}
+              className="px-6 py-2.5 text-church-slate font-medium hover:bg-white rounded-xl transition-colors border border-transparent hover:border-gray-200"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={() => handleSaveDetails()}
+              disabled={isPublishing}
+              className="px-8 py-2.5 bg-church-navy text-white rounded-xl font-bold shadow-md hover:bg-church-navy/90 disabled:opacity-50 transition-colors"
+            >
+              {isPublishing ? (
+                <span className="flex items-center">
+                  <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></span>
+                  Saving...
+                </span>
+              ) : 'Save Changes'}
+            </button>
           </div>
-          
-          <div className="flex space-x-3">
-            {activeStep !== 'Review' ? (
-              <button 
-                type="button" 
-                onClick={nextStep}
-                disabled={loading || isOptimizing || (activeStep === 'Optimize' && !optimizedFile)}
-                className="px-6 py-2 bg-church-navy text-white rounded-full text-sm font-medium hover:bg-church-navy/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Continue
-              </button>
-            ) : isEditMode ? (
-              // Edit mode buttons
-              <>
+        ) : (
+          <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0 rounded-b-3xl">
+            <div>
+              {activeStepIndex > 0 && activeStep !== 'Review' && (
                 <button 
-                  onClick={() => handleSaveDetails('draft')}
-                  disabled={isPublishing}
-                  className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 disabled:opacity-50"
+                  type="button" 
+                  onClick={prevStep}
+                  disabled={isPublishing || isOptimizing}
+                  className="px-4 py-2 text-sm font-medium text-church-slate hover:text-church-navy"
                 >
-                  Save as Draft
+                  ← Back
                 </button>
+              )}
+            </div>
+            
+            <div className="flex space-x-3">
+              {activeStep !== 'Review' ? (
                 <button 
-                  onClick={() => handleSaveDetails('published')}
-                  disabled={isPublishing}
-                  className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold shadow-md hover:bg-church-green/90 disabled:opacity-50"
+                  type="button" 
+                  onClick={nextStep}
+                  disabled={loading || isOptimizing || (activeStep === 'Optimize' && !optimizedFile)}
+                  className="px-6 py-2 bg-church-navy text-white rounded-full text-sm font-medium hover:bg-church-navy/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isPublishing ? 'Saving...' : 'Save & Publish'}
+                  Continue
                 </button>
-              </>
-            ) : (
-              // New upload buttons
-              <>
-                <button 
-                  onClick={() => handlePublish('draft')}
-                  disabled={isPublishing || uploadStatus === 'processing'}
-                  className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Save as Draft
-                </button>
-                <button 
-                  onClick={() => handlePublish('published')}
-                  disabled={isPublishing || uploadStatus === 'processing'}
-                  className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold shadow-md hover:bg-church-green/90 disabled:opacity-50"
-                >
-                  {isPublishing ? 'Publishing...' : 'Publish Sermon'}
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button 
+                    onClick={() => handlePublish('draft')}
+                    disabled={isPublishing || uploadStatus === 'processing'}
+                    className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Save as Draft
+                  </button>
+                  <button 
+                    onClick={() => handlePublish('published')}
+                    disabled={isPublishing || uploadStatus === 'processing'}
+                    className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold shadow-md hover:bg-church-green/90 disabled:opacity-50"
+                  >
+                    {isPublishing ? 'Publishing...' : 'Publish Sermon'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
     </div>
