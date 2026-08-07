@@ -10,6 +10,15 @@ import ModernDatePicker from '../../components/ui/ModernDatePicker';
 const STEPS = ['Details', 'Upload', 'Trim', 'Thumbnail', 'Optimize', 'Review'];
 const EDIT_STEPS = ['Details', 'Thumbnail', 'Review'];
 
+const formatDuration = (totalSeconds) => {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+};
+
 export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
@@ -438,7 +447,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                 <div className="text-center py-10 text-gray-500">Please upload media first.</div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <div className="w-full max-w-2xl bg-black rounded-2xl overflow-hidden mb-6 aspect-video flex items-center justify-center">
+                  <div className="w-full max-w-2xl bg-black rounded-2xl overflow-hidden mb-4 aspect-video flex items-center justify-center">
                     {formData.mediaType === 'video' ? (
                       <video 
                         ref={videoRef}
@@ -456,35 +465,47 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                       />
                     )}
                   </div>
+
+                  <div className="w-full max-w-2xl flex justify-between gap-4 mb-6">
+                    <button 
+                      onClick={() => {
+                        if (videoRef.current) {
+                          const currentTime = Math.floor(videoRef.current.currentTime);
+                          if (trimEnd === 0 || currentTime < trimEnd) setTrimStart(currentTime);
+                        }
+                      }}
+                      className="flex-1 py-2.5 bg-church-navy text-white rounded-xl text-sm font-bold shadow-sm hover:bg-church-navy/90 transition-colors flex items-center justify-center"
+                    >
+                      <Scissors size={16} className="mr-2" /> Set Start Here
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (videoRef.current) {
+                          const currentTime = Math.floor(videoRef.current.currentTime);
+                          if (currentTime > trimStart) setTrimEnd(currentTime);
+                        }
+                      }}
+                      className="flex-1 py-2.5 bg-church-navy text-white rounded-xl text-sm font-bold shadow-sm hover:bg-church-navy/90 transition-colors flex items-center justify-center"
+                    >
+                      <Scissors size={16} className="mr-2" /> Set End Here
+                    </button>
+                  </div>
                   
                   <div className="w-full max-w-2xl bg-gray-50 p-6 rounded-2xl border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-church-navy flex items-center"><Scissors size={18} className="mr-2 text-church-slate" /> Trim Media</h3>
-                      <span className="text-sm text-church-slate font-medium">Duration: {duration}s</span>
+                      <h3 className="font-bold text-church-navy flex items-center"><Scissors size={18} className="mr-2 text-church-slate" /> Trim Selection</h3>
+                      <span className="text-sm text-church-slate font-medium">Original Duration: {formatDuration(duration)}</span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-300">
                       <div>
-                        <label className="block text-xs font-medium text-church-slate mb-1">Start Time (seconds)</label>
-                        <input 
-                          type="number" 
-                          min="0" 
-                          max={trimEnd - 1} 
-                          value={trimStart} 
-                          onChange={e => setTrimStart(Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" 
-                        />
+                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">Start Time</p>
+                        <p className="text-lg font-bold text-church-green">{formatDuration(trimStart)}</p>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-church-slate mb-1">End Time (seconds)</label>
-                        <input 
-                          type="number" 
-                          min={trimStart + 1} 
-                          max={duration} 
-                          value={trimEnd} 
-                          onChange={e => setTrimEnd(Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" 
-                        />
+                      <div className="h-8 w-px bg-gray-200"></div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">End Time</p>
+                        <p className="text-lg font-bold text-church-navy">{formatDuration(trimEnd || duration)}</p>
                       </div>
                     </div>
                   </div>
@@ -503,8 +524,8 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                     <h3 className="font-bold text-church-navy mb-4 flex items-center"><Film size={18} className="mr-2 text-church-slate" /> Extract from Video</h3>
                     <div className="mb-6">
                       <label className="block text-xs font-medium text-church-slate mb-3 flex justify-between">
-                        <span>Slide to find a frame (Seconds)</span>
-                        <span className="font-bold text-church-navy">{Number(thumbnailTime).toFixed(1)}s</span>
+                        <span>Slide to find a frame (Time)</span>
+                        <span className="font-bold text-church-navy">{formatDuration(thumbnailTime)}</span>
                       </label>
                       <input 
                         type="range" 
@@ -518,8 +539,8 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-church-green" 
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-2">
-                        <span>{trimStart}s</span>
-                        <span>{trimEnd || duration || 0}s</span>
+                        <span>{formatDuration(trimStart)}</span>
+                        <span>{formatDuration(trimEnd || duration || 0)}</span>
                       </div>
                     </div>
                     <button 
@@ -616,7 +637,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                     </div>
                   ) : (
                     <div className="flex items-center space-x-4 text-xs font-bold text-gray-500 bg-white p-3 rounded-xl border border-gray-200 inline-flex shadow-sm">
-                      <span>Trims: {trimStart}s - {trimEnd}s</span>
+                      <span>Trims: {formatDuration(trimStart)} - {formatDuration(trimEnd)}</span>
                       <span>•</span>
                       <span>Size: {(optimizedFile?.size || mediaFile?.size || 0) / (1024*1024) | 0} MB</span>
                     </div>

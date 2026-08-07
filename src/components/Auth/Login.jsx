@@ -15,6 +15,7 @@ import {
   Loader2,
   ArrowLeft,
 } from 'lucide-react';
+import logo from '../../assets/logo.svg';
 
 // ---------------------------------------------------------------------------
 // Error copy constants
@@ -186,8 +187,8 @@ export default function Login() {
 
         {/* Brand mark */}
         <div className="relative z-10 flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-church-green font-bold text-lg">C</span>
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg p-1">
+            <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-white font-bold text-xl tracking-tight">ChurchAdmin</span>
         </div>
@@ -226,8 +227,8 @@ export default function Login() {
 
           {/* Mobile logo */}
           <div className="flex items-center space-x-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-church-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm p-1">
+              <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-church-navy font-bold text-lg">ChurchAdmin</span>
           </div>
