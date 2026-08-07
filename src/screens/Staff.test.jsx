@@ -6,7 +6,7 @@ import Staff from './Staff';
 vi.mock('../context/AuthContext', () => ({
   useAuth: vi.fn(() => ({
     currentUser: { uid: '123' },
-    userProfile: { role: 'Staff' }
+    userProfile: { role: 'Staff', churchId: 'test-church-id' }
   })),
 }));
 
