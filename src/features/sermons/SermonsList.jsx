@@ -9,7 +9,7 @@ import SermonFormModal from './SermonFormModal';
 
 export default function SermonsList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV'; // Fallback
+  const CHURCH_ID = userProfile?.churchId ; // Fallback
   const isManager = canManageSermons(userProfile);
   
   const [sermons, setSermons] = useState([]);

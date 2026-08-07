@@ -7,7 +7,7 @@ import CampaignFormModal from './CampaignFormModal';
 
 export default function GivingCampaigns() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

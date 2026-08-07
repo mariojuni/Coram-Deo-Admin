@@ -8,7 +8,7 @@ import NewAttendanceSessionModal from '../../components/Modals/NewAttendanceSess
 
 export default function AttendanceDashboard() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -11,7 +11,7 @@ const MONTHS = [
 
 export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   const [step, setStep] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());

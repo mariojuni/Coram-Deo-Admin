@@ -17,8 +17,8 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Service account keys
+*service-account*.json
+*.serviceaccount.json
+serviceAccountKey.json
+

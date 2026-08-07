@@ -11,7 +11,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 
 export default function EventsList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ export default function EventsList() {
         ...doc.data()
       }));
       // Legacy support for multi-tenant
-      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
       // Sort in memory
       docs.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
       setEvents(docs);

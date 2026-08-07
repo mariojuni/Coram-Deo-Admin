@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { Save, Upload, MapPin, Phone, Mail, Clock, Plus, Trash2, Globe } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 
-const CHURCH_ID = 'YmEc6C69Xz4DKRQaQZBV';
 
 export default function SettingsProfile() {
+  const { userProfile } = useAuth();
+  const CHURCH_ID = userProfile?.churchId;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });

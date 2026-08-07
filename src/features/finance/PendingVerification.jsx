@@ -7,7 +7,7 @@ import { Search, CheckCircle, XCircle, FileImage, ExternalLink, Activity } from 
 
 export default function PendingVerification() {
   const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   const [pendingRecords, setPendingRecords] = useState([]);
   const [loading, setLoading] = useState(true);

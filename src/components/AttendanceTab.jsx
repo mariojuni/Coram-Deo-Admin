@@ -12,7 +12,7 @@ const getTodayStr = () => {
 
 const AttendanceTab = ({ members, todayCheckins, showStaffFeatures, setDemoStaffMode }) => {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
 
   // Filtered checkins state for history list
   const [filterDate, setFilterDate] = useState(getTodayStr());

@@ -6,7 +6,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 
 export default function DiscipleshipWeekFormModal({ isOpen, onClose, planId, week = null, nextWeekNumber = 1, onSave }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   const [formData, setFormData] = useState({
     weekNumber: nextWeekNumber,

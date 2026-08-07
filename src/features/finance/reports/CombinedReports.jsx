@@ -30,7 +30,7 @@ const TABS = [
 
 export default function CombinedReports() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
 
   const [activeTab, setActiveTab] = useState('summary');
   

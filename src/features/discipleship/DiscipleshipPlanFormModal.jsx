@@ -6,7 +6,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 
 export default function DiscipleshipPlanFormModal({ isOpen, onClose, plan = null, onSave }) {
   const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',

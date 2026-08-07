@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { X, Upload, AlertCircle } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
 
-const CHURCH_ID = 'YmEc6C69Xz4DKRQaQZBV';
 
 export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess }) {
+  const { userProfile } = useAuth();
+  const CHURCH_ID = userProfile?.churchId;
   const [jsonFile, setJsonFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

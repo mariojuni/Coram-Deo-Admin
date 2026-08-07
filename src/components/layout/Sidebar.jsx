@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { 
@@ -52,6 +52,7 @@ const navItems = [
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const { activeChurchId, setActiveChurchId, originalUserProfile } = useAuth();
+  const location = useLocation();
   const [churches, setChurches] = useState([]);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
@@ -111,6 +112,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <div className="text-xs font-semibold text-gray-400 mb-4 ml-2 tracking-wider">MENU</div>
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
+              const isDiscipleshipActive = item.name === 'Discipleship' && location.pathname.startsWith('/admin/discipleship');
               
               return (
                 <NavLink
@@ -120,7 +122,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center px-4 py-3 mb-1 rounded-xl transition-all duration-200 border-l-4 ${
-                      isActive
+                      isActive || isDiscipleshipActive
                         ? 'border-church-green bg-church-green/5 text-church-green font-bold'
                         : 'border-transparent text-church-slate hover:bg-gray-50 hover:text-church-navy font-medium'
                     }`

@@ -21,7 +21,7 @@ const normalizeMethod = (m) => {
 
 export default function GivingFormModal({ isOpen, onClose, record = null, editingRecord = null }) {
   const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const activeRecord = record || editingRecord;
 
   const [formData, setFormData] = useState({

@@ -8,7 +8,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 
 export default function ExpensesList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);

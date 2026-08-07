@@ -16,7 +16,7 @@ import {
 
 export default function MemberProfileModal({ isOpen, onClose, member = null }) {
   const { userProfile, activeChurchId } = useAuth();
-  const CHURCH_ID = activeChurchId || userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = activeChurchId || userProfile?.churchId ;
   
   const [activeTab, setActiveTab] = useState('profile');
   const [givingHistory, setGivingHistory] = useState([]);
@@ -51,7 +51,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
 
   const fetchGivingHistory = async (member) => {
     setLoadingGiving(true);
-    const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+    const CHURCH_ID = userProfile?.churchId ;
     try {
       const q = query(
         collection(db, 'givingRecords'), 
@@ -71,7 +71,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
 
   const fetchMinistries = async (memberId) => {
     setLoadingMinistries(true);
-    const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+    const CHURCH_ID = userProfile?.churchId ;
     try {
       const q = query(
         collection(db, 'ministries'),
@@ -100,7 +100,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
 
   const fetchAttendanceHistory = async (memberId) => {
     setLoadingAttendance(true);
-    const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+    const CHURCH_ID = userProfile?.churchId ;
     try {
       const allSessions = [];
       

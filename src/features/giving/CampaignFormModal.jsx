@@ -8,7 +8,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 
 export default function CampaignFormModal({ isOpen, onClose, campaign }) {
   const { userProfile, originalUserProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [formData, setFormData] = useState({
     title: '',
     description: '',

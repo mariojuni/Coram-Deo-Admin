@@ -22,7 +22,7 @@ export default function MinistriesList() {
 
   const navigate = useNavigate();
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
 
   useEffect(() => {
     const handler = setTimeout(() => {

@@ -219,7 +219,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
           ...payload,
           members: [],
           createdAt: serverTimestamp(),
-          churchId: userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV' 
+          churchId: userProfile?.churchId  
         });
       }
       onClose();

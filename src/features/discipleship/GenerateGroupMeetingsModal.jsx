@@ -50,6 +50,15 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
     }));
   };
 
+  const handlePreviewChange = (previewId, field, value) => {
+    setPreviews(prev => prev.map(p => {
+      if (p._previewId === previewId) {
+        return { ...p, [field]: value };
+      }
+      return p;
+    }));
+  };
+
   const handleGenerate = async () => {
     const selectedEvents = previews.filter(p => p.selected && !p.isDuplicate);
     if (selectedEvents.length === 0) {
@@ -132,34 +141,54 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
             previews.map((item) => (
               <div
                 key={item._previewId}
-                onClick={() => !item.isDuplicate && toggleSelect(item._previewId)}
-                className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                className={`flex items-start justify-between p-3.5 rounded-xl border transition-all ${
                   item.isDuplicate
                     ? 'bg-amber-50/50 border-amber-200 opacity-80 cursor-not-allowed'
                     : item.selected
-                    ? 'border-church-green bg-church-green/5 cursor-pointer'
-                    : 'border-gray-100 hover:border-gray-200 cursor-pointer'
+                    ? 'border-church-green bg-church-green/5'
+                    : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <p className="text-sm font-bold text-church-navy">{item.title}</p>
+                <div className="flex-1 mr-4">
+                  <div className="flex items-center space-x-2 mb-1">
+                    {!item.isDuplicate ? (
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => handlePreviewChange(item._previewId, 'title', e.target.value)}
+                        className="text-sm font-bold text-church-navy border-b border-dashed border-gray-300 focus:outline-none focus:border-solid focus:border-church-green bg-transparent w-full"
+                      />
+                    ) : (
+                      <p className="text-sm font-bold text-church-navy">{item.title}</p>
+                    )}
                     {item.isDuplicate && (
-                      <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold flex items-center space-x-1">
+                      <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold flex items-center space-x-1 shrink-0">
                         <AlertTriangle size={10} />
                         <span>Already Generated</span>
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Date: <strong className="text-church-navy">{item.date}</strong> at {item.startTime} | Location: {item.location}
-                  </p>
+                  <div className="text-xs text-gray-500 flex items-center flex-wrap">
+                    <span className="mr-1 mt-1">Date: <strong className="text-church-navy">{item.date}</strong> at {item.startTime} | Location:</span>
+                    {!item.isDuplicate ? (
+                      <input
+                        type="text"
+                        value={item.location}
+                        onChange={(e) => handlePreviewChange(item._previewId, 'location', e.target.value)}
+                        className="mt-1 border-b border-dashed border-gray-300 focus:outline-none focus:border-solid focus:border-church-green bg-transparent flex-1 min-w-[150px]"
+                      />
+                    ) : (
+                      <span className="mt-1">{item.location}</span>
+                    )}
+                  </div>
                 </div>
 
                 {!item.isDuplicate && (
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
-                    item.selected ? 'bg-church-green text-white' : 'border border-gray-300'
-                  }`}>
+                  <div 
+                    onClick={() => toggleSelect(item._previewId)}
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-1 ${
+                      item.selected ? 'bg-church-green text-white' : 'border border-gray-300 hover:border-church-green'
+                    }`}>
                     {item.selected && <Check size={14} />}
                   </div>
                 )}

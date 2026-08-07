@@ -6,7 +6,7 @@ import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
 
 export default function DiscipleshipImportModal({ isOpen, onClose, onImportSuccess }) {
   const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [jsonFile, setJsonFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, googleProvider, db } from '../firebase';
+import { getActiveAuth, getActiveDb, googleProvider } from '../firebase';
 import { isAuthorizedAdminUser } from '../utils/adminRoles';
 
 const defaultAuthContext = {
@@ -90,43 +90,69 @@ export function AuthProvider({ children }) {
   }, [activeChurchId]);
 
   function signup(email, password) {
-    return createUserWithEmailAndPassword(auth, email, password);
+    return createUserWithEmailAndPassword(getActiveAuth(), email, password);
   }
 
   function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+    return signInWithEmailAndPassword(getActiveAuth(), email, password);
   }
 
   function loginWithGoogle() {
-    return signInWithPopup(auth, googleProvider);
+    return signInWithPopup(getActiveAuth(), googleProvider);
   }
 
   function logout() {
     localStorage.removeItem('activeChurchId');
-    return signOut(auth);
+    return signOut(getActiveAuth());
   }
 
   function sendPasswordReset(email) {
-    return sendPasswordResetEmail(auth, email);
+    return sendPasswordResetEmail(getActiveAuth(), email);
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(getActiveAuth(), async (user) => {
       setCurrentUser(user);
 
       if (user) {
         try {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
+          // 1. Fetch custom claims from token
+          const tokenResult = await user.getIdTokenResult(true);
+          const isSuperAdminClaim = Boolean(tokenResult.claims?.superAdmin);
+
+          // 2. Fetch profile from userAccounts/{uid} first, falling back to users/{uid}
+          let docSnap = await getDoc(doc(getActiveDb(), 'userAccounts', user.uid));
+          if (!docSnap.exists()) {
+            docSnap = await getDoc(doc(getActiveDb(), 'users', user.uid));
+          }
 
           if (docSnap.exists()) {
             const data = docSnap.data();
             const normalized = normalizeProfile(user.uid, data);
+            
+            // If custom claim superAdmin is true, ensure systemRoles includes super_admin
+            if (isSuperAdminClaim && !normalized.systemRoles.includes('super_admin')) {
+              normalized.systemRoles.unshift('super_admin');
+              normalized.primaryRole = 'super_admin';
+            }
+
             setUserProfile(normalized);
 
             if (!localStorage.getItem('activeChurchId')) {
               setActiveChurchId(data.churchId || null);
             }
+          } else if (isSuperAdminClaim) {
+            // Synthesize minimal profile if custom claim exists but doc doesn't
+            setUserProfile({
+              uid: user.uid,
+              id: user.uid,
+              email: user.email,
+              systemRoles: ['super_admin'],
+              primaryRole: 'super_admin',
+              role: 'super_admin',
+              status: 'active',
+              churchId: null,
+            });
           } else {
             setUserProfile(null);
             setActiveChurchId(null);

@@ -1,10 +1,27 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Sun, Moon, CloudSun, Sparkles } from 'lucide-react';
 
 export default function DashboardHeader({ userProfile, activeChurchName }) {
-  const name = userProfile?.name || 'Leader';
+  const [greeting, setGreeting] = useState('Welcome back');
+  const [GreetingIcon, setGreetingIcon] = useState(Sun);
+  
+  const name = userProfile?.name?.split(' ')[0] || 'Leader';
   const roles = Array.isArray(userProfile?.systemRoles) ? userProfile.systemRoles : [];
   const primaryRole = userProfile?.primaryRole || roles[0] || 'member';
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting('Good morning');
+      setGreetingIcon(() => CloudSun);
+    } else if (hour < 18) {
+      setGreeting('Good afternoon');
+      setGreetingIcon(() => Sun);
+    } else {
+      setGreeting('Good evening');
+      setGreetingIcon(() => Moon);
+    }
+  }, []);
 
   const roleTitleMap = {
     super_admin: 'Super Administrator',
@@ -17,42 +34,50 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
   };
 
   const getGreetingSummary = () => {
-    if (roles.includes('finance_admin')) return "Here's your weekly financial & giving verification overview.";
-    if (roles.includes('ministry_leader')) return "Here's what needs your team's attention this week.";
-    if (roles.includes('secretary')) return "Here's this week's event schedule and attendance summary.";
+    if (roles.includes('finance_admin')) return "Your financial & giving verification overview is ready.";
+    if (roles.includes('ministry_leader')) return "Here's what needs your team's attention today.";
+    if (roles.includes('secretary')) return "Your schedule and attendance summary for the week.";
     return "Here's what needs your attention this week.";
   };
 
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
-    month: 'short',
+    month: 'long',
     day: 'numeric',
     year: 'numeric',
   });
 
   return (
-    <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-church-soft border border-gray-100 flex justify-between items-center relative overflow-hidden">
-      <div className="z-10 relative max-w-2xl">
-        <div className="flex items-center space-x-2 text-xs font-semibold text-church-green uppercase tracking-wider mb-1">
-          <span>{activeChurchName || 'Local Church Workspace'}</span>
-          <span>•</span>
-          <span>{roleTitleMap[primaryRole] || primaryRole}</span>
-        </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-church-navy">
-          Welcome back, {name}!
-        </h1>
-        <p className="text-xs lg:text-sm text-church-slate mt-1">
-          Today is {currentDateFormatted}
-        </p>
-        <p className="text-sm font-medium text-church-navy mt-2">
-          {getGreetingSummary()}
-        </p>
+    <div className="relative overflow-hidden min-h-[240px] bg-white rounded-3xl p-6 lg:p-8 shadow-church-soft border border-gray-100 group transition-all duration-500 hover:shadow-lg flex items-center">
+      {/* Dynamic Background Elements - Light Theme */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-church-green/10 rounded-full blur-3xl opacity-60 group-hover:scale-110 transition-transform duration-700"></div>
+      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl opacity-60 group-hover:translate-x-4 transition-transform duration-700"></div>
+      <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-500 hidden md:block">
+        <Calendar size={140} strokeWidth={1} className="text-church-navy transform group-hover:rotate-3 transition-transform duration-500" />
       </div>
 
-      {/* Decorative styling */}
-      <div className="absolute right-0 top-0 bottom-0 w-64 bg-church-green/5 rounded-l-full -mr-16 transform -skew-x-12 hidden md:block"></div>
-      <div className="absolute right-10 top-1/2 -translate-y-1/2 hidden md:block opacity-10 text-church-navy">
-        <Calendar size={110} />
+      <div className="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="max-w-2xl space-y-4">
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-church-green/5 backdrop-blur-sm rounded-full border border-church-green/10 text-xs font-semibold tracking-wide uppercase">
+            <span className="text-church-green flex items-center gap-1"><Sparkles size={14} className="text-church-green" /> {activeChurchName || 'Local Church Workspace'}</span>
+            <span className="text-gray-300">•</span>
+            <span className="text-church-navy/70">{roleTitleMap[primaryRole] || primaryRole}</span>
+          </div>
+          
+          <div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-church-navy mb-3 flex items-center gap-3">
+              {greeting}, {name}! <GreetingIcon className="text-yellow-500" size={36} />
+            </h1>
+            <p className="text-church-green text-sm md:text-base font-medium flex items-center gap-2">
+              <Calendar size={16} />
+              {currentDateFormatted}
+            </p>
+          </div>
+          
+          <p className="text-church-slate text-sm md:text-base max-w-lg leading-relaxed pt-2">
+            {getGreetingSummary()}
+          </p>
+        </div>
       </div>
     </div>
   );

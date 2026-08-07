@@ -28,7 +28,7 @@ ChartJS.register(
 
 export default function FinanceDashboard() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   const [givingRecords, setGivingRecords] = useState([]);
   const [expenses, setExpenses] = useState([]);

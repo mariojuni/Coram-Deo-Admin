@@ -8,7 +8,7 @@ import { canManageFunds, canCreateFund, canEditFund, canArchiveFund } from '../.
 
 export default function FundsList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [funds, setFunds] = useState([]);
   const [loading, setLoading] = useState(true);
   

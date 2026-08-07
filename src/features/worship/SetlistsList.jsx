@@ -47,7 +47,7 @@ export default function SetlistsList() {
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         // Fallback or multi-tenant check
-        if (data.churchId === userProfile.churchId || (!data.churchId && userProfile.churchId === 'YmEc6C69Xz4DKRQaQZBV')) {
+        if (data.churchId === userProfile.churchId || (!data.churchId && !userProfile.churchId)) {
           eventsMap[doc.id] = { id: doc.id, ...data };
         }
       });

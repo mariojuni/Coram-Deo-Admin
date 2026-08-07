@@ -29,20 +29,36 @@ const ERROR_NO_CHURCH = 'Your account is not linked to a church yet.';
 // Inline helper — run post-Firebase-Auth authorization check
 // Returns { authorized: true } or { authorized: false, message: string }
 // ---------------------------------------------------------------------------
-async function checkAdminAuthorization(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return { authorized: false, message: ERROR_UNAUTHORIZED };
+async function checkAdminAuthorization(user) {
+  const uid = user.uid;
+  const tokenResult = await user.getIdTokenResult(true);
+  const isSuperAdminClaim = Boolean(tokenResult.claims?.superAdmin);
 
-  const data = snap.data();
+  let snap = await getDoc(doc(db, 'userAccounts', uid));
+  if (!snap.exists()) {
+    snap = await getDoc(doc(db, 'users', uid));
+  }
+
+  if (!snap.exists() && !isSuperAdminClaim) {
+    return { authorized: false, message: ERROR_UNAUTHORIZED };
+  }
+
+  const data = snap.exists() ? snap.data() : {};
+  const isSuperAdmin = isSuperAdminClaim || data.role === 'super_admin' || (Array.isArray(data.systemRoles) && data.systemRoles.includes('super_admin'));
 
   if (data.status === 'disabled') return { authorized: false, message: ERROR_DISABLED };
   if (data.status === 'pendingChurchLink') return { authorized: false, message: ERROR_NO_CHURCH };
+
+  if (isSuperAdmin) {
+    return { authorized: true, redirectUrl: '/super-admin' };
+  }
+
   if (!isAdminRole(data.role)) return { authorized: false, message: ERROR_UNAUTHORIZED };
-  if (data.role !== 'super_admin' && !data.churchId) {
+  if (!data.churchId) {
     return { authorized: false, message: ERROR_NO_CHURCH };
   }
 
-  return { authorized: true };
+  return { authorized: true, redirectUrl: '/admin' };
 }
 
 // ---------------------------------------------------------------------------
@@ -84,16 +100,15 @@ export default function Login() {
 
     try {
       const credential = await login(email, password);
-      const uid = credential.user.uid;
 
-      const result = await checkAdminAuthorization(uid);
+      const result = await checkAdminAuthorization(credential.user);
       if (!result.authorized) {
         await logout();
         setError(result.message);
         return;
       }
 
-      navigate('/admin', { replace: true });
+      navigate(result.redirectUrl || '/admin', { replace: true });
     } catch (err) {
       setError(getFriendlyAuthError(err));
     } finally {
@@ -110,16 +125,15 @@ export default function Login() {
 
     try {
       const credential = await loginWithGoogle();
-      const uid = credential.user.uid;
 
-      const result = await checkAdminAuthorization(uid);
+      const result = await checkAdminAuthorization(credential.user);
       if (!result.authorized) {
         await logout();
         setError(result.message);
         return;
       }
 
-      navigate('/admin', { replace: true });
+      navigate(result.redirectUrl || '/admin', { replace: true });
     } catch (err) {
       setError(getFriendlyAuthError(err));
     } finally {

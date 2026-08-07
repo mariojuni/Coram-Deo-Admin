@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical, Upload, Download, CheckSquare, Square } from 'lucide-react';
@@ -6,9 +7,10 @@ import BiblePlanFormModal from './BiblePlanFormModal';
 import BiblePlanImportModal from './BiblePlanImportModal';
 import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
 
-const CHURCH_ID = 'YmEc6C69Xz4DKRQaQZBV';
 
 export default function BiblePlans() {
+  const { userProfile } = useAuth();
+  const CHURCH_ID = userProfile?.churchId;
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIds, setSelectedPlanIds] = useState([]);

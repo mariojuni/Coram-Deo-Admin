@@ -41,7 +41,7 @@ const PrayerRequests = () => {
 
   const handlePray = async (id) => {
     if (!currentUser) return;
-    const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+    const CHURCH_ID = userProfile?.churchId ;
     const docRef = doc(db, 'churches', CHURCH_ID, 'prayer_requests', id);
     const userId = currentUser.uid;
 

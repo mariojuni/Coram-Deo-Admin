@@ -40,7 +40,7 @@ export default function SettingsUsersAndRoles() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'users'), where('churchId', '==', activeChurchId || 'YmEc6C69Xz4DKRQaQZBV'));
+      const q = query(collection(db, 'users'), where('churchId', '==', activeChurchId ));
       const snap = await getDocs(q);
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setUsers(docs);

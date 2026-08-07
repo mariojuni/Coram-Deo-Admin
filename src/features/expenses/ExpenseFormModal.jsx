@@ -19,7 +19,7 @@ const CATEGORIES = [
 
 export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV'; 
+  const CHURCH_ID = userProfile?.churchId ; 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     amount: '',

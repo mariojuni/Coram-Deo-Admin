@@ -18,7 +18,7 @@ export default function NewPrayerModal({ isOpen, onClose, showToast }) {
     
     const displayName = userProfile?.name || currentUser.displayName || currentUser.email || 'Anonymous';
     
-    const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+    const CHURCH_ID = userProfile?.churchId ;
     try {
       await addDoc(collection(db, 'churches', CHURCH_ID, 'prayer_requests'), {
         name: isAnonymous ? 'Anonymous' : displayName,

@@ -57,24 +57,24 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
       const fetchData = async () => {
         const eventsSnap = await getDocs(collection(db, 'events'));
         let evDocs = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        evDocs = evDocs.filter(d => d.churchId === userProfile?.churchId || (!d.churchId && userProfile?.churchId === 'YmEc6C69Xz4DKRQaQZBV'));
+        evDocs = evDocs.filter(d => d.churchId === userProfile?.churchId || (!d.churchId && !userProfile?.churchId));
         setEvents(evDocs);
         
         const minQ = query(
           collection(db, 'ministries'),
-          where('churchId', '==', userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV')
+          where('churchId', '==', userProfile?.churchId )
         );
         const minSnap = await getDocs(minQ);
         let minDocs = minSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         minDocs = minDocs.filter(d => 
-          (d.churchId === userProfile?.churchId || (!d.churchId && userProfile?.churchId === 'YmEc6C69Xz4DKRQaQZBV')) &&
+          (d.churchId === userProfile?.churchId || (!d.churchId && !userProfile?.churchId)) &&
           d.status === 'Active'
         );
         setMinistries(minDocs);
         
         const membersSnap = await getDocs(collection(db, 'users'));
         let memDocs = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        memDocs = memDocs.filter(d => d.churchId === userProfile?.churchId || (!d.churchId && userProfile?.churchId === 'YmEc6C69Xz4DKRQaQZBV'));
+        memDocs = memDocs.filter(d => d.churchId === userProfile?.churchId || (!d.churchId && !userProfile?.churchId));
         
         // Format names nicely for search
         memDocs = memDocs.map(d => {

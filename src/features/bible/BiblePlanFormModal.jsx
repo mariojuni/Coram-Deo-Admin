@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { X, FileText, Check } from 'lucide-react';
 import { collection, doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 
-const CHURCH_ID = 'YmEc6C69Xz4DKRQaQZBV'; 
+ 
 
 // First 7 Days of TGC Two-Year Plan
 const TGC_TEMPLATE_DAYS = [
@@ -19,6 +20,8 @@ const TGC_TEMPLATE_DAYS = [
 ];
 
 export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
+  const { userProfile } = useAuth();
+  const CHURCH_ID = userProfile?.churchId;
   const [formData, setFormData] = useState({
     title: '',
     description: '',

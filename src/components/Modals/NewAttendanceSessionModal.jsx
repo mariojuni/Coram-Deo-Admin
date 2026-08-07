@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function NewAttendanceSessionModal({ isOpen, onClose }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const navigate = useNavigate();
 
   const [events, setEvents] = useState([]);
@@ -30,7 +30,7 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
         }));
         
         // Filter for church
-        docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+        docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
         // Filter upcoming events (optional, but requested "upcoming events")
         const today = new Date();

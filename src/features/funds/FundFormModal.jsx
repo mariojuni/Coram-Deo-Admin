@@ -18,7 +18,7 @@ const FUND_TYPES = [
 
 export default function FundFormModal({ isOpen, onClose, fund = null }) {
   const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [formData, setFormData] = useState({
     name: '',
     description: '',

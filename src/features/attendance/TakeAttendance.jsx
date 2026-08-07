@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function TakeAttendance() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const { id } = useParams();
   const navigate = useNavigate();
   

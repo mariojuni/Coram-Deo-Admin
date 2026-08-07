@@ -29,14 +29,21 @@ export default function Register() {
       setError('');
       setLoading(true);
       const userCredential = await signup(email, password);
+      const uid = userCredential.user.uid;
       
-      // Create user profile in Firestore
-      await setDoc(doc(db, "users", userCredential.user.uid), {
+      const userData = {
         name: name,
         email: email,
-        role: role, // Save selected role
+        systemRoles: ['member'],
+        primaryRole: 'member',
+        role: 'member', // Default to member strictly
+        status: 'pendingChurchLink',
         createdAt: new Date().toISOString()
-      });
+      };
+
+      // Store in both userAccounts and users
+      await setDoc(doc(db, "userAccounts", uid), userData);
+      await setDoc(doc(db, "users", uid), userData, { merge: true });
 
       navigate('/');
     } catch (err) {
@@ -51,15 +58,20 @@ export default function Register() {
       setError('');
       setLoading(true);
       const result = await loginWithGoogle();
+      const uid = result.user.uid;
       
-      // Create user profile if it's their first time, 
-      // merge: true ensures we don't overwrite the role if they already exist
-      await setDoc(doc(db, "users", result.user.uid), {
+      const userData = {
         name: result.user.displayName,
         email: result.user.email,
-        role: 'member', // Default to member for Google signup, can be changed by admin later
+        systemRoles: ['member'],
+        primaryRole: 'member',
+        role: 'member',
+        status: 'pendingChurchLink',
         createdAt: new Date().toISOString()
-      }, { merge: true });
+      };
+
+      await setDoc(doc(db, "userAccounts", uid), userData, { merge: true });
+      await setDoc(doc(db, "users", uid), userData, { merge: true });
 
       navigate('/');
     } catch (err) {
@@ -111,18 +123,6 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="input-group">
-            <label>Role (For Testing)</label>
-              <ModernDropdown
-                value={role}
-                onChange={(val) => setRole(val)}
-                options={[
-                  { value: 'member', label: 'Member' },
-                  { value: 'staff', label: 'Staff' }
-                ]}
-              />
           </div>
 
           <div className="input-group">

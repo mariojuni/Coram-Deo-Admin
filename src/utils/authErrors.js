@@ -25,8 +25,10 @@ const FIREBASE_ERROR_MAP = {
  * @returns {string}
  */
 export function getFriendlyAuthError(error) {
+  console.error("Firebase Auth/DB Error:", error);
   if (error?.code && FIREBASE_ERROR_MAP[error.code]) {
     return FIREBASE_ERROR_MAP[error.code];
   }
-  return 'Something went wrong. Please try again.';
+  const debugInfo = error?.message || error?.code || 'Unknown';
+  return `Something went wrong. (${debugInfo})`;
 }

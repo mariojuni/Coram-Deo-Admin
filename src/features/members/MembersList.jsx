@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 
 export default function MembersList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -47,7 +47,7 @@ export default function MembersList() {
       }));
       
       // Filter in memory to support legacy records that don't have a churchId yet
-      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
       
       // Format names: First Name Middle Initial Last Name (Title Case)
       docs = docs.map(d => {
@@ -270,7 +270,7 @@ export default function MembersList() {
           membershipStatus: parsedStatus,
           baptismStatus: parsedBaptism,
           notes: remarks,
-          churchId: userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV',
+          churchId: userProfile?.churchId ,
           createdAt: new Date()
         };
 

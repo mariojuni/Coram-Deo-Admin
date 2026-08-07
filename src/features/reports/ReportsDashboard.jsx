@@ -9,7 +9,7 @@ import ModernDatePicker from '../../components/ui/ModernDatePicker';
 
 export default function ReportsDashboard() {
   const { userProfile, activeChurchId } = useAuth();
-  const CHURCH_ID = activeChurchId || userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = activeChurchId || userProfile?.churchId ;
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState('This Month');
   const [startDate, setStartDate] = useState('');
@@ -55,7 +55,7 @@ export default function ReportsDashboard() {
       
       if (reportType === 'members') {
         const snap = await getDocs(collection(db, 'users'));
-        const data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+        const data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
         csvContent = "Name,Email,Phone,Status,Role,Family Group\n";
         data.forEach(m => {
@@ -66,7 +66,7 @@ export default function ReportsDashboard() {
       else if (reportType === 'giving') {
         if (!canSeeGiving) throw new Error("Unauthorized");
         const snap = await getDocs(collection(db, 'givingRecords'));
-        let data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+        let data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
         data.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)); // Descending by date
 
@@ -87,7 +87,7 @@ export default function ReportsDashboard() {
       }
       else if (reportType === 'attendance') {
         const snap = await getDocs(collection(db, 'attendance'));
-        let data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+        let data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
         data.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)); // Descending by date
         

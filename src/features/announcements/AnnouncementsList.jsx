@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function AnnouncementsList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
 
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);

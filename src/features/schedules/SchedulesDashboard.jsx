@@ -7,7 +7,7 @@ import AssignmentFormModal from './AssignmentFormModal';
 
 export default function SchedulesDashboard() {
   const { userProfile, activeChurchId } = useAuth();
-  const CHURCH_ID = activeChurchId || userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = activeChurchId || userProfile?.churchId ;
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -24,7 +24,7 @@ export default function SchedulesDashboard() {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && CHURCH_ID === 'YmEc6C69Xz4DKRQaQZBV'));
+      docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
       docs.sort((a, b) => new Date(a.eventDate || 0) - new Date(b.eventDate || 0));
       
       setAssignments(docs);

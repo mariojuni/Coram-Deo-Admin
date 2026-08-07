@@ -12,7 +12,7 @@ const EDIT_STEPS = ['Details', 'Thumbnail', 'Review'];
 
 export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV';
+  const CHURCH_ID = userProfile?.churchId ;
   
   // In edit mode we use a simplified 2-step flow; new uploads use the full 6-step flow
   const isEditMode = Boolean(sermon);

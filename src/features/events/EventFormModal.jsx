@@ -95,7 +95,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
         await addDoc(collection(db, 'events'), {
           ...formData,
           createdAt: serverTimestamp(),
-          churchId: userProfile?.churchId || 'YmEc6C69Xz4DKRQaQZBV'
+          churchId: userProfile?.churchId 
         });
       }
       onClose();
