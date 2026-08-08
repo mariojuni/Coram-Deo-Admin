@@ -231,10 +231,10 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
           
           <div className="p-8 pb-0 flex items-end">
             <div className="w-24 h-24 rounded-full border-4 border-white bg-church-green flex items-center justify-center text-3xl font-bold text-white shadow-md relative translate-y-6">
-              {member.name?.charAt(0) || 'U'}
+              {(member.displayName || member.name)?.charAt(0) || 'U'}
             </div>
             <div className="ml-6 mb-2">
-              <h1 className="text-3xl font-bold">{member.name}</h1>
+              <h1 className="text-3xl font-bold">{member.displayName || member.name}</h1>
               <div className="flex items-center text-church-slate mt-1 space-x-3">
                 <span className="flex items-center"><Mail size={14} className="mr-1"/> {member.email}</span>
                 {(member.phoneNumber || member.phone) && <span className="flex items-center"><Phone size={14} className="mr-1"/> {member.phoneNumber || member.phone}</span>}
@@ -271,12 +271,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
               Giving History
             </button>
           )}
-          <button 
-            onClick={() => setActiveTab('access')}
-            className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'access' ? 'border-church-green text-church-green' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-          >
-            Access & Role
-          </button>
+          {myCanManageRoles && (
+            <button 
+              onClick={() => setActiveTab('access')}
+              className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'access' ? 'border-church-green text-church-green' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            >
+              Access & Role
+            </button>
+          )}
         </div>
 
         {/* Content Area */}
@@ -459,7 +461,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
               </div>
               <h2 className="text-lg font-bold text-church-navy">Family Group & Ministries</h2>
               <p className="text-sm text-church-slate max-w-md mx-auto">
-                {member.name} is part of the <strong>{member.familyGroup || 'General'}</strong> family group.
+                {member.displayName || member.name} is part of the <strong>{member.familyGroup || 'General'}</strong> family group.
               </p>
               
               {/* Ministry Assignments */}
@@ -500,7 +502,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
               {loadingAttendance ? (
                 <div className="p-8 text-center text-gray-500">Loading records...</div>
               ) : attendanceHistory.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">No attendance records found for {member.name}.</div>
+                <div className="p-8 text-center text-gray-500">No attendance records found for {member.displayName || member.name}.</div>
               ) : (
                 <table className="w-full text-left">
                   <thead>
@@ -549,7 +551,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
               {loadingGiving ? (
                 <div className="p-8 text-center text-gray-500">Loading records...</div>
               ) : givingHistory.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">No giving records found under the exact name "{member.name}".</div>
+                <div className="p-8 text-center text-gray-500">No giving records found under the exact name "{member.displayName || member.name}".</div>
               ) : (
                 <table className="w-full text-left">
                   <thead>
