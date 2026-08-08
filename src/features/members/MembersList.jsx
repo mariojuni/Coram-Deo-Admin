@@ -81,7 +81,24 @@ export default function MembersList() {
       });
       
       docs.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
-      setMembers(docs);
+
+      // Deduplicate in memory
+      const uniqueDocs = [];
+      docs.forEach(d => {
+        const existing = uniqueDocs.find(u => 
+          (u.email && d.email && u.email.toLowerCase() === d.email.toLowerCase()) ||
+          (u.displayName && d.displayName && u.displayName.toLowerCase() === d.displayName.toLowerCase())
+        );
+        if (existing) {
+          // Prefer keeping the one with an email or more contact info
+          if (!existing.email && d.email) existing.email = d.email;
+          if (!existing.phoneNumber && d.phoneNumber) existing.phoneNumber = d.phoneNumber;
+        } else {
+          uniqueDocs.push(d);
+        }
+      });
+      
+      setMembers(uniqueDocs);
       setLoading(false);
 
       // Auto-backfill birthDate & phoneNumber and remove legacy fields (birthday, phone) in Firestore
