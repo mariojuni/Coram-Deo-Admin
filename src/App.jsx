@@ -38,6 +38,8 @@ import SetlistsList from './features/worship/SetlistsList';
 import SetlistDetails from './features/worship/SetlistDetails';
 import ImportSettingsPage from './features/worship/ImportSettingsPage';
 import ImportSongPage from './features/worship/ImportSongPage';
+import BibleLibraryDashboard from './screens/BibleLibrary/Dashboard';
+import BibleImportFlow from './screens/BibleLibrary/ImportFlow';
 
 function AppRoutes() {
   const { currentUser } = useAuth() || {};
@@ -243,6 +245,23 @@ function AppRoutes() {
             element={
               <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
                 <BiblePlans />
+              </RoleGuard>
+            } 
+          />
+
+          <Route 
+            path="bible-library" 
+            element={
+              <RoleGuard allowedRoles={['super_admin']}>
+                <BibleLibraryDashboard />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="bible-library/import" 
+            element={
+              <RoleGuard allowedRoles={['super_admin']}>
+                <BibleImportFlow />
               </RoleGuard>
             } 
           />

@@ -46,6 +46,7 @@ const navItems = [
   { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor'] },
   { name: 'Finance', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },
   { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
+  { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
   { name: 'Churches', path: '/admin/churches', icon: Building, roles: ['super_admin'] },
   { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin'] },
 ];
