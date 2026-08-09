@@ -42,7 +42,10 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       
       // Filter out people already in this ministry
       const existingMemberIds = (ministry?.members || []).map(m => m.memberId);
-      const availableMembers = formattedDocs.filter(m => !existingMemberIds.includes(m.id) && m.membershipStatus !== 'Archived');
+      const availableMembers = formattedDocs.filter(m => {
+        const mIds = [m.id, m.uid, m.authUid].filter(Boolean);
+        return !mIds.some(id => existingMemberIds.includes(id)) && m.membershipStatus !== 'Archived';
+      });
       
       setMembers(availableMembers);
     } catch (err) {

@@ -25,7 +25,14 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
         
         // Initialize selected IDs from the ministry's existing memberIds array
         if (ministry && ministry.memberIds) {
-          setSelectedIds(new Set(ministry.memberIds));
+          const selected = new Set();
+          docs.forEach(doc => {
+            const ids = [doc.id, doc.uid, doc.authUid].filter(Boolean);
+            if (ids.some(id => ministry.memberIds.includes(id))) {
+              selected.add(doc.id);
+            }
+          });
+          setSelectedIds(selected);
         } else {
           setSelectedIds(new Set());
         }
