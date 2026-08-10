@@ -8,7 +8,6 @@ import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
 
 export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId;
   const [jsonFile, setJsonFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +56,7 @@ export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess 
 
       for (const item of itemsToImport) {
         delete item.id;
-        const newRef = doc(collection(db, 'churches', CHURCH_ID, 'bible_plans'));
+        const newRef = doc(collection(db, 'bible_plans'));
         batch.set(newRef, {
           ...item,
           status: item.status || 'draft',

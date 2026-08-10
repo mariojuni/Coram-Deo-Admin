@@ -21,7 +21,6 @@ const TGC_TEMPLATE_DAYS = [
 
 export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId;
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -137,8 +136,8 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
     setError('');
 
     try {
-      const plansColRef = collection(db, 'churches', CHURCH_ID, 'bible_plans');
-      const docRef = plan ? doc(db, 'churches', CHURCH_ID, 'bible_plans', plan.id) : doc(plansColRef);
+      const plansColRef = collection(db, 'bible_plans');
+      const docRef = plan ? doc(db, 'bible_plans', plan.id) : doc(plansColRef);
 
       const planDoc = {
         ...formData,

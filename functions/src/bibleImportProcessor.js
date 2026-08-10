@@ -1,4 +1,4 @@
-const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentWritten, onDocumentDeleted } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
 
@@ -13,7 +13,7 @@ exports.processBibleImport = onDocumentCreated(
   {
     document: "bibleImports/{importId}",
     database: targetDatabase,
-    region: "us-central1",
+    region: "asia-southeast1",
     timeoutSeconds: 540,
     memory: "1GiB"
   },
@@ -112,6 +112,7 @@ exports.processBibleImport = onDocumentCreated(
         contentVersion: contentVersion,
         contentHash: contentHash,
         sourceFormat: "json",
+        sizeBytes: data.metadataSnapshot?.sizeBytes || fileContent.length,
         importedBy: data.importedBy,
         importedAt: data.startedAt,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -189,7 +190,7 @@ exports.processBibleImport = onDocumentCreated(
                 normalizedNotes.push({
                   index: noteIndex,
                   type: "cross_reference",
-                  raw: rawRef
+                  raw: typeof rawRef === 'object' ? (rawRef.text || JSON.stringify(rawRef)) : String(rawRef)
                 });
               }
             }
@@ -201,6 +202,14 @@ exports.processBibleImport = onDocumentCreated(
               verseNumber: verseNumStr,
               content: verseContent
             };
+            
+            if (verse.heading) {
+              verseObj.heading = verse.heading;
+            }
+
+            if (verse.subheading) {
+              verseObj.subheading = verse.subheading;
+            }
             
             if (normalizedNotes.length > 0) {
               verseObj.notes = normalizedNotes;
@@ -267,7 +276,7 @@ exports.onBibleVersionUpdated = onDocumentWritten(
   {
     document: "bibleVersions/{versionId}",
     database: targetDatabase,
-    region: "us-central1",
+    region: "asia-southeast1",
     timeoutSeconds: 60
   },
   async (event) => {
@@ -330,6 +339,35 @@ exports.onBibleVersionUpdated = onDocumentWritten(
         });
       }
     });
+    
+    return null;
+  }
+);
+
+/**
+ * Triggers when a Bible version is deleted.
+ * Recursively deletes all subcollections (like books and chapters).
+ */
+exports.onBibleVersionDeleted = onDocumentDeleted(
+  {
+    document: "bibleVersions/{versionId}",
+    database: targetDatabase,
+    region: "asia-southeast1",
+    timeoutSeconds: 540,
+    memory: "1GiB"
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return null;
+    const db = snap.ref.firestore;
+    
+    try {
+      console.log(`Starting recursive delete for bible version: ${event.params.versionId}`);
+      await db.recursiveDelete(snap.ref);
+      console.log(`Successfully recursively deleted bible version: ${event.params.versionId}`);
+    } catch (error) {
+      console.error(`Error recursively deleting bible version ${event.params.versionId}:`, error);
+    }
     
     return null;
   }

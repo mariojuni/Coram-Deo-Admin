@@ -10,7 +10,6 @@ import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImpor
 
 export default function BiblePlans() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId;
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIds, setSelectedPlanIds] = useState([]);
@@ -24,7 +23,7 @@ export default function BiblePlans() {
   const [activeMenuId, setActiveMenuId] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'churches', CHURCH_ID, 'bible_plans'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'bible_plans'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -52,7 +51,7 @@ export default function BiblePlans() {
     setActiveMenuId(null);
     if (window.confirm(`Are you sure you want to delete the plan "${title}"?`)) {
       try {
-        await deleteDoc(doc(db, 'churches', CHURCH_ID, 'bible_plans', id));
+        await deleteDoc(doc(db, 'bible_plans', id));
       } catch (error) {
         console.error("Error deleting document: ", error);
         alert("Failed to delete plan.");

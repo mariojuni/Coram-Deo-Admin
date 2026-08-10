@@ -97,10 +97,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         }
       }
 
-      const dataToSave = {
+      const baseData = {
         ...formData,
-        birthday: deleteField(),
-        phone: deleteField(),
         name: computedName
       };
 
@@ -108,17 +106,19 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         // Update existing member
         const docRef = doc(db, 'users', member.id);
         await updateDoc(docRef, {
-          ...dataToSave,
+          ...baseData,
+          birthday: deleteField(),
+          phone: deleteField(),
           updatedAt: serverTimestamp(),
           updatedBy: currentUser?.uid || null
         });
       } else {
         // Add new member profile
         await addDoc(collection(db, 'users'), {
-          ...dataToSave,
+          ...baseData,
           createdAt: serverTimestamp(),
           createdBy: currentUser?.uid || null,
-          churchId: userProfile?.churchId  
+          churchId: userProfile?.churchId || null
         });
       }
       onClose();

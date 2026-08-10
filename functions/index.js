@@ -140,3 +140,5 @@ admin.initializeApp();
 const bibleFunctions = require("./src/bibleImportProcessor");
 exports.processBibleImport = bibleFunctions.processBibleImport;
 exports.onBibleVersionUpdated = bibleFunctions.onBibleVersionUpdated;
+exports.onBibleVersionDeleted = bibleFunctions.onBibleVersionDeleted;
+

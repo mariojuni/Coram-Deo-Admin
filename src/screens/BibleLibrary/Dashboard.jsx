@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { Plus, BookOpen, Globe, Clock, CheckCircle, Archive, AlertCircle, Search, X, BookMarked, Hash, FileText, Shield, Calendar, RefreshCw, Layers, ChevronRight } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '../../firebase';
+import { Plus, BookOpen, Globe, Clock, CheckCircle, Archive, AlertCircle, Search, X, BookMarked, Hash, FileText, Shield, Calendar, RefreshCw, Layers, ChevronRight, Trash2 } from 'lucide-react';
 
 export default function BibleLibraryDashboard() {
   const navigate = useNavigate();
@@ -56,6 +57,28 @@ export default function BibleLibraryDashboard() {
   const handlePublish = async (version) => {
     await updateDoc(doc(db, 'bibleVersions', String(version.id)), { status: 'published' });
     setSelectedVersion(v => v ? { ...v, status: 'published' } : null);
+  };
+
+  const handleDelete = async (version) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${version.title}"? This cannot be undone.`)) return;
+
+    try {
+      const related = imports.filter(i => String(i.translationId) === String(version.translationId));
+      
+      await Promise.all(related.map(async (imp) => {
+        if (imp.sourceStoragePath) {
+          const fileRef = ref(storage, imp.sourceStoragePath);
+          await deleteObject(fileRef).catch(e => console.log('Error deleting storage file:', e));
+        }
+        await deleteDoc(doc(db, 'bibleImports', imp.id));
+      }));
+
+      await deleteDoc(doc(db, 'bibleVersions', String(version.id)));
+      setSelectedVersion(null);
+    } catch (error) {
+      console.error("Error during deletion:", error);
+      alert("An error occurred while deleting the Bible version and its files.");
+    }
   };
 
   return (
@@ -274,6 +297,13 @@ export default function BibleLibraryDashboard() {
               >
                 <RefreshCw size={15} className="mr-2" />
                 Re-import
+              </button>
+              <button
+                onClick={() => handleDelete(selectedVersion)}
+                className="flex items-center justify-center px-4 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 transition-colors"
+                title="Delete Version"
+              >
+                <Trash2 size={15} />
               </button>
             </div>
           </div>
