@@ -72,7 +72,7 @@ export default function FinanceLayout() {
     <div className="flex flex-col h-full max-w-7xl mx-auto pb-10">
       
       {/* Top Navigation Tabs */}
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 mb-6 p-2 overflow-x-auto custom-scrollbar">
+      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 mb-6 p-2 overflow-x-auto custom-scrollbar shrink-0">
         <nav className="flex space-x-1 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -98,7 +98,7 @@ export default function FinanceLayout() {
       </div>
 
       {/* Tab Content Routing */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0">
         <Routes>
           <Route path="/" element={<FinanceDashboard />} />
           <Route path="giving" element={<GivingRecords />} />
