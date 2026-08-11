@@ -191,31 +191,6 @@ export default function GivingRecords() {
     return 'Others';
   };
 
-  const handleMigrateData = async () => {
-    if (!window.confirm("Are you sure you want to migrate legacy giving data to givingRecords?")) return;
-    setLoading(true);
-    try {
-      const givingRef = collection(db, 'giving');
-      const snap = await getDocs(query(givingRef, where('churchId', '==', CHURCH_ID)));
-      
-      let migratedCount = 0;
-      for (const docSnap of snap.docs) {
-        const data = docSnap.data();
-        const newRef = doc(collection(db, 'givingRecords'));
-        await setDoc(newRef, {
-          ...data,
-          status: 'completed',
-          migratedAt: new Date()
-        });
-        migratedCount++;
-      }
-      alert(`Migrated ${migratedCount} legacy records to givingRecords!`);
-    } catch (err) {
-      console.error("Migration error:", err);
-      alert("Error migrating data.");
-    }
-    setLoading(false);
-  };
 
   // Filter records
   const ledgerRecords = records.filter(r => ['completed', 'approved'].includes(r.status));
@@ -256,12 +231,7 @@ export default function GivingRecords() {
           <p className="text-sm text-church-slate mt-1">Manage tithes, offerings, and donations.</p>
         </div>
         <div className="flex items-center space-x-3">
-          <button 
-            onClick={handleMigrateData}
-            className="flex items-center px-4 py-2.5 bg-yellow-500 text-white rounded-full shadow-md text-sm font-medium hover:bg-yellow-600 transition-opacity"
-          >
-            Migrate Legacy Data
-          </button>
+
           <button 
             onClick={handleAddClick}
             className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
@@ -308,9 +278,9 @@ export default function GivingRecords() {
           </h2>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
+        <div className="overflow-auto flex-1">
+          <table className="w-full text-left border-collapse relative">
+            <thead className="sticky top-0 z-10 bg-white">
               <tr className="bg-church-bg/50 text-church-slate text-xs uppercase tracking-wider">
                 <th className="px-6 py-4 font-semibold rounded-tl-3xl">Date</th>
                 <th className="px-6 py-4 font-semibold">Donor Name</th>

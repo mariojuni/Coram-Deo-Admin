@@ -7,7 +7,8 @@ export default function ModernDropdown({
   onChange, 
   placeholder = 'Select an option',
   className = '',
-  searchable = false
+  searchable = false,
+  allowCustom = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,7 +74,7 @@ export default function ModernDropdown({
           )}
           
           <div className="overflow-y-auto flex-1">
-            {filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 && (!allowCustom || !searchQuery) ? (
               <div className="px-4 py-3 text-sm text-gray-500 italic text-center">
                 {searchable && searchQuery ? 'No matching options' : 'No options available'}
               </div>
@@ -101,6 +102,18 @@ export default function ModernDropdown({
                   </button>
                 );
               })}
+              {allowCustom && searchQuery && !options.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase()) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(`custom:${searchQuery}`);
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors text-church-navy hover:bg-gray-50 font-medium"
+                >
+                  <span className="truncate pr-4">Use "{searchQuery}"</span>
+                </button>
+              )}
             </div>
           )}
           </div>

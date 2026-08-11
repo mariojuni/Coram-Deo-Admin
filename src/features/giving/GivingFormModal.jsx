@@ -51,6 +51,9 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
     if (formData.userId && !opts.some(o => o.value === formData.userId)) {
       opts.push({ value: formData.userId, label: formData.donorName || 'Selected Member' });
     }
+    if (!formData.userId && formData.donorName && formData.donorName !== 'Anonymous') {
+      opts.push({ value: 'custom_donor', label: formData.donorName });
+    }
     return opts;
   }, [members, formData.userId, formData.donorName]);
 
@@ -287,18 +290,28 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
             <div>
               <label className="block text-sm font-medium text-church-navy mb-1.5">Donor Name</label>
               <ModernDropdown
-                value={formData.userId || ''}
+                value={formData.userId ? formData.userId : (formData.donorName && formData.donorName !== 'Anonymous' ? 'custom_donor' : '')}
                 onChange={(val) => {
-                  const selectedMember = members.find(m => m.id === val);
-                  setFormData(prev => ({
-                    ...prev,
-                    userId: val,
-                    donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
-                  }));
+                  if (typeof val === 'string' && val.startsWith('custom:')) {
+                    const customName = val.replace('custom:', '');
+                    setFormData(prev => ({
+                      ...prev,
+                      userId: '',
+                      donorName: customName
+                    }));
+                  } else {
+                    const selectedMember = members.find(m => m.id === val);
+                    setFormData(prev => ({
+                      ...prev,
+                      userId: val,
+                      donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
+                    }));
+                  }
                 }}
                 options={donorOptions}
                 placeholder="-- Select Donor --"
                 searchable={true}
+                allowCustom={true}
               />
             </div>
             

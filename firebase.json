@@ -1,4 +1,10 @@
 {
+  "firestore": [
+    {
+      "database": "coramdeo",
+      "rules": "firestore.rules"
+    }
+  ],
   "hosting": {
     "public": "dist",
     "ignore": [
