@@ -102,11 +102,16 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         name: computedName
       };
 
+      // Firestore throws an error if any field is explicitly undefined
+      const cleanData = Object.fromEntries(
+        Object.entries(baseData).filter(([_, v]) => v !== undefined)
+      );
+
       if (member) {
         // Update existing member
         const docRef = doc(db, 'users', member.id);
         await updateDoc(docRef, {
-          ...baseData,
+          ...cleanData,
           birthday: deleteField(),
           phone: deleteField(),
           updatedAt: serverTimestamp(),
@@ -115,7 +120,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       } else {
         // Add new member profile
         await addDoc(collection(db, 'users'), {
-          ...baseData,
+          ...cleanData,
           createdAt: serverTimestamp(),
           createdBy: currentUser?.uid || null,
           churchId: userProfile?.churchId || null
@@ -123,8 +128,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       }
       onClose();
     } catch (err) {
-      console.error(err);
-      setError('Failed to save member data. Please try again.');
+      console.error("Save Member Error:", err);
+      setError(err.message || 'Failed to save member data. Please try again.');
     } finally {
       setLoading(false);
     }
