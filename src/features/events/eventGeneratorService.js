@@ -159,6 +159,29 @@ export async function saveGeneratedEvents(eventsToSave, status, churchId, genera
   const batch = writeBatch(db);
   
   eventsToSave.forEach(event => {
+    let startTimestamp = null;
+    if (event.date && event.startTime) {
+      const d = new Date(event.date);
+      const timeStr = String(event.startTime).trim();
+      const timeMatch12 = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      const timeMatch24 = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+      
+      if (timeMatch12) {
+        let hours = parseInt(timeMatch12[1], 10);
+        const mins = parseInt(timeMatch12[2], 10);
+        const isPM = timeMatch12[3].toUpperCase() === 'PM';
+        if (isPM && hours < 12) hours += 12;
+        if (!isPM && hours === 12) hours = 0;
+        d.setHours(hours, mins, 0, 0);
+        startTimestamp = d;
+      } else if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const mins = parseInt(timeMatch24[2], 10);
+        d.setHours(hours, mins, 0, 0);
+        startTimestamp = d;
+      }
+    }
+
     const docRef = doc(collection(db, 'events'));
     batch.set(docRef, {
       churchId,
@@ -176,6 +199,7 @@ export async function saveGeneratedEvents(eventsToSave, status, churchId, genera
       source: 'template_generated',
       templateId: event.templateId,
       generatedMonth: generatedMonth,
+      ...(startTimestamp && { startTimestamp }),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });

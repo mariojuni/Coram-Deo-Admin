@@ -317,8 +317,19 @@ export default function GivingRecords() {
                     <td className="px-6 py-4 whitespace-nowrap text-church-slate font-medium">
                       {formatDate(date)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-church-navy">
-                      {donorName}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="font-bold text-church-navy">
+                        {donorName}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        {record.giverEntityType === 'household' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 uppercase tracking-wider">
+                            Household
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-church-slate">{record.userId ? 'Member' : 'Guest'}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700">

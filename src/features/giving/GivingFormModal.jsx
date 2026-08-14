@@ -25,6 +25,8 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
   const activeRecord = record || editingRecord;
 
   const [formData, setFormData] = useState({
+    giverEntityType: 'individual',
+    householdId: '',
     userId: '',
     donorName: '',
     amount: '',
@@ -40,6 +42,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [members, setMembers] = useState([]);
+  const [households, setHouseholds] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [funds, setFunds] = useState([]);
 
@@ -60,6 +63,8 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
   useEffect(() => {
     if (activeRecord) {
       setFormData({
+        giverEntityType: activeRecord.giverEntityType || 'individual',
+        householdId: activeRecord.householdId || '',
         userId: activeRecord.userId || '',
         donorName: activeRecord.donorName || '',
         amount: activeRecord.amount !== undefined && activeRecord.amount !== null ? activeRecord.amount.toString() : '',
@@ -75,6 +80,8 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
     } else {
       const today = new Date().toISOString().split('T')[0];
       setFormData({
+        giverEntityType: 'individual',
+        householdId: '',
         userId: '',
         donorName: '',
         amount: '',
@@ -95,9 +102,12 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
       const fetchMembers = async () => {
         try {
           if (!CHURCH_ID) return;
-          const q = query(collection(db, 'users'), where('churchId', '==', CHURCH_ID));
-          const snap = await getDocs(q);
-          const activeMembers = snap.docs
+          const qMembers = query(collection(db, 'users'), where('churchId', '==', CHURCH_ID));
+          const qHouseholds = query(collection(db, 'households'), where('churchId', '==', CHURCH_ID));
+          
+          const [membersSnap, householdsSnap] = await Promise.all([getDocs(qMembers), getDocs(qHouseholds)]);
+          
+          const activeMembers = membersSnap.docs
             .map(d => {
               const u = d.data();
               if (u.membershipStatus === 'Archived') return null;
@@ -115,6 +125,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
             .sort((a, b) => a.name.localeCompare(b.name));
 
           setMembers(activeMembers);
+          setHouseholds(householdsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
           if (activeRecord && !activeRecord.userId && activeRecord.donorName) {
             const matched = activeMembers.find(m => m.name.toLowerCase() === activeRecord.donorName.toLowerCase());
@@ -193,8 +204,19 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         }
       }
 
+      const finalGiverType = formData.giverEntityType;
+      const finalHouseholdId = finalGiverType === 'household' ? formData.householdId : null;
+      let finalUserId = formData.userId;
+      if (finalGiverType === 'household') {
+        const householdObj = households.find(h => h.id === finalHouseholdId);
+        finalUserId = householdObj?.primaryMemberId || null;
+      }
+
       const payload = {
         ...formData,
+        giverEntityType: finalGiverType,
+        householdId: finalHouseholdId,
+        userId: finalUserId || null,
         fundType: finalFundType,
         amount: amountNum,
         transactionDate: formData.date
@@ -205,8 +227,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         await updateDoc(doc(db, 'givingRecords', activeRecord.id), {
           ...payload,
           churchId: CHURCH_ID,
-          userId: formData.userId || null,
-          donorName: formData.userId ? formData.donorName : (formData.donorName || 'Anonymous'),
+          donorName: formData.donorName || 'Anonymous',
           updatedAt: serverTimestamp(),
           updatedBy: currentUser?.uid || null
         });
@@ -244,8 +265,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         await addDoc(collection(db, 'givingRecords'), {
           ...payload,
           churchId: CHURCH_ID,
-          userId: formData.userId || null,
-          donorName: formData.userId ? formData.donorName : (formData.donorName || 'Anonymous'),
+          donorName: formData.donorName || 'Anonymous',
           createdAt: serverTimestamp(),
           createdBy: currentUser?.uid || null,
           status: 'completed'
@@ -287,33 +307,80 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>}
             
-            <div>
-              <label className="block text-sm font-medium text-church-navy mb-1.5">Donor Name</label>
-              <ModernDropdown
-                value={formData.userId ? formData.userId : (formData.donorName && formData.donorName !== 'Anonymous' ? 'custom_donor' : '')}
-                onChange={(val) => {
-                  if (typeof val === 'string' && val.startsWith('custom:')) {
-                    const customName = val.replace('custom:', '');
-                    setFormData(prev => ({
-                      ...prev,
-                      userId: '',
-                      donorName: customName
-                    }));
-                  } else {
-                    const selectedMember = members.find(m => m.id === val);
-                    setFormData(prev => ({
-                      ...prev,
-                      userId: val,
-                      donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
-                    }));
-                  }
-                }}
-                options={donorOptions}
-                placeholder="-- Select Donor --"
-                searchable={true}
-                allowCustom={true}
-              />
+            <div className="flex space-x-4 mb-4">
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="giverEntityType" 
+                  value="individual" 
+                  checked={formData.giverEntityType === 'individual'} 
+                  onChange={handleChange} 
+                  className="mr-2 text-church-green focus:ring-church-green"
+                />
+                <span className="text-sm font-medium text-church-navy">Individual</span>
+              </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="giverEntityType" 
+                  value="household" 
+                  checked={formData.giverEntityType === 'household'} 
+                  onChange={handleChange} 
+                  className="mr-2 text-church-green focus:ring-church-green"
+                />
+                <span className="text-sm font-medium text-church-navy">Household</span>
+              </label>
             </div>
+
+            {formData.giverEntityType === 'household' ? (
+              <div>
+                <label className="block text-sm font-medium text-church-navy mb-1.5">Household</label>
+                <ModernDropdown
+                  value={formData.householdId}
+                  onChange={(val) => {
+                    const selectedHousehold = households.find(h => h.id === val);
+                    setFormData(prev => ({
+                      ...prev,
+                      householdId: val,
+                      donorName: selectedHousehold ? selectedHousehold.name : ''
+                    }));
+                  }}
+                  options={[
+                    { value: '', label: '-- Select Household --' },
+                    ...households.map(h => ({ value: h.id, label: h.name }))
+                  ]}
+                  placeholder="-- Select Household --"
+                  searchable={true}
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-church-navy mb-1.5">Donor Name</label>
+                <ModernDropdown
+                  value={formData.userId ? formData.userId : (formData.donorName && formData.donorName !== 'Anonymous' ? 'custom_donor' : '')}
+                  onChange={(val) => {
+                    if (typeof val === 'string' && val.startsWith('custom:')) {
+                      const customName = val.replace('custom:', '');
+                      setFormData(prev => ({
+                        ...prev,
+                        userId: '',
+                        donorName: customName
+                      }));
+                    } else {
+                      const selectedMember = members.find(m => m.id === val);
+                      setFormData(prev => ({
+                        ...prev,
+                        userId: val,
+                        donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
+                      }));
+                    }
+                  }}
+                  options={donorOptions}
+                  placeholder="-- Select Donor --"
+                  searchable={true}
+                />
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4">
               <div>

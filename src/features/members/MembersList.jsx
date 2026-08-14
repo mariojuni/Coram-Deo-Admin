@@ -7,12 +7,14 @@ import MemberFormModal from './MemberFormModal';
 import MemberProfileModal from './MemberProfileModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import * as XLSX from 'xlsx';
+import HouseholdsList from './HouseholdsList';
 
 export default function MembersList() {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('members');
   
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -365,12 +367,27 @@ export default function MembersList() {
 
   return (
     <div className="space-y-6 flex flex-col h-[calc(100vh-140px)]">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Members Directory</h1>
-          <p className="text-sm text-church-slate mt-1">Manage church members, profiles, and data.</p>
+          <h1 className="text-3xl font-bold text-church-navy">Directory</h1>
+          <div className="flex space-x-6 mt-4 border-b border-gray-200">
+            <button 
+              className={`pb-2 font-bold ${activeTab === 'members' ? 'text-church-green border-b-2 border-church-green' : 'text-gray-400 hover:text-church-navy'}`}
+              onClick={() => setActiveTab('members')}
+            >
+              Members
+            </button>
+            <button 
+              className={`pb-2 font-bold ${activeTab === 'households' ? 'text-church-green border-b-2 border-church-green' : 'text-gray-400 hover:text-church-navy'}`}
+              onClick={() => setActiveTab('households')}
+            >
+              Households
+            </button>
+          </div>
         </div>
-        <div className="flex items-center space-x-3">
+        
+        {activeTab === 'members' && (
+        <div className="flex items-center space-x-3 pb-2">
           <input 
             type="file" 
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
@@ -395,7 +412,12 @@ export default function MembersList() {
             Add Member
           </button>
         </div>
+        )}
       </div>
+
+      {activeTab === 'households' ? (
+        <HouseholdsList />
+      ) : (
 
       <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Table Toolbar */}
@@ -547,6 +569,7 @@ export default function MembersList() {
           <div>Showing {filteredMembers.length} profiles</div>
         </div>
       </div>
+      )}
 
       <MemberFormModal 
         isOpen={isFormOpen}

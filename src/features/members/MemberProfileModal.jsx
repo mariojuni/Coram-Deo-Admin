@@ -21,6 +21,9 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
   const [activeTab, setActiveTab] = useState('profile');
   const [givingHistory, setGivingHistory] = useState([]);
   const [loadingGiving, setLoadingGiving] = useState(false);
+  const [userHousehold, setUserHousehold] = useState(null);
+  const [showHouseholdGiving, setShowHouseholdGiving] = useState(false);
+  const [fundsMap, setFundsMap] = useState({});
   
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
@@ -40,7 +43,23 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
       
       const canSeeGiving = canManageGiving(userProfile);
       if (canSeeGiving && member.id) {
-        fetchGivingHistory(member);
+        fetchHouseholdAndGiving(member);
+        
+        // Fetch funds map
+        const fetchFunds = async () => {
+          try {
+            const q = query(collection(db, 'givingFunds'), where('churchId', '==', CHURCH_ID));
+            const snap = await getDocs(q);
+            const map = {};
+            snap.forEach(d => {
+              map[d.id] = d.data().name;
+            });
+            setFundsMap(map);
+          } catch (e) {
+            console.error("Error fetching funds:", e);
+          }
+        };
+        fetchFunds();
       }
       if (member.id) {
         fetchAttendanceHistory(member.id);
@@ -49,15 +68,55 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
     }
   }, [isOpen, member, userProfile]);
 
-  const fetchGivingHistory = async (member) => {
+  const fetchHouseholdAndGiving = async (member) => {
     setLoadingGiving(true);
-    const CHURCH_ID = userProfile?.churchId ;
+    const CHURCH_ID = userProfile?.churchId;
     try {
-      const q = query(
-        collection(db, 'givingRecords'), 
+      // 1. Fetch Household
+      const hq = query(
+        collection(db, 'households'),
         where('churchId', '==', CHURCH_ID),
-        where('userId', '==', member.id)
+        where('memberIds', 'array-contains', member.id)
       );
+      const hSnap = await getDocs(hq);
+      let household = null;
+      if (!hSnap.empty) {
+        household = { id: hSnap.docs[0].id, ...hSnap.docs[0].data() };
+        setUserHousehold(household);
+        setShowHouseholdGiving(true);
+      } else {
+        setUserHousehold(null);
+        setShowHouseholdGiving(false);
+      }
+
+      // 2. Fetch Giving
+      await fetchGivingHistory(member, household, household ? true : false);
+    } catch (e) {
+      console.error(e);
+      setLoadingGiving(false);
+    }
+  };
+
+  const fetchGivingHistory = async (member, household, showHousehold) => {
+    setLoadingGiving(true);
+    const CHURCH_ID = userProfile?.churchId;
+    try {
+      let q;
+      if (showHousehold && household && household.memberIds?.length > 0) {
+        const ids = household.memberIds.slice(0, 10); // max 10 for 'in' query
+        q = query(
+          collection(db, 'givingRecords'), 
+          where('churchId', '==', CHURCH_ID),
+          where('userId', 'in', ids)
+        );
+      } else {
+        q = query(
+          collection(db, 'givingRecords'), 
+          where('churchId', '==', CHURCH_ID),
+          where('userId', '==', member.id)
+        );
+      }
+      
       const snap = await getDocs(q);
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       docs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort latest first
@@ -68,6 +127,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
       setLoadingGiving(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen && member && canManageGiving(userProfile)) {
+      if (userHousehold !== undefined) {
+        fetchGivingHistory(member, userHousehold, showHouseholdGiving);
+      }
+    }
+  }, [showHouseholdGiving]);
 
   const fetchMinistries = async (memberId) => {
     setLoadingMinistries(true);
@@ -538,48 +605,77 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
           )}
 
           {activeTab === 'giving' && canSeeGiving && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h3 className="text-sm font-bold text-church-green uppercase tracking-wider flex items-center">
-                  <CreditCard size={16} className="mr-2" /> Giving Records
-                </h3>
-                <div className="text-sm font-bold text-church-navy">
-                  Total: ₱{givingHistory.reduce((sum, r) => sum + (r.amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <div className="space-y-6">
+              {userHousehold && (
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-sm text-blue-800 mb-3">
+                    <strong>Note:</strong> {member.displayName || member.name} belongs to the <strong>{userHousehold.name}</strong>. Showing combined household giving. To view only {member.displayName || member.name}'s personal giving, change the filter below.
+                  </p>
+                  <div className="flex items-center space-x-6">
+                    <label className="flex items-center text-sm font-medium text-blue-900 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={showHouseholdGiving} 
+                        onChange={() => setShowHouseholdGiving(true)} 
+                        className="mr-2 accent-blue-600 rounded"
+                      />
+                      Show Household Giving
+                    </label>
+                    <label className="flex items-center text-sm font-medium text-blue-900 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={!showHouseholdGiving} 
+                        onChange={() => setShowHouseholdGiving(false)} 
+                        className="mr-2 accent-blue-600 rounded"
+                      />
+                      Show Only Individual Giving
+                    </label>
+                  </div>
                 </div>
-              </div>
-              
-              {loadingGiving ? (
-                <div className="p-8 text-center text-gray-500">Loading records...</div>
-              ) : givingHistory.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">No giving records found under the exact name "{member.displayName || member.name}".</div>
-              ) : (
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-white border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase">
-                      <th className="px-6 py-3">Date</th>
-                      <th className="px-6 py-3">Fund</th>
-                      <th className="px-6 py-3">Method</th>
-                      <th className="px-6 py-3 text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {givingHistory.map(record => (
-                      <tr key={record.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-church-slate">{new Date(record.date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-church-navy">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                            {record.fundType}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-church-slate">{record.method}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-green-600 text-right">
-                          ₱{(record.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               )}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                  <h3 className="text-sm font-bold text-church-green uppercase tracking-wider flex items-center">
+                    <CreditCard size={16} className="mr-2" /> Giving Records
+                  </h3>
+                  <div className="text-sm font-bold text-church-navy">
+                    Total: ₱{givingHistory.reduce((sum, r) => sum + (r.amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+                
+                {loadingGiving ? (
+                  <div className="p-8 text-center text-gray-500">Loading records...</div>
+                ) : givingHistory.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">No giving records found under the exact name "{member.displayName || member.name}".</div>
+                ) : (
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-white border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase">
+                        <th className="px-6 py-3">Date</th>
+                        <th className="px-6 py-3">Fund</th>
+                        <th className="px-6 py-3">Method</th>
+                        <th className="px-6 py-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {givingHistory.map(record => (
+                        <tr key={record.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm text-church-slate">{new Date(record.date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-church-navy">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                              {fundsMap[record.fundId] || record.fundType || 'Unknown'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-church-slate">{record.method}</td>
+                          <td className="px-6 py-4 text-sm font-bold text-green-600 text-right">
+                            ₱{(record.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
           )}
 
