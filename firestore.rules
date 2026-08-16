@@ -44,7 +44,7 @@ service cloud.firestore {
     function isRoleAdmin(churchId) {
       return isSuperAdmin() || (
         userDocExists() &&
-        userDoc().churchId == churchId &&
+        userDoc().get('churchId', null) == churchId &&
         hasAnySystemRole(['church_admin'])
       );
     }
@@ -52,7 +52,7 @@ service cloud.firestore {
     function isPastorOrAdmin(churchId) {
       return isSuperAdmin() || (
         userDocExists() &&
-        userDoc().churchId == churchId &&
+        userDoc().get('churchId', null) == churchId &&
         hasAnySystemRole(['church_admin', 'pastor'])
       );
     }
@@ -60,7 +60,7 @@ service cloud.firestore {
     function isChurchAdmin(churchId) {
       return isSuperAdmin() || (
         userDocExists() &&
-        userDoc().churchId == churchId &&
+        userDoc().get('churchId', null) == churchId &&
         hasAnySystemRole(['church_admin', 'ministry_leader', 'pastor', 'staff'])
       );
     }
@@ -261,20 +261,19 @@ service cloud.firestore {
         // Allows a newly authenticated user to bind their authUid/accountId to an unlinked imported member document.
         ((resource.data.get('authUid', null) == null || resource.data.get('authUid', null) == '') &&
           (request.resource.data.get('authUid', null) == request.auth.uid || request.resource.data.get('accountId', null) == request.auth.uid) &&
-          request.resource.data.systemRoles == resource.data.systemRoles &&
-          request.resource.data.primaryRole == resource.data.primaryRole &&
-          request.resource.data.role == resource.data.role) ||
+          request.resource.data.get('systemRoles', null) == resource.data.get('systemRoles', null) &&
+          request.resource.data.get('primaryRole', null) == resource.data.get('primaryRole', null) &&
+          request.resource.data.get('role', null) == resource.data.get('role', null)) ||
 
-        // super_admin can update any other user.
-        (isSuperAdmin() && request.auth.uid != userId) ||
+        // super_admin can update any user.
+        (isSuperAdmin()) ||
 
         // church_admin / role-admin can update users within their church,
         // but cannot elevate to super_admin.
-        (isRoleAdmin(resource.data.churchId) &&
-          request.resource.data.churchId == resource.data.churchId &&
-          !(request.resource.data.systemRoles != null && request.resource.data.systemRoles.hasAll(['super_admin'])) &&
-          request.resource.data.role != 'super_admin' &&
-          request.auth.uid != userId)
+        (isRoleAdmin(resource.data.get('churchId', null)) &&
+          request.resource.data.get('churchId', null) == resource.data.get('churchId', null) &&
+          !(request.resource.data.get('systemRoles', null) != null && request.resource.data.get('systemRoles', null).hasAll(['super_admin'])) &&
+          request.resource.data.get('role', null) != 'super_admin')
       );
 
       allow delete: if isSuperAdmin();
