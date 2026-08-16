@@ -270,8 +270,15 @@ service cloud.firestore {
 
         // church_admin / role-admin can update users within their church,
         // but cannot elevate to super_admin.
-        (isRoleAdmin(resource.data.get('churchId', null)) &&
-          request.resource.data.get('churchId', null) == resource.data.get('churchId', null) &&
+        // Handles both normal docs (with churchId) and legacy docs (no churchId).
+        (userDocExists() && hasAnySystemRole(['church_admin']) && (
+          // Normal case: doc has a churchId that matches the admin's church
+          (isRoleAdmin(resource.data.get('churchId', null)) &&
+            request.resource.data.get('churchId', null) == resource.data.get('churchId', null)) ||
+          // Legacy case: doc has no churchId — admin can claim it by assigning their own
+          (resource.data.get('churchId', null) == null &&
+            request.resource.data.get('churchId', null) == userDoc().get('churchId', null))
+        ) &&
           !(request.resource.data.get('systemRoles', null) != null && request.resource.data.get('systemRoles', null).hasAll(['super_admin'])) &&
           request.resource.data.get('role', null) != 'super_admin')
       );

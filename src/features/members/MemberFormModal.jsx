@@ -112,6 +112,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         const docRef = doc(db, 'users', member.id);
         await updateDoc(docRef, {
           ...cleanData,
+          // Always preserve/set churchId so legacy docs without it get migrated
+          // and so the Firestore rule (churchId must not change) always passes
+          churchId: member.churchId || userProfile?.churchId || null,
           birthday: deleteField(),
           phone: deleteField(),
           updatedAt: serverTimestamp(),
