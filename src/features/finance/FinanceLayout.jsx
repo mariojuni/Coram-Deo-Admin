@@ -7,7 +7,8 @@ import {
   Receipt, 
   Wallet, 
   Target, 
-  Activity 
+  Activity,
+  Building
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -28,6 +29,7 @@ import GivingCampaigns from '../giving/GivingCampaigns';
 
 import FundsList from '../funds/FundsList';
 import CombinedReports from './reports/CombinedReports';
+import DonationAccountsList from './donation-accounts/DonationAccountsList';
 
 export default function FinanceLayout() {
   const { userProfile } = useAuth();
@@ -62,6 +64,7 @@ export default function FinanceLayout() {
   if (canManageFinanceSettings(userProfile)) {
     tabs.push({ name: 'Funds', path: '/admin/finance/funds', icon: Wallet, exact: false });
     tabs.push({ name: 'Campaigns', path: '/admin/finance/campaigns', icon: Target, exact: false });
+    tabs.push({ name: 'Donation Accounts', path: '/admin/finance/donation-accounts', icon: Building, exact: false });
   }
 
   if (canViewFinanceReports(userProfile)) {
@@ -106,6 +109,7 @@ export default function FinanceLayout() {
           <Route path="expenses" element={<ExpensesList />} />
           <Route path="funds" element={<FundsList />} />
           <Route path="campaigns" element={<GivingCampaigns />} />
+          <Route path="donation-accounts" element={<DonationAccountsList />} />
           <Route path="reports" element={<CombinedReports />} />
           <Route path="*" element={<Navigate to="/admin/finance" replace />} />
         </Routes>
