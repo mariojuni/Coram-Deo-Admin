@@ -68,7 +68,7 @@ service cloud.firestore {
     function isFinanceOrChurchAdmin(churchId) {
       return isSuperAdmin() || (
         userDocExists() &&
-        userDoc().churchId == churchId &&
+        userDoc().get('churchId', null) == churchId &&
         hasAnySystemRole(['church_admin', 'finance_admin', 'pastor', 'staff', 'ministry_leader'])
       );
     }
@@ -80,10 +80,10 @@ service cloud.firestore {
     function isAssignedMinistryLeader(churchId, ministryId) {
       return isSignedIn() &&
         userDocExists() &&
-        userDoc().churchId == churchId &&
+        userDoc().get('churchId', null) == churchId &&
         hasAnySystemRole(['ministry_leader']) &&
-        userDoc().managedMinistryIds != null &&
-        userDoc().managedMinistryIds.hasAll([ministryId]);
+        userDoc().get('managedMinistryIds', null) != null &&
+        userDoc().get('managedMinistryIds', null).hasAll([ministryId]);
     }
 
     function isWorshipAdmin(churchId, ministryId) {
@@ -134,7 +134,7 @@ service cloud.firestore {
       allow write: if isSignedIn()
         && (isPastorOrAdmin(resource.data.churchId)
             || isChurchAdmin(resource.data.churchId)
-            || (userDocExists() && userDoc().churchId == resource.data.churchId)
+            || (userDocExists() && userDoc().get('churchId', null) == resource.data.churchId)
             || (resource != null && resource.data.userId == request.auth.uid)
             || (request.resource != null && request.resource.data.userId == request.auth.uid));
     }
@@ -164,7 +164,7 @@ service cloud.firestore {
     match /ministryAssignments/{assignmentId} {
       allow read: if isSignedIn();
       allow create: if isChurchAdmin(request.resource.data.churchId);
-      allow update: if isChurchAdmin(resource.data.churchId) || isChurchAdmin(request.resource.data.churchId) || (resource != null && (resource.data.memberId == request.auth.uid || (userDocExists() && resource.data.memberId == userDoc().memberId)));
+      allow update: if isChurchAdmin(resource.data.churchId) || isChurchAdmin(request.resource.data.churchId) || (resource != null && (resource.data.memberId == request.auth.uid || (userDocExists() && resource.data.memberId == userDoc().get('memberId', null))));
       allow delete: if isChurchAdmin(resource.data.churchId);
     }
 
@@ -185,7 +185,7 @@ service cloud.firestore {
     }
 
     match /donationAccounts/{accountId} {
-      allow read: if isSignedIn() && (resource.data.churchId == userDoc().churchId || isFinanceOrChurchAdmin(resource.data.churchId));
+      allow read: if isSignedIn() && ((userDocExists() && resource.data.churchId == userDoc().get('churchId', null)) || isFinanceOrChurchAdmin(resource.data.churchId));
       allow create: if isFinanceOrChurchAdmin(request.resource.data.churchId);
       allow update: if isFinanceOrChurchAdmin(resource.data.churchId) && isFinanceOrChurchAdmin(request.resource.data.churchId);
       allow delete: if isFinanceOrChurchAdmin(resource.data.churchId);
@@ -239,9 +239,9 @@ service cloud.firestore {
 
     match /personalWorshipArrangements/{arrangementId} {
       allow read, write: if isSignedIn()
-        && (resource == null || resource.data.userId == request.auth.uid || resource.data.memberId == userDoc().memberId)
-        && (request.resource == null || request.resource.data.userId == request.auth.uid || request.resource.data.memberId == userDoc().memberId)
-        && (request.resource == null || request.resource.data.churchId == userDoc().churchId);
+        && (resource == null || resource.data.userId == request.auth.uid || (userDocExists() && resource.data.memberId == userDoc().get('memberId', null)))
+        && (request.resource == null || request.resource.data.userId == request.auth.uid || (userDocExists() && request.resource.data.memberId == userDoc().get('memberId', null)))
+        && (request.resource == null || (userDocExists() && request.resource.data.churchId == userDoc().get('churchId', null)));
     }
 
 
@@ -534,14 +534,14 @@ service cloud.firestore {
       allow create, update: if isSignedIn() && (
         isPastorOrAdmin(request.resource.data.churchId != null ? request.resource.data.churchId : resource.data.churchId) ||
         (resource != null && (
-          (resource.data.leaderMemberIds != null && userDocExists() && userDoc().memberId != null && resource.data.leaderMemberIds.hasAny([userDoc().memberId])) ||
+          (resource.data.leaderMemberIds != null && userDocExists() && userDoc().get('memberId', null) != null && resource.data.leaderMemberIds.hasAny([userDoc().get('memberId', null)])) ||
           (resource.data.leaderUserIds != null && resource.data.leaderUserIds.hasAny([request.auth.uid]))
         ))
       );
       allow delete: if isSignedIn() && (
         isPastorOrAdmin(resource.data.churchId) ||
         (resource != null && (
-          (resource.data.leaderMemberIds != null && userDocExists() && userDoc().memberId != null && resource.data.leaderMemberIds.hasAny([userDoc().memberId])) ||
+          (resource.data.leaderMemberIds != null && userDocExists() && userDoc().get('memberId', null) != null && resource.data.leaderMemberIds.hasAny([userDoc().get('memberId', null)])) ||
           (resource.data.leaderUserIds != null && resource.data.leaderUserIds.hasAny([request.auth.uid]))
         ))
       );
@@ -553,8 +553,8 @@ service cloud.firestore {
         isPastorOrAdmin(resource.data.churchId) ||
         (resource.data.groupId != null && exists(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)) && (
           (get(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)).data.leaderMemberIds != null &&
-           userDocExists() && userDoc().memberId != null &&
-           get(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)).data.leaderMemberIds.hasAny([userDoc().memberId])) ||
+           userDocExists() && userDoc().get('memberId', null) != null &&
+           get(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)).data.leaderMemberIds.hasAny([userDoc().get('memberId', null)])) ||
           (get(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)).data.leaderUserIds != null &&
            get(/databases/$(database)/documents/discipleshipGroups/$(resource.data.groupId)).data.leaderUserIds.hasAny([request.auth.uid]))
         ))
