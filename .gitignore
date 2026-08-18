@@ -22,3 +22,5 @@ dist-ssr
 *.serviceaccount.json
 serviceAccountKey.json
 
+# Debug directory
+debug/
