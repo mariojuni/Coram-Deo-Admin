@@ -13,6 +13,7 @@ export default function EventDetails() {
   const [activeTab, setActiveTab] = useState('overview');
   const [assignments, setAssignments] = useState([]);
   const [setlist, setSetlist] = useState(null);
+  const [rsvpUsers, setRsvpUsers] = useState({});
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -52,6 +53,37 @@ export default function EventDetails() {
     
     return () => unsubscribe();
   }, [id]);
+
+  useEffect(() => {
+    if (!event?.rsvps || !Array.isArray(event.rsvps)) return;
+
+    const fetchUsers = async () => {
+      const usersData = { ...rsvpUsers };
+      const usersToFetch = event.rsvps
+        .map(rsvp => rsvp.userId)
+        .filter(userId => userId && usersData[userId] === undefined);
+
+      if (usersToFetch.length === 0) return;
+
+      try {
+        const promises = usersToFetch.map(userId => getDoc(doc(db, 'users', userId)));
+        const docs = await Promise.all(promises);
+        
+        docs.forEach(docSnap => {
+          if (docSnap.exists()) {
+            usersData[docSnap.id] = docSnap.data();
+          } else {
+            usersData[docSnap.id] = null; // Mark as null if not found
+          }
+        });
+        setRsvpUsers(usersData);
+      } catch (error) {
+        console.error("Error fetching RSVP users:", error);
+      }
+    };
+    
+    fetchUsers();
+  }, [event?.rsvps]);
 
   if (loading) return <div className="p-8 text-center text-church-slate">Loading event details...</div>;
   if (!event) return <div className="p-8 text-center text-church-slate">Event not found.</div>;
@@ -185,8 +217,39 @@ export default function EventDetails() {
           )}
 
           {activeTab === 'rsvp' && (
-            <div className="text-center py-12 text-church-slate">
-              <p>RSVP management coming soon.</p>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-church-navy text-lg">RSVP Responses</h3>
+              </div>
+              {(!event.rsvps || event.rsvps.length === 0) ? (
+                <div className="text-center py-12 text-church-slate">
+                  <p>No RSVPs yet for this event.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {event.rsvps.map((rsvp, index) => {
+                    const user = rsvpUsers[rsvp.userId];
+                    const name = user 
+                      ? `${user.firstName || ''} ${user.middleInitial ? user.middleInitial + '.' : ''} ${user.lastName || ''}`.replace(/\s+/g, ' ').trim()
+                      : (user === null ? 'Unknown User' : 'Loading...');
+                    
+                    return (
+                      <div key={index} className="p-4 border border-gray-100 rounded-xl flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-church-navy">{name}</p>
+                        </div>
+                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
+                          rsvp.status === 'going' ? 'bg-green-100 text-green-700' : 
+                          rsvp.status === 'not_going' ? 'bg-red-100 text-red-700' : 
+                          'bg-orange-100 text-orange-700'
+                        }`}>
+                          {rsvp.status}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
