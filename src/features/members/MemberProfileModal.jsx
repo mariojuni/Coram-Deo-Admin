@@ -253,6 +253,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
 
       const userRef = doc(db, 'users', member.id);
       await updateDoc(userRef, {
+        churchId: member.churchId || CHURCH_ID,
         systemRoles: newRoles,
         primaryRole,
         role: primaryRole, // keep legacy field in sync

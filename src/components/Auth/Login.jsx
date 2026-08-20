@@ -35,10 +35,7 @@ async function checkAdminAuthorization(user) {
   const tokenResult = await user.getIdTokenResult(true);
   const isSuperAdminClaim = Boolean(tokenResult.claims?.superAdmin);
 
-  let snap = await getDoc(doc(db, 'userAccounts', uid));
-  if (!snap.exists()) {
-    snap = await getDoc(doc(db, 'users', uid));
-  }
+  let snap = await getDoc(doc(db, 'users', uid));
 
   if (!snap.exists() && !isSuperAdminClaim) {
     return { authorized: false, message: ERROR_UNAUTHORIZED };

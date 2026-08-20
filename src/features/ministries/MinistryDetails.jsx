@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, getDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { formatStandardName } from '../../utils/nameUtils';
 import { ArrowLeft, Users, Shield, Calendar, Plus, MoreVertical, Trash2, Edit, BookOpen, Monitor, Mic, Guitar, Drum, Piano, GraduationCap, Music, Heart, Star, Settings } from 'lucide-react';
 import AssignMemberModal from './AssignMemberModal';
 import MinistryFormModal from './MinistryFormModal';
@@ -93,6 +94,39 @@ export default function MinistryDetails() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const [activeMenuId, setActiveMenuId] = useState(null);
+  
+  const [ministryMembersDocs, setMinistryMembersDocs] = useState([]);
+  const [usersMap, setUsersMap] = useState({});
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        const mapping = {};
+        snap.forEach(d => {
+          mapping[d.id] = { id: d.id, ...d.data() };
+        });
+        setUsersMap(mapping);
+      } catch (err) {
+        console.error("Error fetching users for name resolution:", err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (!id) return;
+    const q = query(
+      collection(db, 'ministryMembers'),
+      where('ministryId', '==', id),
+      where('status', '==', 'active')
+    );
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setMinistryMembersDocs(docs);
+    });
+    return () => unsubscribe();
+  }, [id]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'ministries', id), (docSnap) => {
@@ -110,7 +144,29 @@ export default function MinistryDetails() {
   if (loading) return <div className="p-8 text-center text-gray-500">Loading ministry details...</div>;
   if (!ministry) return null;
 
-  const members = ministry.members || [];
+  const legacyMembers = ministry.members || [];
+  const mergedMembersMap = new Map();
+  
+  legacyMembers.forEach(m => {
+    if (m.memberId) mergedMembersMap.set(m.memberId, m);
+  });
+
+  ministryMembersDocs.forEach(mDoc => {
+    const mId = mDoc.memberId || mDoc.userId;
+    if (!mId) return;
+    
+    if (!mergedMembersMap.has(mId)) {
+      const userDoc = usersMap[mId];
+      const displayName = userDoc ? formatStandardName(userDoc) : 'Unnamed Member';
+      mergedMembersMap.set(mId, {
+        memberId: mId,
+        memberName: displayName,
+        servingRole: mDoc.ministryRole || 'Member'
+      });
+    }
+  });
+
+  const members = Array.from(mergedMembersMap.values());
   
   // Basic stats
   const totalMembers = members.length;
@@ -118,11 +174,18 @@ export default function MinistryDetails() {
   const handleRemoveMember = async (memberToRemove) => {
     if (window.confirm(`Remove ${memberToRemove.memberName} from ${ministry.name}?`)) {
       try {
-        const updatedMembers = members.filter(m => m.memberId !== memberToRemove.memberId);
+        const updatedMembers = legacyMembers.filter(m => m.memberId !== memberToRemove.memberId);
         await updateDoc(doc(db, 'ministries', ministry.id), {
           members: updatedMembers,
           updatedAt: new Date()
         });
+        
+        try {
+           const memberDocId = `${ministry.id}_${memberToRemove.memberId}`;
+           await deleteDoc(doc(db, 'ministryMembers', memberDocId));
+        } catch(e) {
+           console.warn("Failed to delete from ministryMembers collection", e);
+        }
       } catch (err) {
         console.error(err);
         alert("Failed to remove member");
@@ -152,13 +215,30 @@ export default function MinistryDetails() {
     const newRole = window.prompt("Enter serving role (e.g. Drummer, Vocalist):", member.servingRole || '');
     if (newRole !== null) {
       try {
-        const updatedMembers = members.map(m => 
+        const updatedMembers = legacyMembers.map(m => 
           m.memberId === member.memberId ? { ...m, servingRole: newRole.trim() } : m
         );
+        if (!legacyMembers.some(m => m.memberId === member.memberId)) {
+           updatedMembers.push({
+             memberId: member.memberId,
+             memberName: member.memberName,
+             servingRole: newRole.trim()
+           });
+        }
         await updateDoc(doc(db, 'ministries', ministry.id), {
           members: updatedMembers,
           updatedAt: new Date()
         });
+        
+        try {
+           const memberDocId = `${ministry.id}_${member.memberId}`;
+           await updateDoc(doc(db, 'ministryMembers', memberDocId), {
+             ministryRole: newRole.trim(),
+             updatedAt: new Date().toISOString()
+           });
+        } catch(e) {
+           console.warn("Failed to update ministryMembers collection", e);
+        }
       } catch (err) {
         console.error(err);
         alert("Failed to update serving role");

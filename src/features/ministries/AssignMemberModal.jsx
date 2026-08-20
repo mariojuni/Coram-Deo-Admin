@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { collection, query, orderBy, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { formatStandardName } from '../../utils/nameUtils';
@@ -40,9 +40,18 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       // Sort members alphabetically by standardized display name
       formattedDocs.sort((a, b) => a.displayName.localeCompare(b.displayName));
       
+      // Deduplicate by displayName to prevent duplicated/tripled names from showing in the dropdown
+      const uniqueDocsMap = new Map();
+      formattedDocs.forEach(d => {
+        if (!uniqueDocsMap.has(d.displayName)) {
+          uniqueDocsMap.set(d.displayName, d);
+        }
+      });
+      const uniqueFormattedDocs = Array.from(uniqueDocsMap.values());
+      
       // Filter out people already in this ministry
       const existingMemberIds = (ministry?.members || []).map(m => m.memberId);
-      const availableMembers = formattedDocs.filter(m => {
+      const availableMembers = uniqueFormattedDocs.filter(m => {
         const mIds = [m.id, m.uid, m.authUid].filter(Boolean);
         return !mIds.some(id => existingMemberIds.includes(id)) && m.membershipStatus !== 'Archived';
       });
@@ -79,7 +88,8 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       
       const newMemberObj = {
         memberId: selectedMemberId,
-        memberName: displayName
+        memberName: displayName,
+        servingRole: 'Member'
       };
 
       const updatedMembers = [...(ministry.members || []), newMemberObj];
@@ -88,6 +98,24 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
         members: updatedMembers,
         updatedAt: new Date()
       });
+      
+      // Sync to ministryMembers collection for mobile app compatibility
+      try {
+        const memberDocId = `${ministry.id}_${selectedMemberId}`;
+        const memberRef = doc(db, 'ministryMembers', memberDocId);
+        await setDoc(memberRef, {
+          churchId: ministry.churchId || ministry.church_id || '',
+          ministryId: ministry.id,
+          memberId: selectedMemberId,
+          userId: selectedMemberId,
+          status: 'active',
+          ministryRole: 'Member',
+          joinedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (err) {
+        console.warn('Failed to sync to ministryMembers collection', err);
+      }
       
       onClose();
     } catch (err) {

@@ -87,6 +87,7 @@ export default function SettingsUsersAndRoles() {
       // 1. Update user document with systemRoles array
       const userRef = doc(db, 'users', editingUser.id);
       await updateDoc(userRef, {
+        churchId: editingUser.churchId || activeChurchId,
         systemRoles: selectedRoles,
         primaryRole,
         // Keep legacy `role` in sync for backward compat with any other systems

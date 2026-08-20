@@ -120,11 +120,8 @@ export function AuthProvider({ children }) {
           const tokenResult = await user.getIdTokenResult(true);
           const isSuperAdminClaim = Boolean(tokenResult.claims?.superAdmin);
 
-          // 2. Fetch profile from userAccounts/{uid} first, falling back to users/{uid}
-          let docSnap = await getDoc(doc(getActiveDb(), 'userAccounts', user.uid));
-          if (!docSnap.exists()) {
-            docSnap = await getDoc(doc(getActiveDb(), 'users', user.uid));
-          }
+          // 2. Fetch profile from users/{uid}
+          let docSnap = await getDoc(doc(getActiveDb(), 'users', user.uid));
 
           if (docSnap.exists()) {
             const data = docSnap.data();
