@@ -23,7 +23,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
     endTime: '',
     location: '',
     category: EVENT_CATEGORIES[0],
-    status: 'Draft',
+    status: 'draft',
     enableRSVP: false,
     enableVolunteer: false,
     enableAttendance: false,
@@ -42,7 +42,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
         endTime: event.endTime || '',
         location: event.location || '',
         category: event.category || EVENT_CATEGORIES[0],
-        status: event.status || 'Draft',
+        status: (event.status || 'draft').toLowerCase(),
         enableRSVP: event.enableRSVP || false,
         enableVolunteer: event.enableVolunteer || false,
         enableAttendance: event.enableAttendance || false,
@@ -57,7 +57,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
         endTime: '',
         location: '',
         category: EVENT_CATEGORIES[0],
-        status: 'Draft',
+        status: 'draft',
         enableRSVP: false,
         enableVolunteer: false,
         enableAttendance: false,
@@ -238,9 +238,9 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.status}
                 onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
                 options={[
-                  { value: 'Draft', label: 'Draft' },
-                  { value: 'Published', label: 'Published' },
-                  { value: 'Cancelled', label: 'Cancelled' }
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'published', label: 'Published' },
+                  { value: 'cancelled', label: 'Cancelled' }
                 ]}
               />
             </div>

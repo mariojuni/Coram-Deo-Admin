@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { collection, addDoc, doc, updateDoc, deleteField, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteField, serverTimestamp, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
@@ -108,18 +108,56 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       );
 
       if (member) {
-        // Update existing member
-        const docRef = doc(db, 'users', member.id);
-        await updateDoc(docRef, {
-          ...cleanData,
-          // Always preserve/set churchId so legacy docs without it get migrated
-          // and so the Firestore rule (churchId must not change) always passes
-          churchId: member.churchId || userProfile?.churchId || null,
-          birthday: deleteField(),
-          phone: deleteField(),
-          updatedAt: serverTimestamp(),
-          updatedBy: currentUser?.uid || null
-        });
+        let matchingPendingUser = null;
+        
+        // Try to match by email first
+        if (cleanData.email) {
+          const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
+          const emailSnap = await getDocs(emailQ);
+          if (!emailSnap.empty) {
+            matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
+          }
+        }
+        
+        // Try to match by phone if not found by email
+        if (!matchingPendingUser && cleanData.phoneNumber) {
+          const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
+          const phoneSnap = await getDocs(phoneQ);
+          if (!phoneSnap.empty) {
+            matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
+          }
+        }
+
+        if (matchingPendingUser) {
+          // Merge imported data into registered user's doc
+          const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
+          await updateDoc(registeredUserRef, {
+            ...cleanData,
+            churchId: member.churchId || userProfile?.churchId || null,
+            status: deleteField(), // Remove pending status
+            birthday: deleteField(),
+            phone: deleteField(),
+            updatedAt: serverTimestamp(),
+            updatedBy: currentUser?.uid || null
+          });
+          
+          // Delete old imported member document
+          const oldMemberRef = doc(db, 'users', member.id);
+          await deleteDoc(oldMemberRef);
+        } else {
+          // Update existing member normally
+          const docRef = doc(db, 'users', member.id);
+          await updateDoc(docRef, {
+            ...cleanData,
+            // Always preserve/set churchId so legacy docs without it get migrated
+            // and so the Firestore rule (churchId must not change) always passes
+            churchId: member.churchId || userProfile?.churchId || null,
+            birthday: deleteField(),
+            phone: deleteField(),
+            updatedAt: serverTimestamp(),
+            updatedBy: currentUser?.uid || null
+          });
+        }
       } else {
         // Add new member profile
         await addDoc(collection(db, 'users'), {

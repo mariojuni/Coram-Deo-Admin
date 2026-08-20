@@ -269,12 +269,12 @@ export default function EventsList() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">
-                  <h3 className={`text-lg font-bold truncate ${event.status === 'Cancelled' ? 'text-gray-400 line-through' : 'text-church-navy'}`}>
+                  <h3 className={`text-lg font-bold truncate ${event.status?.toLowerCase() === 'cancelled' ? 'text-gray-400 line-through' : 'text-church-navy'}`}>
                     {event.title}
                   </h3>
-                  {event.status === 'Published' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase font-bold rounded">Published</span>}
-                  {event.status === 'Draft' && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">Draft</span>}
-                  {event.status === 'Cancelled' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] uppercase font-bold rounded">Cancelled</span>}
+                  {event.status?.toLowerCase() === 'published' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase font-bold rounded">Published</span>}
+                  {(!event.status || event.status?.toLowerCase() === 'draft') && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">Draft</span>}
+                  {event.status?.toLowerCase() === 'cancelled' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] uppercase font-bold rounded">Cancelled</span>}
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-church-slate">

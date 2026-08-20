@@ -318,7 +318,7 @@ export function canViewSongListFromAssignment(userProfile, assignment, ministry,
   if (assignment.canViewSongList !== true) return false;
 
   // Event status and date check
-  if (event.status && event.status !== 'published') return false;
+  if (event.status && event.status.toLowerCase() !== 'published') return false;
   
   if (event.date) {
     const today = new Date();

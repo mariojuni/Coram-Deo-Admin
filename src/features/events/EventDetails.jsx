@@ -95,7 +95,7 @@ export default function EventDetails() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <h4 className="font-bold text-church-navy mb-1">Status</h4>
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${event.status === 'Published' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${event.status?.toLowerCase() === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>
                     {event.status || 'Draft'}
                   </span>
                 </div>
