@@ -69,7 +69,7 @@ export const getGivingVsExpensesReport = (givingRecords, expenses, filters) => {
   return result;
 };
 
-export const getFundBalanceReport = (givingRecords, expenses, funds, filters) => {
+export const getFundBalanceReport = (givingRecords, expenses, funds, filters, fundTransfers = []) => {
   const fundMap = {}; // fundId -> data
 
   funds.forEach(fund => {
@@ -79,6 +79,8 @@ export const getFundBalanceReport = (givingRecords, expenses, funds, filters) =>
       fundType: fund.type || 'Standard',
       totalGiving: 0,
       totalExpenses: 0,
+      totalTransfersIn: 0,
+      totalTransfersOut: 0,
       balance: 0,
       isActive: fund.status === 'active'
     };
@@ -89,7 +91,7 @@ export const getFundBalanceReport = (givingRecords, expenses, funds, filters) =>
       const fId = record.fundId;
       if (fId) {
         if (!fundMap[fId]) {
-          fundMap[fId] = { fundId: fId, fundName: record.fundType || 'Unknown', fundType: 'Unknown', totalGiving: 0, totalExpenses: 0, balance: 0, isActive: false };
+          fundMap[fId] = { fundId: fId, fundName: record.fundType || 'Unknown', fundType: 'Unknown', totalGiving: 0, totalExpenses: 0, totalTransfersIn: 0, totalTransfersOut: 0, balance: 0, isActive: false };
         }
         fundMap[fId].totalGiving += (Number(record.amount) || 0);
       }
@@ -100,19 +102,32 @@ export const getFundBalanceReport = (givingRecords, expenses, funds, filters) =>
     const fId = expense.fundId;
     if (fId) {
       if (!fundMap[fId]) {
-        fundMap[fId] = { fundId: fId, fundName: expense.fundType || 'Unknown', fundType: 'Unknown', totalGiving: 0, totalExpenses: 0, balance: 0, isActive: false };
+        fundMap[fId] = { fundId: fId, fundName: expense.fundType || 'Unknown', fundType: 'Unknown', totalGiving: 0, totalExpenses: 0, totalTransfersIn: 0, totalTransfersOut: 0, balance: 0, isActive: false };
       }
       fundMap[fId].totalExpenses += (Number(expense.amount) || 0);
     }
   });
 
+  fundTransfers.forEach(transfer => {
+    const amount = Number(transfer.amount) || 0;
+    const sourceId = transfer.sourceFundId;
+    const destId = transfer.destinationFundId;
+    
+    if (sourceId && fundMap[sourceId]) {
+      fundMap[sourceId].totalTransfersOut += amount;
+    }
+    if (destId && fundMap[destId]) {
+      fundMap[destId].totalTransfersIn += amount;
+    }
+  });
+
   let result = Object.values(fundMap).map(row => ({
     ...row,
-    balance: row.totalGiving - row.totalExpenses
+    balance: row.totalGiving - row.totalExpenses + row.totalTransfersIn - row.totalTransfersOut
   }));
 
   // Only include active funds OR archived funds that have transactions in this period
-  result = result.filter(row => row.isActive || row.totalGiving > 0 || row.totalExpenses > 0);
+  result = result.filter(row => row.isActive || row.totalGiving > 0 || row.totalExpenses > 0 || row.totalTransfersIn > 0 || row.totalTransfersOut > 0);
 
   result.sort((a, b) => a.fundName.localeCompare(b.fundName));
 

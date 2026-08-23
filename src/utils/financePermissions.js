@@ -97,3 +97,10 @@ export const canViewFinanceReports = (userProfile) => {
 export const canViewCombinedReports = (userProfile) => {
   return hasAnyRole(userProfile, FINANCE_VIEW_ROLES);
 };
+
+/**
+ * Check if the user can manage fund transfers.
+ */
+export const canManageFundTransfers = (userProfile) => {
+  return hasAnyRole(userProfile, FINANCE_ADMIN_ROLES);
+};

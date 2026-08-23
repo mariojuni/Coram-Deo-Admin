@@ -8,7 +8,8 @@ import {
   Wallet, 
   Target, 
   Activity,
-  Building
+  Building,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -18,7 +19,8 @@ import {
   canManageExpenses,
   canViewFinanceSummary,
   canManageFinanceSettings,
-  canViewFinanceReports
+  canViewFinanceReports,
+  canManageFundTransfers
 } from '../../utils/financePermissions';
 
 import FinanceDashboard from './FinanceDashboard';
@@ -28,6 +30,7 @@ import ExpensesList from '../expenses/ExpensesList';
 import GivingCampaigns from '../giving/GivingCampaigns';
 
 import FundsList from '../funds/FundsList';
+import FundTransfersList from '../funds/FundTransfersList';
 import CombinedReports from './reports/CombinedReports';
 import DonationAccountsList from './donation-accounts/DonationAccountsList';
 
@@ -65,6 +68,10 @@ export default function FinanceLayout() {
     tabs.push({ name: 'Funds', path: '/admin/finance/funds', icon: Wallet, exact: false });
     tabs.push({ name: 'Campaigns', path: '/admin/finance/campaigns', icon: Target, exact: false });
     tabs.push({ name: 'Donation Accounts', path: '/admin/finance/donation-accounts', icon: Building, exact: false });
+  }
+
+  if (canManageFundTransfers(userProfile)) {
+    tabs.push({ name: 'Transfers', path: '/admin/finance/transfers', icon: ArrowRightLeft, exact: false });
   }
 
   if (canViewFinanceReports(userProfile)) {
@@ -108,6 +115,7 @@ export default function FinanceLayout() {
           <Route path="verification" element={<PendingVerification />} />
           <Route path="expenses" element={<ExpensesList />} />
           <Route path="funds" element={<FundsList />} />
+          <Route path="transfers" element={<FundTransfersList />} />
           <Route path="campaigns" element={<GivingCampaigns />} />
           <Route path="donation-accounts" element={<DonationAccountsList />} />
           <Route path="reports" element={<CombinedReports />} />

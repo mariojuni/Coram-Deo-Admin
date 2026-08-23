@@ -39,6 +39,7 @@ export default function CombinedReports() {
   const [expenses, setExpenses] = useState([]);
   const [funds, setFunds] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
+  const [fundTransfers, setFundTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters state
@@ -56,6 +57,7 @@ export default function CombinedReports() {
 
     let givingUnsubscribe = () => {};
     let expensesUnsubscribe = () => {};
+    let transfersUnsubscribe = () => {};
 
     const fetchData = async () => {
       try {
@@ -79,6 +81,11 @@ export default function CombinedReports() {
         const qExpenses = query(collection(db, 'givingExpenses'), where('churchId', '==', CHURCH_ID));
         expensesUnsubscribe = onSnapshot(qExpenses, (snapshot) => {
           setExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        const qTransfers = query(collection(db, 'fundTransfers'), where('churchId', '==', CHURCH_ID));
+        transfersUnsubscribe = onSnapshot(qTransfers, (snapshot) => {
+          setFundTransfers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
           setLoading(false);
         });
 
@@ -93,6 +100,7 @@ export default function CombinedReports() {
     return () => {
       givingUnsubscribe();
       expensesUnsubscribe();
+      transfersUnsubscribe();
     };
   }, [CHURCH_ID, userProfile]);
 
@@ -119,6 +127,17 @@ export default function CombinedReports() {
     });
   }, [expenses, dateFilter, selectedFundId, selectedCampaignId]);
 
+  const filteredFundTransfers = useMemo(() => {
+    return fundTransfers.filter(t => {
+      const dDate = t.date || '';
+      if (dateFilter.startDate && dDate < dateFilter.startDate) return false;
+      if (dateFilter.endDate && dDate > dateFilter.endDate) return false;
+      // If a specific fund is selected, a transfer might be relevant if it's the source or destination. 
+      // But for total balance calculation, it's safer to include all in the date range.
+      return true;
+    });
+  }, [fundTransfers, dateFilter]);
+
   if (!canViewCombinedReports(userProfile)) {
     return (
       <div className="p-8 text-center bg-white rounded-3xl shadow-sm border border-gray-100 max-w-2xl mx-auto mt-12">
@@ -131,7 +150,7 @@ export default function CombinedReports() {
   // Generate Reports
   const summaryReport = getFinanceSummaryReport(filteredGiving, filteredExpenses, dateFilter);
   const givingVsExpensesReport = getGivingVsExpensesReport(filteredGiving, filteredExpenses, dateFilter);
-  const fundBalanceReport = getFundBalanceReport(filteredGiving, filteredExpenses, funds, dateFilter);
+  const fundBalanceReport = getFundBalanceReport(filteredGiving, filteredExpenses, funds, dateFilter, filteredFundTransfers);
   const campaignProgressReport = getCampaignProgressReport(filteredGiving, filteredExpenses, campaigns, dateFilter);
   const monthlyReport = getMonthlyFinanceReport(filteredGiving, filteredExpenses, dateFilter);
 
