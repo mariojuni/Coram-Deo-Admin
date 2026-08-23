@@ -7,16 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 
-const CATEGORIES = [
-  'Utilities',
-  'Ministry Supplies',
-  'Events & Programs',
-  'Salaries & Stipends',
-  'Facility Maintenance',
-  'Missions & Outreach',
-  'Other'
-];
-
 export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ; 
@@ -35,6 +25,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [funds, setFunds] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     if (expense) {
@@ -42,7 +33,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         date: expense.date || new Date().toISOString().split('T')[0],
         amount: expense.amount || '',
         payee: expense.payee || '',
-        category: expense.category || 'Utilities',
+        category: expense.category || '',
         description: expense.description || '',
         fundId: expense.fundId || '',
         fundType: expense.fundType || '',
@@ -52,7 +43,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         date: new Date().toISOString().split('T')[0],
         amount: '',
         payee: '',
-        category: 'Utilities',
+        category: '',
         description: '',
         fundId: '',
         fundType: '',
@@ -64,27 +55,53 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
 
     // Fetch active funds for dropdown
     if (isOpen) {
-      const fetchFunds = async () => {
+      const fetchFundsAndCategories = async () => {
         try {
           if (!CHURCH_ID) return;
           const { query, where, getDocs } = await import('firebase/firestore');
-          const q = query(collection(db, 'givingFunds'), where('churchId', '==', CHURCH_ID), where('status', '==', 'active'));
-          const snap = await getDocs(q);
-          const activeFunds = snap.docs
+          
+          // Fetch Funds
+          const qFunds = query(collection(db, 'givingFunds'), where('churchId', '==', CHURCH_ID), where('status', '==', 'active'));
+          const snapFunds = await getDocs(qFunds);
+          const activeFunds = snapFunds.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(f => f.allowExpenses !== false)
             .sort((a, b) => a.name.localeCompare(b.name));
           setFunds(activeFunds);
           
-          if (!expense && activeFunds.length > 0) {
-             setFormData(prev => ({ ...prev, fundId: activeFunds[0].id, fundType: activeFunds[0].name }));
+          // Fetch Categories
+          const qCats = query(collection(db, 'expenseCategories'), where('churchId', '==', CHURCH_ID), where('status', '==', 'active'));
+          const snapCats = await getDocs(qCats);
+          const activeCategories = snapCats.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+          
+          // Prepend existing category if it's not in the active list
+          if (expense?.category && !activeCategories.find(c => c.name === expense.category)) {
+            activeCategories.unshift({ id: 'legacy', name: expense.category, status: 'active' });
           }
+          
+          setCategories(activeCategories);
+
+          setFormData(prev => {
+            const updates = {};
+            if (!expense && activeFunds.length > 0 && !prev.fundId) {
+               updates.fundId = activeFunds[0].id;
+               updates.fundType = activeFunds[0].name;
+            }
+            if (!expense && activeCategories.length > 0 && !prev.category) {
+               updates.category = activeCategories[0].name;
+            } else if (expense?.category && !prev.category) {
+               updates.category = expense.category;
+            }
+            return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+          });
         } catch (e) {
-          console.error("Failed to fetch funds for dropdown", e);
+          console.error("Failed to fetch funds/categories for dropdown", e);
         }
       };
       
-      fetchFunds();
+      fetchFundsAndCategories();
     }
   }, [expense, isOpen, CHURCH_ID]);
 
@@ -231,7 +248,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                 <ModernDropdown
                   value={formData.category}
                   onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
-                  options={CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                  options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
                 />
               </div>
             </div>

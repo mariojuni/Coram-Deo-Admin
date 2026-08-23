@@ -62,8 +62,12 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
 
   useEffect(() => {
     if (activeRecord) {
+      let derivedGiverType = activeRecord.giverEntityType;
+      if (!derivedGiverType) {
+        derivedGiverType = (!activeRecord.userId && (!activeRecord.donorName || activeRecord.donorName === 'Anonymous')) ? 'anonymous' : 'individual';
+      }
       setFormData({
-        giverEntityType: activeRecord.giverEntityType || 'individual',
+        giverEntityType: derivedGiverType,
         householdId: activeRecord.householdId || '',
         userId: activeRecord.userId || '',
         donorName: activeRecord.donorName || '',
@@ -207,9 +211,14 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
       const finalGiverType = formData.giverEntityType;
       const finalHouseholdId = finalGiverType === 'household' ? formData.householdId : null;
       let finalUserId = formData.userId;
+      let finalDonorName = formData.donorName;
+      
       if (finalGiverType === 'household') {
         const householdObj = households.find(h => h.id === finalHouseholdId);
         finalUserId = householdObj?.primaryMemberId || null;
+      } else if (finalGiverType === 'anonymous') {
+        finalUserId = null;
+        finalDonorName = 'Anonymous';
       }
 
       const payload = {
@@ -217,6 +226,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         giverEntityType: finalGiverType,
         householdId: finalHouseholdId,
         userId: finalUserId || null,
+        donorName: finalDonorName,
         fundType: finalFundType,
         amount: amountNum,
         transactionDate: formData.date
@@ -227,7 +237,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         await updateDoc(doc(db, 'givingRecords', activeRecord.id), {
           ...payload,
           churchId: CHURCH_ID,
-          donorName: formData.donorName || 'Anonymous',
+          donorName: finalDonorName || 'Anonymous',
           updatedAt: serverTimestamp(),
           updatedBy: currentUser?.uid || null
         });
@@ -265,7 +275,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         await addDoc(collection(db, 'givingRecords'), {
           ...payload,
           churchId: CHURCH_ID,
-          donorName: formData.donorName || 'Anonymous',
+          donorName: finalDonorName || 'Anonymous',
           createdAt: serverTimestamp(),
           createdBy: currentUser?.uid || null,
           status: 'completed'
@@ -330,9 +340,20 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
                 />
                 <span className="text-sm font-medium text-church-navy">Household</span>
               </label>
+              <label className="flex items-center">
+                <input 
+                  type="radio" 
+                  name="giverEntityType" 
+                  value="anonymous" 
+                  checked={formData.giverEntityType === 'anonymous'} 
+                  onChange={handleChange} 
+                  className="mr-2 text-church-green focus:ring-church-green"
+                />
+                <span className="text-sm font-medium text-church-navy">Loose Offering</span>
+              </label>
             </div>
 
-            {formData.giverEntityType === 'household' ? (
+            {formData.giverEntityType === 'household' && (
               <div>
                 <label className="block text-sm font-medium text-church-navy mb-1.5">Household</label>
                 <ModernDropdown
@@ -353,7 +374,9 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
                   searchable={true}
                 />
               </div>
-            ) : (
+            )}
+            
+            {formData.giverEntityType === 'individual' && (
               <div>
                 <label className="block text-sm font-medium text-church-navy mb-1.5">Donor Name</label>
                 <ModernDropdown
