@@ -7,7 +7,7 @@ import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
 
 
 export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess }) {
-  const { userProfile } = useAuth();
+  const { userProfile, activeChurchId } = useAuth();
   const [jsonFile, setJsonFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,12 +51,15 @@ export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess 
     setError('');
 
     try {
+      const CHURCH_ID = activeChurchId || userProfile?.churchId;
+      if (!CHURCH_ID) throw new Error("No church context found.");
+
       const itemsToImport = Array.isArray(previewData) ? previewData : [previewData];
       const batch = writeBatch(db);
 
       for (const item of itemsToImport) {
         delete item.id;
-        const newRef = doc(collection(db, 'bible_plans'));
+        const newRef = doc(collection(db, 'churches', CHURCH_ID, 'bible_plans'));
         batch.set(newRef, {
           ...item,
           status: item.status || 'draft',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical, Upload, Download, CheckSquare, Square } from 'lucide-react';
 import BiblePlanFormModal from './BiblePlanFormModal';
@@ -9,7 +9,7 @@ import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImpor
 
 
 export default function BiblePlans() {
-  const { userProfile } = useAuth();
+  const { userProfile, activeChurchId } = useAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIds, setSelectedPlanIds] = useState([]);
@@ -21,20 +21,44 @@ export default function BiblePlans() {
   
   // Action menu state
   const [activeMenuId, setActiveMenuId] = useState(null);
+  
+  const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
-    const q = query(collection(db, 'bible_plans'), orderBy('createdAt', 'desc'));
+    const CHURCH_ID = activeChurchId || userProfile?.churchId;
+    
+    if (!CHURCH_ID) {
+      setLoading(false);
+      setFetchError('No church context found. Please select a church or ensure your account is linked.');
+      return;
+    }
+
+    setLoading(true);
+    setFetchError('');
+    
+    const q = query(collection(db, 'churches', CHURCH_ID, 'bible_plans'));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const docs = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        .sort((a, b) => {
+          const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return timeB - timeA;
+        });
       setPlans(docs);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching plans:", error);
+      setFetchError(error.message);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userProfile, activeChurchId]);
 
   const handleAddClick = () => {
     setEditingPlan(null);
@@ -51,7 +75,8 @@ export default function BiblePlans() {
     setActiveMenuId(null);
     if (window.confirm(`Are you sure you want to delete the plan "${title}"?`)) {
       try {
-        await deleteDoc(doc(db, 'bible_plans', id));
+        const CHURCH_ID = activeChurchId || userProfile?.churchId;
+        await deleteDoc(doc(db, 'churches', CHURCH_ID, 'bible_plans', id));
       } catch (error) {
         console.error("Error deleting document: ", error);
         alert("Failed to delete plan.");
@@ -167,7 +192,14 @@ export default function BiblePlans() {
         </div>
       )}
       
-      {loading ? (
+      {fetchError ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center p-8 bg-white rounded-3xl shadow-church-soft border border-gray-100 max-w-md w-full">
+            <p className="text-red-600 font-bold text-lg mb-2">⚠️ Could not load reading plans</p>
+            <p className="text-sm text-church-slate">{fetchError}</p>
+          </div>
+        </div>
+      ) : loading ? (
         <div className="flex-1 flex items-center justify-center">
           <p className="text-church-slate">Loading reading plans...</p>
         </div>

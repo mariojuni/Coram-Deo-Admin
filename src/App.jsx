@@ -245,7 +245,7 @@ function AppRoutes() {
           <Route 
             path="bible" 
             element={
-              <RoleGuard allowedRoles={['super_admin']}>
+              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
                 <BiblePlans />
               </RoleGuard>
             } 
