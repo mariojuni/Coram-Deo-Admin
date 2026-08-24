@@ -5,6 +5,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import RoleGuard from './components/Auth/RoleGuard';
+import PrivacyPolicy from './components/Auth/PrivacyPolicy';
 import AdminLayout from './components/layout/AdminLayout';
 import EnvironmentSwitcher from './components/EnvironmentSwitcher/EnvironmentSwitcher';
 
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         
         {/* Admin Portal Routes */}
         <Route 

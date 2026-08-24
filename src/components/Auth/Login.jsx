@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFriendlyAuthError } from '../../utils/authErrors';
 import { isAdminRole } from '../../utils/adminRoles';
@@ -367,7 +367,10 @@ export default function Login() {
 
               {/* Footer */}
               <p className="text-center text-xs text-church-slate/70 mt-6 leading-relaxed">
-                Secure access for authorized church leaders only.
+                Secure access for authorized church leaders only.<br/>
+                <Link to="/privacy-policy" className="text-church-green hover:underline mt-1 inline-block">
+                  Privacy Policy
+                </Link>
               </p>
             </div>
           )}
