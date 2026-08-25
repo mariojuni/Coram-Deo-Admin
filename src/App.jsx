@@ -27,6 +27,7 @@ import AttendanceDashboard from './features/attendance/AttendanceDashboard';
 import TakeAttendance from './features/attendance/TakeAttendance';
 import AnnouncementsList from './features/announcements/AnnouncementsList';
 import ChurchesDashboard from './features/superadmin/ChurchesDashboard';
+import PendingMembers from './features/superadmin/PendingMembers';
 import ReportsDashboard from './features/reports/ReportsDashboard';
 import SchedulesDashboard from './features/schedules/SchedulesDashboard';
 import DiscipleshipPlans from './features/discipleship/DiscipleshipPlans';
@@ -346,6 +347,7 @@ function AppRoutes() {
         >
           <Route index element={<ChurchesDashboard />} />
           <Route path="churches" element={<ChurchesDashboard />} />
+          <Route path="pending-members" element={<PendingMembers />} />
           <Route path="settings/roles" element={<SettingsUsersAndRoles />} />
         </Route>
 
