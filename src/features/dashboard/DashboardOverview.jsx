@@ -193,15 +193,18 @@ export default function DashboardOverview() {
         let pendingGivingCount = 0;
         let totalExpensesThisMonth = 0;
         if (canFinance) {
-          const thisMonthGiving = givingDocs.filter((g) => g.date && g.date >= startOfMonthStr);
+          const thisMonthGiving = givingDocs.filter((g) => {
+            const gDate = g.transactionDate || g.date || '';
+            return gDate >= startOfMonthStr;
+          });
           thisMonthGiving.forEach((g) => {
-            if (g.status === 'approved' || !g.status) {
+            if (g.status === 'approved' || g.status === 'completed' || !g.status) {
               approvedGivingTotal += g.amount || 0;
             } else if (g.status === 'pending') {
               pendingGivingCount++;
             }
           });
-          expensesDocs.filter((ex) => ex.expenseDate && ex.expenseDate >= startOfMonthStr).forEach((ex) => {
+          expensesDocs.filter((ex) => ex.date && ex.date >= startOfMonthStr).forEach((ex) => {
             totalExpensesThisMonth += ex.amount || 0;
           });
 
