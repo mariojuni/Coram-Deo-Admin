@@ -48,7 +48,7 @@ const navItems = [
   { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
   { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
   { name: 'Churches', path: '/admin/churches', icon: Building, roles: ['super_admin'] },
-  { name: 'Pending Accounts', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
+  { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
   { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin'] },
 ];
 
