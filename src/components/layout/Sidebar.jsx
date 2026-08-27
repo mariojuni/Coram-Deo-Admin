@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { 
@@ -30,7 +30,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
 
-const navItems = [
+const churchNavItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary'] },
   { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
   { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
@@ -46,22 +46,28 @@ const navItems = [
   { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor'] },
   { name: 'Finance', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },
   { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
-  { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
-  { name: 'Churches', path: '/admin/churches', icon: Building, roles: ['super_admin'] },
-  { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
   { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin'] },
+];
+
+const systemNavItems = [
+  { name: 'Churches', path: '/super-admin/churches', icon: Building, roles: ['super_admin'] },
+  { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
+  { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
+  { name: 'Global Roles', path: '/super-admin/settings/roles', icon: Shield, roles: ['super_admin'] },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const { activeChurchId, setActiveChurchId, originalUserProfile } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [churches, setChurches] = useState([]);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
   const isSuperAdmin = hasRole(originalUserProfile, 'super_admin');
   const primaryRole = getPrimaryRole(originalUserProfile);
 
-  const filteredNavItems = navItems.filter(item =>
+  const activeNavItems = activeChurchId === 'system' ? systemNavItems : churchNavItems;
+  const filteredNavItems = activeNavItems.filter(item =>
     hasAnyRole(originalUserProfile, item.roles)
   );
 
@@ -109,9 +115,65 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             </button>
           </div>
 
+          {/* Workspace Switcher */}
+          {isSuperAdmin && (
+            <div className="px-4 mb-2 relative">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-2">Workspace</p>
+              <button 
+                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+                className="w-full bg-gray-50 border border-gray-100 hover:border-church-green/50 text-church-navy text-sm rounded-xl px-3 py-2.5 font-bold flex items-center justify-between transition-colors shadow-sm"
+              >
+                <div className="flex items-center truncate">
+                  <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center mr-2 shrink-0">
+                    <Building size={14} />
+                  </div>
+                  <span className="truncate">
+                    {activeChurchId === 'system' ? 'System Administration' : (churches.find(c => c.id === activeChurchId)?.name || 'Select Church')}
+                  </span>
+                </div>
+                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isSwitcherOpen && (
+                <div className="absolute top-full mt-1 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 overflow-hidden">
+                  <div className="max-h-64 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setActiveChurchId('system');
+                        setIsSwitcherOpen(false);
+                        navigate('/super-admin/churches');
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors ${activeChurchId === 'system' ? 'bg-church-green/5 text-church-green font-bold' : 'text-church-navy hover:bg-gray-50'}`}
+                    >
+                      <span className="truncate pr-2 font-semibold">System Administration</span>
+                      {activeChurchId === 'system' && <Check size={16} className="text-church-green shrink-0" />}
+                    </button>
+                    <div className="border-t border-gray-100 my-1"></div>
+                    {churches.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setActiveChurchId(c.id);
+                          setIsSwitcherOpen(false);
+                          navigate('/admin');
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors ${activeChurchId === c.id ? 'bg-church-green/5 text-church-green font-bold' : 'text-church-navy hover:bg-gray-50'}`}
+                      >
+                        <span className="truncate pr-2">{c.name}</span>
+                        {activeChurchId === c.id && <Check size={16} className="text-church-green shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Navigation */}
           <nav className="flex-1 px-4 py-4 space-y-1">
-            <div className="text-xs font-semibold text-gray-400 mb-4 ml-2 tracking-wider">MENU</div>
+            <div className="text-xs font-semibold text-gray-400 mb-4 ml-2 tracking-wider">
+              {activeChurchId === 'system' ? 'SYSTEM MENU' : 'CHURCH MENU'}
+            </div>
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
               const isDiscipleshipActive = item.name === 'Discipleship' && location.pathname.startsWith('/admin/discipleship');
@@ -137,49 +199,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             })}
           </nav>
 
-          {/* User Profile & Tenant Switcher */}
+          {/* User Profile */}
           <div className="mt-auto p-4 m-4 bg-gray-50 rounded-2xl relative">
-            {isSuperAdmin && (
-              <div className="mb-4 pb-4 border-b border-gray-200">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Workspace</p>
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                    className="w-full bg-white border border-gray-200 hover:border-church-green/50 text-church-navy text-sm rounded-xl px-3 py-2.5 font-bold flex items-center justify-between transition-colors shadow-sm"
-                  >
-                    <div className="flex items-center truncate">
-                      <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center mr-2 shrink-0">
-                        <Building size={14} />
-                      </div>
-                      <span className="truncate">
-                        {churches.find(c => c.id === activeChurchId)?.name || 'Select Church'}
-                      </span>
-                    </div>
-                    <ChevronDown size={16} className={`text-gray-400 transition-transform ${isSwitcherOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isSwitcherOpen && (
-                    <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 overflow-hidden">
-                      <div className="max-h-48 overflow-y-auto">
-                        {churches.map(c => (
-                          <button
-                            key={c.id}
-                            onClick={() => {
-                              setActiveChurchId(c.id);
-                              setIsSwitcherOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors ${activeChurchId === c.id ? 'bg-church-green/5 text-church-green font-bold' : 'text-church-navy hover:bg-gray-50'}`}
-                          >
-                            <span className="truncate pr-2">{c.name}</span>
-                            {activeChurchId === c.id && <Check size={16} className="text-church-green shrink-0" />}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-church-green flex items-center justify-center text-white font-bold shadow-sm">
                 {originalUserProfile?.name?.charAt(0).toUpperCase() || 'U'}

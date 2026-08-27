@@ -45,7 +45,7 @@ export default function PendingMembers() {
         name: doc.data().name
       }));
       // Sort alphabetically
-      churchesData.sort((a, b) => a.name.localeCompare(b.name));
+      churchesData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       setChurches(churchesData);
 
     } catch (error) {
@@ -115,8 +115,10 @@ export default function PendingMembers() {
   };
 
   const displayedUsers = users.filter(u => {
-    const isPending = u.status === 'pending_church_link' || u.membershipStatus === 'pending_church_link';
-    const isActive = u.status === 'Active' || u.membershipStatus === 'Active';
+    const status = String(u.status || '').toLowerCase();
+    const memStatus = String(u.membershipStatus || '').toLowerCase();
+    const isPending = status === 'pending_church_link' || memStatus === 'pending_church_link';
+    const isActive = status === 'active' || memStatus === 'active';
     
     if (activeTab === 'pending' && !isPending) return false;
     if (activeTab === 'active' && !isActive) return false;
@@ -221,6 +223,8 @@ export default function PendingMembers() {
                 {displayedUsers.map((user) => {
                   const currentChurch = churches.find(c => c.id === user.churchId);
                   const userName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown';
+                  const isSuperAdmin = (user.systemRoles || []).includes('super_admin') || String(user.role || '').toLowerCase() === 'super_admin';
+                  const isGlobalAdmin = isSuperAdmin && !user.churchId;
                   
                   return (
                     <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
@@ -242,8 +246,8 @@ export default function PendingMembers() {
                       
                       {activeTab === 'active' && (
                         <td className="py-4 px-4">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">
-                            {currentChurch?.name || 'Unknown Church'}
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium ${isGlobalAdmin ? 'bg-purple-50 text-purple-700' : (!currentChurch ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700')}`}>
+                            {isGlobalAdmin ? 'System (Global Admin)' : (currentChurch?.name || 'Unassigned')}
                           </span>
                         </td>
                       )}
@@ -264,24 +268,30 @@ export default function PendingMembers() {
                             </div>
                           ) : (
                             <div className="flex items-center gap-2 w-full justify-end">
-                              <div className="w-56 text-left">
-                                <ModernDropdown
-                                  options={churches.map(c => ({ value: c.id, label: c.name }))}
-                                  value={user.churchId || ""}
-                                  onChange={(val) => {
-                                    if (val !== user.churchId) confirmAndAssign(user.id, val, userName);
-                                  }}
-                                  placeholder="Re-assign Church..."
-                                  searchable={true}
-                                />
-                              </div>
-                              <button
-                                onClick={() => confirmUnlink(user.id, userName)}
-                                className="p-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
-                                title="Unlink User"
-                              >
-                                <Link2Off size={20} />
-                              </button>
+                              {isGlobalAdmin ? (
+                                <span className="text-xs text-gray-400 font-medium italic pr-2">Global Admins are not assigned</span>
+                              ) : (
+                                <>
+                                  <div className="w-56 text-left">
+                                    <ModernDropdown
+                                      options={churches.map(c => ({ value: c.id, label: c.name }))}
+                                      value={user.churchId || ""}
+                                      onChange={(val) => {
+                                        if (val !== user.churchId) confirmAndAssign(user.id, val, userName);
+                                      }}
+                                      placeholder="Re-assign Church..."
+                                      searchable={true}
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={() => confirmUnlink(user.id, userName)}
+                                    className="p-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
+                                    title="Unlink User"
+                                  >
+                                    <Link2Off size={20} />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>

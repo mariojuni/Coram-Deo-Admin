@@ -25,8 +25,18 @@ import GroupsOverviewCard from './components/GroupsOverviewCard';
 import WorshipOverviewCard from './components/WorshipOverviewCard';
 import RecentActivityCard from './components/RecentActivityCard';
 
+import { useNavigate } from 'react-router-dom';
+
 export default function DashboardOverview() {
   const { userProfile, activeChurchId } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (activeChurchId === 'system') {
+      navigate('/super-admin/churches', { replace: true });
+    }
+  }, [activeChurchId, navigate]);
+
   const CHURCH_ID = activeChurchId || userProfile?.churchId;
 
   const [activeChurchName, setActiveChurchName] = useState('');

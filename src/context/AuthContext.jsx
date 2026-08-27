@@ -136,7 +136,11 @@ export function AuthProvider({ children }) {
             setUserProfile(normalized);
 
             if (!localStorage.getItem('activeChurchId')) {
-              setActiveChurchId(data.churchId || null);
+              if (normalized.systemRoles.includes('super_admin')) {
+                setActiveChurchId('system');
+              } else {
+                setActiveChurchId(data.churchId || null);
+              }
             }
           } else if (isSuperAdminClaim) {
             // Synthesize minimal profile if custom claim exists but doc doesn't
@@ -150,6 +154,9 @@ export function AuthProvider({ children }) {
               status: 'active',
               churchId: null,
             });
+            if (!localStorage.getItem('activeChurchId')) {
+              setActiveChurchId('system');
+            }
           } else {
             setUserProfile(null);
             setActiveChurchId(null);
