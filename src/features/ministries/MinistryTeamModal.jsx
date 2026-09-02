@@ -18,9 +18,10 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, 'users'), orderBy('name', 'asc'));
+        const q = query(collection(db, 'users'));
         const snapshot = await getDocs(q);
         const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        docs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setMembers(docs);
         
         // Initialize selected IDs from the ministry's existing memberIds array

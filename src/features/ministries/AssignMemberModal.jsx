@@ -23,13 +23,8 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      let snap;
-      try {
-        const q = query(collection(db, 'users'), orderBy('name', 'asc'));
-        snap = await getDocs(q);
-      } catch (queryErr) {
-        snap = await getDocs(collection(db, 'users'));
-      }
+      // Fetch all users without orderBy to ensure users missing the 'name' field are not dropped
+      const snap = await getDocs(collection(db, 'users'));
       
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       const formattedDocs = docs.map(d => ({
@@ -37,7 +32,7 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
         displayName: formatStandardName(d)
       }));
       
-      // Sort members alphabetically by standardized display name
+      // Sort members alphabetically by standardized display name locally
       formattedDocs.sort((a, b) => a.displayName.localeCompare(b.displayName));
       
       // Deduplicate by displayName to prevent duplicated/tripled names from showing in the dropdown
@@ -49,11 +44,11 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       });
       const uniqueFormattedDocs = Array.from(uniqueDocsMap.values());
       
-      // Filter out people already in this ministry
+      // Filter out people already in this ministry, and those who are inactive/deceased/transferred if needed
       const existingMemberIds = (ministry?.members || []).map(m => m.memberId);
       const availableMembers = uniqueFormattedDocs.filter(m => {
         const mIds = [m.id, m.uid, m.authUid].filter(Boolean);
-        return !mIds.some(id => existingMemberIds.includes(id)) && m.membershipStatus !== 'Archived';
+        return !mIds.some(id => existingMemberIds.includes(id)) && m.status !== 'deceased' && m.status !== 'transferred';
       });
       
       setMembers(availableMembers);
