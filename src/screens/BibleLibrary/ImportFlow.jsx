@@ -149,11 +149,12 @@ export default function BibleImportFlow() {
         const existingDoc = querySnapshot.docs[0].data();
         const existingHash = existingDoc.contentHash || null;
         const currentVersion = existingDoc.contentVersion || 1;
-        if (existingHash && existingHash === newHash) {
-          setVersionInfo({ type: 'identical', currentVersion, newHash, existingHash });
-        } else {
+        
+        // if (existingHash && existingHash === newHash) {
+        //   setVersionInfo({ type: 'identical', currentVersion, newHash, existingHash });
+        // } else {
           setVersionInfo({ type: 'update', currentVersion, nextVersion: currentVersion + 1, newHash, existingHash });
-        }
+        // }
       }
     }
   };

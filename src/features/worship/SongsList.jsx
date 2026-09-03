@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Music, Edit, Trash2, Search, Filter, Upload, Settings, Eye, EyeOff, FileText, CheckCircle, XCircle, Download, CheckSquare, Square } from 'lucide-react';
+import { Plus, Music, Edit, Trash2, Search, Filter, Upload, Settings, Eye, EyeOff, FileText, CheckCircle, XCircle, Download, CheckSquare, Square, Guitar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getSongs, deleteSong, updateSong } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import { canManageSongDirectorySettings, canEditSong, canViewSongLibrary } from '../../utils/songDirectoryPermissions';
 import SongFormModal from './SongFormModal';
 import SongImportModal from './SongImportModal';
+import UltimateGuitarImportModal from './UltimateGuitarImportModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
 
@@ -16,6 +17,7 @@ export default function SongsList() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isUGImportModalOpen, setIsUGImportModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState(null);
   const [selectedSongIds, setSelectedSongIds] = useState([]);
   
@@ -158,34 +160,45 @@ export default function SongsList() {
           <p className="text-sm text-church-slate mt-1">Manage worship songs, arrangements, and mobile directory visibility.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {userProfile?.role === 'super_admin' && (
+            <>
+              <button 
+                onClick={handleBulkExport}
+                disabled={filteredSongs.length === 0}
+                className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <Download size={18} className="mr-2" />
+                {selectedSongIds.length > 0 ? `Export Selected (${selectedSongIds.length})` : 'Export All JSON'}
+              </button>
+              <button 
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <Upload size={18} className="mr-2 text-purple-600" />
+                Import JSON
+              </button>
+              <button 
+                onClick={() => navigate('/admin/worship/songs/import/settings')}
+                className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+                title="Import Settings"
+              >
+                <Settings size={18} />
+              </button>
+              <button 
+                onClick={() => navigate('/admin/worship/songs/import')}
+                className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <Upload size={18} className="mr-2" />
+                Import PDF
+              </button>
+            </>
+          )}
           <button 
-            onClick={handleBulkExport}
-            disabled={filteredSongs.length === 0}
-            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            onClick={() => setIsUGImportModalOpen(true)}
+            className="flex items-center px-4 py-2.5 bg-orange-500 text-white rounded-full shadow-sm text-sm font-medium hover:bg-orange-600 transition-colors"
           >
-            <Download size={18} className="mr-2" />
-            {selectedSongIds.length > 0 ? `Export Selected (${selectedSongIds.length})` : 'Export All JSON'}
-          </button>
-          <button 
-            onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Upload size={18} className="mr-2 text-purple-600" />
-            Import JSON
-          </button>
-          <button 
-            onClick={() => navigate('/admin/worship/songs/import/settings')}
-            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
-            title="Import Settings"
-          >
-            <Settings size={18} />
-          </button>
-          <button 
-            onClick={() => navigate('/admin/worship/songs/import')}
-            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Upload size={18} className="mr-2" />
-            Import PDF
+            <Guitar size={18} className="mr-2" />
+            Import from UG
           </button>
           <button 
             onClick={handleAddClick}
@@ -382,13 +395,15 @@ export default function SongsList() {
 
                     {/* Actions & Quick Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2">
-                      <button 
-                        onClick={() => handleSingleExport(song)}
-                        className="text-purple-600 hover:text-purple-900 bg-purple-50 px-2 py-1 rounded-md inline-flex items-center"
-                        title="Export JSON"
-                      >
-                        <Download size={14} className="mr-1" /> JSON
-                      </button>
+                      {userProfile?.role === 'super_admin' && (
+                        <button 
+                          onClick={() => handleSingleExport(song)}
+                          className="text-purple-600 hover:text-purple-900 bg-purple-50 px-2 py-1 rounded-md inline-flex items-center"
+                          title="Export JSON"
+                        >
+                          <Download size={14} className="mr-1" /> JSON
+                        </button>
+                      )}
 
                       {canManageDir && (
                         <>
@@ -463,6 +478,12 @@ export default function SongsList() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         churchId={userProfile?.churchId}
+        onImportSuccess={fetchSongs}
+      />
+
+      <UltimateGuitarImportModal
+        isOpen={isUGImportModalOpen}
+        onClose={() => setIsUGImportModalOpen(false)}
         onImportSuccess={fetchSongs}
       />
     </div>

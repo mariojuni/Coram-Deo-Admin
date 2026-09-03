@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Guitar } from 'lucide-react';
 import { createSong, updateSong } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import UltimateGuitarImportModal from './UltimateGuitarImportModal';
 
 export function extractYouTubeVideoId(url) {
   if (!url || typeof url !== 'string') return null;
@@ -53,6 +54,24 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
     ccliSongNumber: ''
   });
   const [saving, setSaving] = useState(false);
+  const [isUGModalOpen, setIsUGModalOpen] = useState(false);
+
+  // Merge UG import data into the current form
+  const handleUGMerge = (ugFormData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...ugFormData,
+      // Preserve any already-filled fields the user may have typed
+      title:    prev.title    || ugFormData.title,
+      artist:   prev.artist   || ugFormData.artist,
+      defaultKey: prev.defaultKey || ugFormData.defaultKey,
+      originalKey: prev.originalKey || ugFormData.originalKey,
+      // Always take the chord chart from UG
+      chordChart: ugFormData.chordChart || prev.chordChart,
+      lyrics: ugFormData.lyrics || prev.lyrics,
+    }));
+    setIsUGModalOpen(false);
+  };
 
   useEffect(() => {
     if (song) {
@@ -212,13 +231,26 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm sm:p-6">
       <div className="fixed inset-0 bg-church-navy/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-church-navy">
-            {song ? 'Edit Song' : 'Add New Song'}
-          </h2>
+          <div>
+            <h2 className="text-xl font-bold text-church-navy">
+              {song ? 'Edit Song' : 'Add New Song'}
+            </h2>
+            {!song && (
+              <button
+                type="button"
+                onClick={() => setIsUGModalOpen(true)}
+                className="mt-1 flex items-center gap-1.5 text-xs text-orange-500 hover:text-orange-700 font-semibold transition-colors"
+              >
+                <Guitar size={13} />
+                Auto-fill from Ultimate Guitar
+              </button>
+            )}
+          </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
             <X size={20} />
           </button>
@@ -473,5 +505,13 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
         </div>
       </div>
     </div>
+
+    <UltimateGuitarImportModal
+      isOpen={isUGModalOpen}
+      onClose={() => setIsUGModalOpen(false)}
+      mergeMode={true}
+      onMergeData={handleUGMerge}
+    />
+    </>
   );
 }
