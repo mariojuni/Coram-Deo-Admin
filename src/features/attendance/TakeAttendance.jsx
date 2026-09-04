@@ -5,6 +5,7 @@ import { db } from '../../firebase';
 import { ArrowLeft, Search, CheckCircle, XCircle, Clock, FileWarning, Users, QrCode } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { useAuth } from '../../context/AuthContext';
+import { formatStandardName } from '../../utils/nameUtils';
 
 export default function TakeAttendance() {
   const { userProfile } = useAuth();
@@ -65,11 +66,7 @@ export default function TakeAttendance() {
       const activeMembers = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .filter(m => m.membershipStatus !== 'Archived')
-        .sort((a, b) => {
-          const nameA = (a.name || a.displayName || '').toLowerCase();
-          const nameB = (b.name || b.displayName || '').toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
+        .sort((a, b) => formatStandardName(a).localeCompare(formatStandardName(b)));
       setMembers(activeMembers);
     };
 
@@ -104,7 +101,8 @@ export default function TakeAttendance() {
         const docRef = doc(db, 'attendance_sessions', id, 'records', memberId);
         
         // Find member name
-        const memberName = members.find(m => m.id === memberId)?.name || 'Unknown';
+        const memberObj = members.find(m => m.id === memberId);
+        const memberName = memberObj ? formatStandardName(memberObj) : 'Unknown';
         const now = new Date().toISOString();
         
         batch.set(docRef, {
@@ -163,7 +161,7 @@ export default function TakeAttendance() {
   };
 
   const filteredMembers = members.filter(m => {
-    const matchesSearch = (m.name || m.displayName || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    const matchesSearch = formatStandardName(m).toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     
     const currentMark = marks[m.id];
     let matchesFilter = true;
@@ -307,7 +305,7 @@ export default function TakeAttendance() {
               return (
                 <div key={member.id} className="flex items-center justify-between p-3 rounded-2xl border border-gray-100 hover:border-church-green/30 transition-all hover:shadow-sm bg-white">
                   <div className="flex flex-col">
-                    <span className="font-bold text-church-navy">{member.name}</span>
+                    <span className="font-bold text-church-navy">{formatStandardName(member)}</span>
                     <span className="text-xs text-gray-400">{member.role?.replace('_', ' ')}</span>
                   </div>
                   
