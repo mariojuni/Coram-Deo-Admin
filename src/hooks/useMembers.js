@@ -9,7 +9,7 @@ export function useMembers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('name', 'asc'));
+    const q = query(collection(db, 'users'));
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       if (snapshot.empty) {
         console.log("No users found. Seeding members into users collection...");
@@ -27,6 +27,11 @@ export function useMembers() {
         const membersData = [];
         snapshot.forEach((doc) => {
           membersData.push({ id: doc.id, ...doc.data() });
+        });
+        membersData.sort((a, b) => {
+          const nameA = (a.name || a.displayName || '').toLowerCase();
+          const nameB = (b.name || b.displayName || '').toLowerCase();
+          return nameA.localeCompare(nameB);
         });
         setMembers(membersData);
         setLoading(false);

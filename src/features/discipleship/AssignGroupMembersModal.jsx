@@ -32,11 +32,16 @@ export default function AssignGroupMembersModal({ isOpen, onClose, group, onSave
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, 'users'), orderBy('name', 'asc'));
+        const q = query(collection(db, 'users'));
         const snap = await getDocs(q);
-        const membersList = snap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(m => !m.churchId || m.churchId === CHURCH_ID);
+        let allMembers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        allMembers.sort((a, b) => {
+          const nameA = (a.name || a.displayName || '').toLowerCase();
+          const nameB = (b.name || b.displayName || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+        const membersList = allMembers.filter(m => !m.churchId || m.churchId === CHURCH_ID);
         setAllMembers(membersList);
       } catch (err) {
         console.error("Error fetching members:", err);

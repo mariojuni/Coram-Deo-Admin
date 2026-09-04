@@ -60,11 +60,16 @@ export default function TakeAttendance() {
 
     // Fetch roster
     const fetchMembers = async () => {
-      const q = query(collection(db, 'users'), orderBy('name', 'asc'));
+      const q = query(collection(db, 'users'));
       const snap = await getDocs(q);
       const activeMembers = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(m => m.membershipStatus !== 'Archived');
+        .filter(m => m.membershipStatus !== 'Archived')
+        .sort((a, b) => {
+          const nameA = (a.name || a.displayName || '').toLowerCase();
+          const nameB = (b.name || b.displayName || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
       setMembers(activeMembers);
     };
 

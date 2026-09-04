@@ -14,7 +14,12 @@ import {
   CheckCircle,
   Loader2,
   ArrowLeft,
+  Phone,
+  Key
 } from 'lucide-react';
+import { RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider, signOut } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getActiveAuth, getActiveApp } from '../../firebase';
 import logo from '../../assets/logo.svg';
 
 // ---------------------------------------------------------------------------
@@ -76,10 +81,16 @@ export default function Login() {
 
   // Forgot password state
   const [forgotMode, setForgotMode] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetIdentifier, setResetIdentifier] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // SMS OTP state
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   // Redirect if already authorized
   useEffect(() => {
@@ -147,9 +158,69 @@ export default function Login() {
     setResetError('');
     setResetSubmitting(true);
 
+    const identifier = resetIdentifier.trim();
+    const isEmail = identifier.includes('@');
+
+    if (isEmail) {
+      try {
+        await sendPasswordReset(identifier);
+        setResetSuccess(true);
+      } catch (err) {
+        setResetError(getFriendlyAuthError(err));
+      } finally {
+        setResetSubmitting(false);
+      }
+    } else {
+      // SMS flow
+      try {
+        if (!identifier.startsWith('+')) {
+          throw new Error('Please include your country code (e.g., +63 or +1).');
+        }
+
+        if (!window.recaptchaVerifier) {
+          window.recaptchaVerifier = new RecaptchaVerifier(getActiveAuth(), 'recaptcha-container', {
+            size: 'invisible',
+          });
+        }
+        const appVerifier = window.recaptchaVerifier;
+        const result = await signInWithPhoneNumber(getActiveAuth(), identifier, appVerifier);
+        setConfirmationResult(result);
+        setOtpMode(true);
+      } catch (err) {
+        setResetError(getFriendlyAuthError(err));
+        if (window.recaptchaVerifier) {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        }
+      } finally {
+        setResetSubmitting(false);
+      }
+    }
+  }
+
+  async function handleOtpSubmit(e) {
+    e.preventDefault();
+    setResetError('');
+    setResetSubmitting(true);
+
     try {
-      await sendPasswordReset(resetEmail);
+      if (newPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters.');
+      }
+      // 1. Verify OTP
+      const credential = PhoneAuthProvider.credential(confirmationResult.verificationId, otpCode);
+      await getActiveAuth().signInWithCredential(credential);
+
+      // 2. Call Cloud Function to update password
+      const functions = getFunctions(getActiveApp(), 'asia-southeast1');
+      const resetFn = httpsCallable(functions, 'resetPasswordWithPhone');
+      await resetFn({ newPassword });
+
+      // 3. Sign out of the temporary phone session
+      await signOut(getActiveAuth());
+      
       setResetSuccess(true);
+      setOtpMode(false);
     } catch (err) {
       setResetError(getFriendlyAuthError(err));
     } finally {
@@ -158,16 +229,20 @@ export default function Login() {
   }
 
   function openForgotPassword() {
-    setResetEmail(email); // prefill with whatever the user typed
+    setResetIdentifier(email); // prefill with whatever the user typed
     setResetSuccess(false);
     setResetError('');
     setForgotMode(true);
+    setOtpMode(false);
+    setConfirmationResult(null);
   }
 
   function closeForgotPassword() {
     setForgotMode(false);
     setResetSuccess(false);
     setResetError('');
+    setOtpMode(false);
+    setConfirmationResult(null);
   }
 
   // ------------------------------------------------------------------
@@ -388,12 +463,16 @@ export default function Login() {
                 Back to sign in
               </button>
 
-              <div className="mb-8">
+              <div className="mb-6">
                 <h2 className="text-2xl font-bold text-church-navy tracking-tight">Reset password</h2>
                 <p className="text-church-slate text-sm mt-1 leading-relaxed">
-                  Enter your email address and we&apos;ll send you a link to reset your password.
+                  {otpMode 
+                    ? `Enter the code sent to ${resetIdentifier} and your new password.` 
+                    : 'Enter your email address or phone number.'}
                 </p>
               </div>
+
+              <div id="recaptcha-container"></div>
 
               {/* Success state */}
               {resetSuccess ? (
@@ -413,43 +492,101 @@ export default function Login() {
                     </div>
                   )}
 
-                  <form onSubmit={handleResetSubmit} className="space-y-5" noValidate>
-                    <div className="space-y-1.5">
-                      <label htmlFor="reset-email" className="block text-sm font-medium text-church-navy">
-                        Email address
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                          <Mail size={16} className="text-church-slate" />
+                  {otpMode ? (
+                    <form onSubmit={handleOtpSubmit} className="space-y-5" noValidate>
+                      <div className="space-y-1.5">
+                        <label htmlFor="otpCode" className="block text-sm font-medium text-church-navy">
+                          6-digit OTP Code
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                            <Key size={16} className="text-church-slate" />
+                          </div>
+                          <input
+                            id="otpCode"
+                            type="text"
+                            required
+                            placeholder="123456"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                          />
                         </div>
-                        <input
-                          id="reset-email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          placeholder="you@church.org"
-                          value={resetEmail}
-                          onChange={(e) => setResetEmail(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
-                        />
                       </div>
-                    </div>
 
-                    <button
-                      type="submit"
-                      disabled={resetSubmitting}
-                      className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {resetSubmitting ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Sending…
-                        </>
-                      ) : (
-                        'Send Reset Link'
-                      )}
-                    </button>
-                  </form>
+                      <div className="space-y-1.5">
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-church-navy">
+                          New Password
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                            <Lock size={16} className="text-church-slate" />
+                          </div>
+                          <input
+                            id="newPassword"
+                            type="password"
+                            required
+                            placeholder="Min 6 characters"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={resetSubmitting}
+                        className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {resetSubmitting ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Verifying…
+                          </>
+                        ) : (
+                          'Reset Password'
+                        )}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleResetSubmit} className="space-y-5" noValidate>
+                      <div className="space-y-1.5">
+                        <label htmlFor="reset-input" className="block text-sm font-medium text-church-navy">
+                          Email or Phone number
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                            {resetIdentifier.includes('@') ? <Mail size={16} className="text-church-slate" /> : <Phone size={16} className="text-church-slate" />}
+                          </div>
+                          <input
+                            id="reset-input"
+                            type="text"
+                            required
+                            placeholder="you@church.org or +639123456789"
+                            value={resetIdentifier}
+                            onChange={(e) => setResetIdentifier(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={resetSubmitting}
+                        className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {resetSubmitting ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Sending…
+                          </>
+                        ) : (
+                          'Send Reset Link / OTP'
+                        )}
+                      </button>
+                    </form>
+                  )}
                 </>
               )}
             </div>
