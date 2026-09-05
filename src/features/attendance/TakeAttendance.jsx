@@ -45,32 +45,71 @@ export default function TakeAttendance() {
       }
     });
 
-    // Fetch existing records for this session to populate initial marks
     const fetchExistingRecords = async () => {
       const recordsQ = query(collection(db, 'attendance_sessions', id, 'records'));
       const recordsSnap = await getDocs(recordsQ);
       const initialMarks = {};
+      const extraMembers = [];
+      
       recordsSnap.forEach(r => {
         const data = r.data();
-        if (data.type?.toLowerCase() === 'member') {
-          initialMarks[data.memberId] = data.status;
+        if (data.status) {
+          const rawStatus = data.status;
+          const normalizedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
+          const memberId = data.memberId || r.id;
+          initialMarks[memberId] = normalizedStatus;
+          
+          extraMembers.push({
+            id: memberId,
+            name: data.memberName || 'Unknown',
+            role: data.type || 'Member',
+          });
         }
       });
       setMarks(initialMarks);
+      return { extraMembers, initialMarks };
     };
 
     // Fetch roster
     const fetchMembers = async () => {
       const q = query(collection(db, 'users'));
       const snap = await getDocs(q);
-      const activeMembers = snap.docs
+      return snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(m => m.membershipStatus !== 'Archived')
-        .sort((a, b) => formatStandardName(a).localeCompare(formatStandardName(b)));
-      setMembers(activeMembers);
+        .filter(m => m.membershipStatus !== 'Archived');
     };
 
-    Promise.all([fetchExistingRecords(), fetchMembers()]).then(() => setLoading(false));
+    Promise.all([fetchExistingRecords(), fetchMembers()]).then(([{ extraMembers, initialMarks }, activeMembers]) => {
+      const finalMembers = [...activeMembers];
+      const existingIds = new Set(activeMembers.map(m => m.id));
+      
+      for (const extra of extraMembers) {
+        if (!existingIds.has(extra.id) && !extra.id.startsWith('visitor_')) {
+          finalMembers.push(extra);
+        }
+      }
+      
+      // Deduplicate members by name to prevent tripled/duplicate names
+      const uniqueMap = new Map();
+      finalMembers.forEach(m => {
+        const nameKey = formatStandardName(m).toLowerCase().trim();
+        if (uniqueMap.has(nameKey)) {
+          // If we already have this person, prefer the one that has an attendance mark
+          const existing = uniqueMap.get(nameKey);
+          if (!initialMarks[existing.id] && initialMarks[m.id]) {
+            uniqueMap.set(nameKey, m);
+          }
+        } else {
+          uniqueMap.set(nameKey, m);
+        }
+      });
+      
+      const dedupedMembers = Array.from(uniqueMap.values());
+      dedupedMembers.sort((a, b) => formatStandardName(a).localeCompare(formatStandardName(b)));
+      
+      setMembers(dedupedMembers);
+      setLoading(false);
+    });
     
     return () => unsubscribeSession();
   }, [id, navigate]);
