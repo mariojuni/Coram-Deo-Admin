@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { seedMembers } from '../utils/seedData';
 import { addDoc, serverTimestamp } from 'firebase/firestore';
+import { deduplicateMembers } from '../utils/nameUtils';
 
 export function useMembers() {
   const [members, setMembers] = useState([]);
@@ -24,10 +25,11 @@ export function useMembers() {
           }
         }
       } else {
-        const membersData = [];
+        let membersData = [];
         snapshot.forEach((doc) => {
           membersData.push({ id: doc.id, ...doc.data() });
         });
+        membersData = deduplicateMembers(membersData);
         membersData.sort((a, b) => {
           const nameA = (a.name || a.displayName || '').toLowerCase();
           const nameB = (b.name || b.displayName || '').toLowerCase();

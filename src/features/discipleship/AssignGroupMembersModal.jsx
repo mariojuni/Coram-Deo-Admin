@@ -4,7 +4,7 @@ import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { assignGroupLeadersAndMembers } from './discipleshipGroupService';
-import { formatStandardName } from '../../utils/nameUtils';
+import { formatStandardName, deduplicateMembers } from '../../utils/nameUtils';
 
 export default function AssignGroupMembersModal({ isOpen, onClose, group, onSaved }) {
   const { userProfile, activeChurchId } = useAuth();
@@ -35,6 +35,7 @@ export default function AssignGroupMembersModal({ isOpen, onClose, group, onSave
         const q = query(collection(db, 'users'));
         const snap = await getDocs(q);
         let allMembers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        allMembers = deduplicateMembers(allMembers);
         allMembers.sort((a, b) => {
           const nameA = (a.name || a.displayName || '').toLowerCase();
           const nameB = (b.name || b.displayName || '').toLowerCase();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, updateDoc, doc, writeBatch, getDocs, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, Calendar as CalendarIcon, Edit, Trash2, MapPin, Clock, MoreVertical, Users, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -93,6 +93,62 @@ export default function EventsList() {
       }
     }
   };
+
+  const handleBulkComplete = async () => {
+    if (selectedEvents.length === 0) return;
+    if (window.confirm(`Are you sure you want to mark ${selectedEvents.length} selected events as completed?`)) {
+      try {
+        const batch = writeBatch(db);
+        const completedAt = new Date().toISOString();
+        
+        for (const id of selectedEvents) {
+          batch.update(doc(db, 'events', id), { 
+            status: 'completed',
+            completedAt: completedAt
+          });
+          
+          // Close attendance sessions
+          const sessionsQ = query(collection(db, 'attendance_sessions'), where('eventId', '==', id));
+          const sessionsSnap = await getDocs(sessionsQ);
+          sessionsSnap.forEach(sessionDoc => {
+            batch.update(doc(db, 'attendance_sessions', sessionDoc.id), { status: 'Closed' });
+          });
+        }
+        
+        await batch.commit();
+        setSelectedEvents([]);
+        setIsSelectionMode(false);
+      } catch (error) {
+        console.error("Error updating documents: ", error);
+        alert("Failed to complete selected events.");
+      }
+    }
+  };
+
+  const handleCompleteEvent = async (id) => {
+    setActiveMenuId(null);
+    if (window.confirm(`Are you sure you want to mark this event as completed?`)) {
+      try {
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'events', id), {
+          status: 'completed',
+          completedAt: new Date().toISOString()
+        });
+
+        // Close attendance sessions
+        const sessionsQ = query(collection(db, 'attendance_sessions'), where('eventId', '==', id));
+        const sessionsSnap = await getDocs(sessionsQ);
+        sessionsSnap.forEach(sessionDoc => {
+          batch.update(doc(db, 'attendance_sessions', sessionDoc.id), { status: 'Closed' });
+        });
+
+        await batch.commit();
+      } catch (error) {
+        console.error("Error updating document: ", error);
+        alert("Failed to complete event.");
+      }
+    }
+  };
   
   const toggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
@@ -143,6 +199,14 @@ export default function EventsList() {
           <div className="flex flex-wrap gap-2 items-center justify-end">
             {isSelectionMode ? (
               <>
+                <button 
+                  onClick={handleBulkComplete}
+                  disabled={selectedEvents.length === 0}
+                  className="flex items-center px-4 py-2 bg-green-50 text-green-600 rounded-full text-sm font-medium hover:bg-green-100 transition-colors disabled:opacity-50 border border-green-200"
+                >
+                  <CheckCircle2 size={16} className="mr-2" />
+                  Mark Completed ({selectedEvents.length})
+                </button>
                 <button 
                   onClick={handleBulkDelete}
                   disabled={selectedEvents.length === 0}
@@ -273,6 +337,7 @@ export default function EventsList() {
                     {event.title}
                   </h3>
                   {event.status?.toLowerCase() === 'published' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase font-bold rounded">Published</span>}
+                  {event.status?.toLowerCase() === 'completed' && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] uppercase font-bold rounded">Completed</span>}
                   {(!event.status || event.status?.toLowerCase() === 'draft') && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">Draft</span>}
                   {event.status?.toLowerCase() === 'cancelled' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] uppercase font-bold rounded">Cancelled</span>}
                 </div>
@@ -326,6 +391,14 @@ export default function EventsList() {
                         >
                           <Edit size={14} className="mr-2" /> Edit
                         </button>
+                        {event.status !== 'completed' && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleCompleteEvent(event.id); }}
+                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
+                          >
+                            <CheckCircle2 size={14} className="mr-2" /> Mark Completed
+                          </button>
+                        )}
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDeleteClick(event.id, event.title); }}
                           className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
