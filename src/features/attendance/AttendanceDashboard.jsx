@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { ClipboardCheck, Plus, Calendar, Users, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NewAttendanceSessionModal from '../../components/Modals/NewAttendanceSessionModal';
+import { deduplicateMembers } from '../../utils/nameUtils';
 
 export default function AttendanceDashboard() {
   const { userProfile } = useAuth();
@@ -21,9 +22,13 @@ export default function AttendanceDashboard() {
       const q = query(collection(db, 'users'));
       const snap = await getDocs(q);
       const activeMembers = snap.docs
-        .map(d => d.data())
-        .filter(m => m.membershipStatus !== 'Archived');
-      setTotalMembers(activeMembers.length);
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(m => m.membershipStatus !== 'Archived')
+        .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
+      
+      // We must deduplicate to match the inside session logic
+      const dedupedMembers = deduplicateMembers(activeMembers, {});
+      setTotalMembers(dedupedMembers.length);
     };
     fetchMembers();
   }, []);
@@ -60,13 +65,50 @@ export default function AttendanceDashboard() {
           <h1 className="text-3xl font-bold text-church-navy">Attendance</h1>
           <p className="text-sm text-church-slate mt-1">Track service participation and monitor church growth.</p>
         </div>
-        <button 
-          onClick={handleCreateSession}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-bold hover:bg-church-green/90 transition-opacity"
-        >
-          <Plus size={18} className="mr-2" />
-          New Session
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={async () => {
+              if(!window.confirm('Recalculate metrics for all sessions?')) return;
+              try {
+                const sessionsSnap = await getDocs(collection(db, 'attendance_sessions'));
+                for (const sessionDoc of sessionsSnap.docs) {
+                  const recordsSnap = await getDocs(collection(db, 'attendance_sessions', sessionDoc.id, 'records'));
+                  let present = 0, absent = 0, late = 0, excused = 0;
+                  recordsSnap.forEach(r => {
+                    const status = r.data().status?.toLowerCase();
+                    const isVisitor = r.data().type === 'visitor';
+                    if (!isVisitor) {
+                      if (status === 'present') present++;
+                      if (status === 'absent') absent++;
+                      if (status === 'late') late++;
+                      if (status === 'excused') excused++;
+                    }
+                  });
+                  await updateDoc(doc(db, 'attendance_sessions', sessionDoc.id), {
+                    'metrics.present': present,
+                    'metrics.absent': absent,
+                    'metrics.late': late,
+                    'metrics.excused': excused
+                  });
+                }
+                alert('Metrics recalculated successfully!');
+              } catch (err) {
+                console.error(err);
+                alert('Failed to recalculate.');
+              }
+            }}
+            className="flex items-center px-5 py-2.5 bg-gray-200 text-gray-700 rounded-full shadow-sm text-sm font-bold hover:bg-gray-300 transition-colors"
+          >
+            Fix Data
+          </button>
+          <button 
+            onClick={handleCreateSession}
+            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-bold hover:bg-church-green/90 transition-opacity"
+          >
+            <Plus size={18} className="mr-2" />
+            New Session
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden min-h-[400px]">

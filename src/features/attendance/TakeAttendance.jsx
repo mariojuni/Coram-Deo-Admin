@@ -5,7 +5,7 @@ import { db } from '../../firebase';
 import { ArrowLeft, Search, CheckCircle, XCircle, Clock, FileWarning, Users, QrCode } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { useAuth } from '../../context/AuthContext';
-import { formatStandardName } from '../../utils/nameUtils';
+import { formatStandardName, deduplicateMembers } from '../../utils/nameUtils';
 
 export default function TakeAttendance() {
   const { userProfile } = useAuth();
@@ -76,7 +76,8 @@ export default function TakeAttendance() {
       const snap = await getDocs(q);
       return snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(m => m.membershipStatus !== 'Archived');
+        .filter(m => m.membershipStatus !== 'Archived')
+        .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
     };
 
     Promise.all([fetchExistingRecords(), fetchMembers()]).then(([{ extraMembers, initialMarks }, activeMembers]) => {
@@ -89,22 +90,8 @@ export default function TakeAttendance() {
         }
       }
       
-      // Deduplicate members by name to prevent tripled/duplicate names
-      const uniqueMap = new Map();
-      finalMembers.forEach(m => {
-        const nameKey = formatStandardName(m).toLowerCase().trim();
-        if (uniqueMap.has(nameKey)) {
-          // If we already have this person, prefer the one that has an attendance mark
-          const existing = uniqueMap.get(nameKey);
-          if (!initialMarks[existing.id] && initialMarks[m.id]) {
-            uniqueMap.set(nameKey, m);
-          }
-        } else {
-          uniqueMap.set(nameKey, m);
-        }
-      });
-      
-      const dedupedMembers = Array.from(uniqueMap.values());
+      // Deduplicate members by name and email to prevent tripled/duplicate names
+      const dedupedMembers = deduplicateMembers(finalMembers, initialMarks);
       dedupedMembers.sort((a, b) => formatStandardName(a).localeCompare(formatStandardName(b)));
       
       setMembers(dedupedMembers);
@@ -142,6 +129,7 @@ export default function TakeAttendance() {
         // Find member name
         const memberObj = members.find(m => m.id === memberId);
         const memberName = memberObj ? formatStandardName(memberObj) : 'Unknown';
+        const isVisitor = memberObj?.role === 'visitor';
         const now = new Date().toISOString();
         
         batch.set(docRef, {
@@ -149,7 +137,7 @@ export default function TakeAttendance() {
           memberId,
           memberName,
           status,
-          type: 'member',
+          type: isVisitor ? 'visitor' : 'member',
           timestamp: now,
           checkInMethod: 'manual_web',
           checkedInAt: now,
@@ -164,10 +152,15 @@ export default function TakeAttendance() {
           userId: memberId
         }, { merge: true });
 
-        if (status === 'Present') newMetrics.present++;
-        if (status === 'Absent') newMetrics.absent++;
-        if (status === 'Late') newMetrics.late++;
-        if (status === 'Excused') newMetrics.excused++;
+        if (isVisitor) {
+          // If a visitor is marked present, they are already counted in visitors
+          // but we shouldn't add them to newMetrics.present
+        } else {
+          if (status === 'Present') newMetrics.present++;
+          if (status === 'Absent') newMetrics.absent++;
+          if (status === 'Late') newMetrics.late++;
+          if (status === 'Excused') newMetrics.excused++;
+        }
       });
 
       // Update session metrics
