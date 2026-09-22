@@ -107,34 +107,34 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         Object.entries(baseData).filter(([_, v]) => v !== undefined)
       );
 
-      if (member) {
-        let matchingPendingUser = null;
-        
-        // Try to match by email first
-        if (cleanData.email) {
-          const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
-          const emailSnap = await getDocs(emailQ);
-          if (!emailSnap.empty) {
-            matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
-          }
+      let matchingPendingUser = null;
+      
+      // Try to match by email first
+      if (cleanData.email) {
+        const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
+        const emailSnap = await getDocs(emailQ);
+        if (!emailSnap.empty) {
+          matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
         }
-        
-        // Try to match by phone if not found by email
-        if (!matchingPendingUser && cleanData.phoneNumber) {
-          const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
-          const phoneSnap = await getDocs(phoneQ);
-          if (!phoneSnap.empty) {
-            matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
-          }
+      }
+      
+      // Try to match by phone if not found by email
+      if (!matchingPendingUser && cleanData.phoneNumber) {
+        const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
+        const phoneSnap = await getDocs(phoneQ);
+        if (!phoneSnap.empty) {
+          matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
         }
+      }
 
+      if (member) {
         if (matchingPendingUser) {
           // Merge imported data into registered user's doc
           const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
           await updateDoc(registeredUserRef, {
             ...cleanData,
             churchId: member.churchId || userProfile?.churchId || null,
-            status: deleteField(), // Remove pending status
+            status: 'Active', // Remove pending status and set to Active
             birthday: deleteField(),
             phone: deleteField(),
             updatedAt: serverTimestamp(),
@@ -159,13 +159,26 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
           });
         }
       } else {
-        // Add new member profile
-        await addDoc(collection(db, 'users'), {
-          ...cleanData,
-          createdAt: serverTimestamp(),
-          createdBy: currentUser?.uid || null,
-          churchId: userProfile?.churchId || null
-        });
+        if (matchingPendingUser) {
+          // Admin is adding a new member, and we found a pending auth account!
+          // We should just update the pending auth account instead of duplicating
+          const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
+          await updateDoc(registeredUserRef, {
+            ...cleanData,
+            churchId: userProfile?.churchId || null,
+            status: 'Active',
+            updatedAt: serverTimestamp(),
+            updatedBy: currentUser?.uid || null
+          });
+        } else {
+          // Add new member profile
+          await addDoc(collection(db, 'users'), {
+            ...cleanData,
+            createdAt: serverTimestamp(),
+            createdBy: currentUser?.uid || null,
+            churchId: userProfile?.churchId || null
+          });
+        }
       }
       onClose();
     } catch (err) {

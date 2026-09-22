@@ -32,6 +32,7 @@ export default function PendingMembers() {
       const relevantUsers = allUsers.filter(u => 
         u.status === 'pending_church_link' || 
         u.membershipStatus === 'pending_church_link' ||
+        u.status === 'pendingChurchLink' ||
         u.status === 'Active' || 
         u.membershipStatus === 'Active'
       );
@@ -98,13 +99,13 @@ export default function PendingMembers() {
     try {
       await updateDoc(doc(db, 'users', userId), {
         churchId: null,
-        status: 'pending_church_link',
-        membershipStatus: 'pending_church_link'
+        status: 'pendingChurchLink',
+        membershipStatus: 'pendingChurchLink'
       });
       // Update local state
       setUsers(prev => prev.map(u => 
         u.id === userId 
-          ? { ...u, churchId: null, status: 'pending_church_link', membershipStatus: 'pending_church_link' }
+          ? { ...u, churchId: null, status: 'pendingChurchLink', membershipStatus: 'pendingChurchLink' }
           : u
       ));
     } catch (error) {
@@ -132,7 +133,7 @@ export default function PendingMembers() {
   const displayedUsers = users.filter(u => {
     const status = String(u.status || '').toLowerCase();
     const memStatus = String(u.membershipStatus || '').toLowerCase();
-    const isPending = status === 'pending_church_link' || memStatus === 'pending_church_link';
+    const isPending = status === 'pending_church_link' || memStatus === 'pending_church_link' || status === 'pendingchurchlink';
     const isActive = status === 'active' || memStatus === 'active';
     
     if (activeTab === 'pending' && !isPending) return false;
