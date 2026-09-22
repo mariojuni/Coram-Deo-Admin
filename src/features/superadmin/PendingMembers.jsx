@@ -24,8 +24,8 @@ export default function PendingMembers() {
       const usersSnap = await getDocs(collection(db, 'users'));
       
       const allUsers = usersSnap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+        ...doc.data(),
+        id: doc.id
       }));
 
       // Filter for active and pending
