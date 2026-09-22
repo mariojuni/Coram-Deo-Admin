@@ -36,7 +36,22 @@ export default function PendingMembers() {
         u.membershipStatus === 'Active'
       );
 
-      setUsers(relevantUsers);
+      // Deduplicate accounts by email (or ID if no email)
+      const uniqueUsersMap = new Map();
+      relevantUsers.forEach(u => {
+        const key = u.email ? u.email.toLowerCase() : u.id;
+        // If a duplicate exists, prefer the one that is already active/assigned
+        if (uniqueUsersMap.has(key)) {
+          const existing = uniqueUsersMap.get(key);
+          if ((u.status === 'Active' || u.churchId) && !(existing.status === 'Active' || existing.churchId)) {
+            uniqueUsersMap.set(key, u);
+          }
+        } else {
+          uniqueUsersMap.set(key, u);
+        }
+      });
+
+      setUsers(Array.from(uniqueUsersMap.values()));
 
       // Fetch churches
       const churchesSnap = await getDocs(collection(db, 'churches'));
@@ -125,8 +140,10 @@ export default function PendingMembers() {
 
     if (activeTab === 'active' && filterChurchId && u.churchId !== filterChurchId) return false;
 
-    const matchesSearch = (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (u.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const userNameSearch = (u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()).toLowerCase();
+    const matchesSearch = userNameSearch.includes(searchTerm.toLowerCase()) || 
+                          (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (u.id || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesSearch;
   });
@@ -236,6 +253,7 @@ export default function PendingMembers() {
                           <div>
                             <p className="font-bold text-church-navy">{userName}</p>
                             <p className="text-xs text-gray-500">{user.role || 'Member'}</p>
+                            <p className="text-[10px] text-gray-400 font-mono mt-0.5">ID: {user.id}</p>
                           </div>
                         </div>
                       </td>

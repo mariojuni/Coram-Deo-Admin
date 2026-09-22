@@ -156,8 +156,12 @@ export default function MinistryDetails() {
     if (!mId) return;
     
     if (!mergedMembersMap.has(mId)) {
-      const userDoc = usersMap[mId];
-      const displayName = userDoc ? formatStandardName(userDoc) : 'Unnamed Member';
+      // Try to resolve name from usersMap (keyed by users doc ID)
+      const userDoc = usersMap[mId] || (mDoc.userId ? usersMap[mDoc.userId] : null);
+      // Fall back to the memberName stored in the ministryMembers doc itself
+      const displayName = userDoc
+        ? formatStandardName(userDoc)
+        : (mDoc.memberName && mDoc.memberName !== 'Unnamed Member' ? mDoc.memberName : 'Unnamed Member');
       mergedMembersMap.set(mId, {
         memberId: mId,
         memberName: displayName,
