@@ -364,6 +364,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Birth Date</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.birthDate || member.birthday || 'Not specified'}</dd></div>
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Age</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{calculateAge(member.birthDate || member.birthday)}</dd></div>
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Address</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.address || 'Not specified'}</dd></div>
+                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Location</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.isAbroad ? 'Abroad' : 'Local'}</dd></div>
                   </dl>
                 </div>
 

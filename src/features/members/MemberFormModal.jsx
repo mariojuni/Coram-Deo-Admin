@@ -22,7 +22,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
     membershipStatus: 'Active',
     baptismStatus: 'Not Baptized',
     emergencyContact: '',
-    notes: ''
+    notes: '',
+    isAbroad: false
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +48,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         membershipStatus: member.membershipStatus || 'Active',
         baptismStatus: member.baptismStatus || 'Not Baptized',
         emergencyContact: member.emergencyContact || '',
-        notes: member.notes || ''
+        notes: member.notes || '',
+        isAbroad: member.isAbroad || false
       });
     } else {
       setFormData({
@@ -64,7 +66,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         membershipStatus: 'Active',
         baptismStatus: 'Not Baptized',
         emergencyContact: '',
-        notes: ''
+        notes: '',
+        isAbroad: false
       });
     }
     setError('');
@@ -241,6 +244,19 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       { value: 'Female', label: 'Female' }
                     ]}
                   />
+                </div>
+                
+                <div className="flex items-center md:mt-6">
+                  <label className="flex items-center text-sm font-medium text-church-navy cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isAbroad"
+                      checked={formData.isAbroad}
+                      onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
+                      className="mr-2 w-4 h-4 text-church-green rounded focus:ring-church-green border-gray-300"
+                    />
+                    Currently Abroad
+                  </label>
                 </div>
               </div>
             </div>

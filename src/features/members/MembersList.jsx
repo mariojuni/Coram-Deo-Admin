@@ -19,6 +19,7 @@ export default function MembersList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterLocation, setFilterLocation] = useState('All');
   
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -139,12 +140,17 @@ export default function MembersList() {
       ? m.membershipStatus !== 'Archived' // Hide archived by default if "All" is selected
       : m.membershipStatus === filterStatus;
 
+    // Location match
+    const locationMatch = filterLocation === 'All'
+      ? true
+      : filterLocation === 'Abroad' ? m.isAbroad === true : (m.isAbroad === false || m.isAbroad === undefined);
+
     // Exception: If they explicitly filter by Archived, show archived.
     if (filterStatus === 'Archived') {
-      return searchMatch && m.membershipStatus === 'Archived';
+      return searchMatch && m.membershipStatus === 'Archived' && locationMatch;
     }
 
-    return searchMatch && statusMatch;
+    return searchMatch && statusMatch && locationMatch;
   });
 
   const handleAddClick = () => {
@@ -437,6 +443,20 @@ export default function MembersList() {
             </div>
             
             <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-gray-400 uppercase">Location:</span>
+              <ModernDropdown
+                value={filterLocation}
+                onChange={(val) => setFilterLocation(val)}
+                className="w-36"
+                options={[
+                  { value: 'All', label: 'All Locations' },
+                  { value: 'Local', label: 'Local Only' },
+                  { value: 'Abroad', label: 'Abroad Only' }
+                ]}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
               <span className="text-xs font-bold text-gray-400 uppercase">Status:</span>
               <ModernDropdown
                 value={filterStatus}
@@ -491,7 +511,7 @@ export default function MembersList() {
                         </div>
                         <div className="ml-4">
                           <p className="text-sm font-bold text-church-navy group-hover:text-church-green transition-colors">{member.displayName}</p>
-                          <p className="text-xs text-church-slate">{member.gender || 'Unknown'} • {member.birthDate || member.birthday ? new Date(member.birthDate || member.birthday).toLocaleDateString() : 'No birth date'}</p>
+                          <p className="text-xs text-church-slate">{member.gender || 'Unknown'} • {member.birthDate || member.birthday ? new Date(member.birthDate || member.birthday).toLocaleDateString() : 'No birth date'} {member.isAbroad && '• Abroad'}</p>
                         </div>
                       </div>
                     </td>
