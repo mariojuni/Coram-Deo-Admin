@@ -54,13 +54,94 @@ export default function ReportsDashboard() {
       let csvContent = "";
       
       if (reportType === 'members') {
+        const { doc, getDoc } = await import('firebase/firestore');
         const snap = await getDocs(collection(db, 'users'));
         const data = snap.docs.map(d => d.data()).filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
-        csvContent = "Name,Email,Phone,Status,Role,Family Group\n";
-        data.forEach(m => {
-          const phoneVal = m.phoneNumber || m.phone || '';
-          csvContent += `"${m.name}","${m.email}","${phoneVal}","${m.membershipStatus}","${m.role}","${m.familyGroup}"\n`;
+        let churchName = "Church";
+        let cData = null;
+        if (CHURCH_ID) {
+          try {
+            const cSnap = await getDoc(doc(db, 'churches', CHURCH_ID));
+            if (cSnap.exists()) {
+              cData = cSnap.data();
+              churchName = cData.name || churchName;
+            }
+          } catch(e) {}
+        }
+        
+        let processedData = data.map(d => {
+          let displayName = d.name || '';
+          const toTitleCase = (str) => {
+            if (!str) return '';
+            return str.split(/[\s-]+/).map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            ).join(' ');
+          };
+          if (d.firstName || d.lastName) {
+            const f = toTitleCase(d.firstName);
+            const l = toTitleCase(d.lastName);
+            const mi = d.middleName ? d.middleName.charAt(0).toUpperCase() + '.' : '';
+            displayName = [f, mi, l].filter(Boolean).join(' ');
+          } else if (d.name) {
+            const parts = d.name.split(' ').filter(Boolean);
+            if (parts.length > 2) {
+              const f = toTitleCase(parts[0]);
+              const l = toTitleCase(parts[parts.length - 1]);
+              const mi = parts[1].charAt(0).toUpperCase() + '.';
+              displayName = `${f} ${mi} ${l}`;
+            } else {
+              displayName = toTitleCase(d.name);
+            }
+          }
+          return { ...d, displayName };
+        });
+
+        const uniqueDocs = [];
+        processedData.forEach(d => {
+          const existing = uniqueDocs.find(u => 
+            (u.email && d.email && u.email.toLowerCase() === d.email.toLowerCase()) ||
+            (u.displayName && d.displayName && u.displayName.toLowerCase() === d.displayName.toLowerCase())
+          );
+          if (existing) {
+            if (!existing.email && d.email) existing.email = d.email;
+            if (!existing.phoneNumber && d.phoneNumber) existing.phoneNumber = d.phoneNumber;
+          } else {
+            uniqueDocs.push(d);
+          }
+        });
+        
+        const finalData = uniqueDocs.filter(d => d.membershipStatus !== 'Archived');
+
+        const activeTotal = finalData.filter(d => d.membershipStatus === 'Active' || !d.membershipStatus).length;
+        const transferredTotal = finalData.filter(d => d.membershipStatus === 'Transferred').length;
+        const deceasedTotal = finalData.filter(d => d.membershipStatus === 'Deceased').length;
+        const fellowshipTotal = finalData.filter(d => d.membershipStatus === 'Fellowship').length;
+
+        csvContent = `"${churchName.toUpperCase()}"\n`;
+        if (cData?.district) csvContent += `"${cData.district.toUpperCase()}"\n`;
+        if (cData?.address) csvContent += `"${cData.address}"\n`;
+        
+        csvContent += `\n`;
+        
+        const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        csvContent += `"Updated List of ${churchName} Full Members as of ${currentDate}"\n`;
+        if (cData?.dateOrganized) csvContent += `"Date Organized: ${cData.dateOrganized}"\n`;
+        
+        csvContent += `\n`;
+        csvContent += `"TOTALS: Active (${activeTotal}) - Transferred (${transferredTotal}) - Deceased (${deceasedTotal}) - Fellowship (${fellowshipTotal})"\n\n`;
+
+        csvContent += `"NAME","GENDER","BIRTHDAY","DATE RECEIVED","CATEGORY","BAPTIZED","ABROAD"\n`;
+        
+        finalData.forEach(m => {
+          const gender = m.gender ? m.gender.charAt(0).toUpperCase() : '';
+          const birthday = m.birthDate || m.birthday ? new Date(m.birthDate || m.birthday).toLocaleDateString() : '';
+          const dateReceived = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleDateString() : '';
+          const category = m.membershipStatus || 'Active';
+          const baptized = m.baptismStatus === 'Baptized' ? 'Yes' : '';
+          const abroad = m.isAbroad ? 'Yes' : 'No';
+          
+          csvContent += `"${m.displayName}","${gender}","${birthday}","${dateReceived}","${category}","${baptized}","${abroad}"\n`;
         });
       }
       else if (reportType === 'giving') {
