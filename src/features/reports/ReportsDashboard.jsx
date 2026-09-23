@@ -112,6 +112,7 @@ export default function ReportsDashboard() {
         });
         
         const finalData = uniqueDocs.filter(d => d.membershipStatus !== 'Archived');
+        finalData.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
 
         const activeTotal = finalData.filter(d => d.membershipStatus === 'Active' || !d.membershipStatus).length;
         const transferredTotal = finalData.filter(d => d.membershipStatus === 'Transferred').length;

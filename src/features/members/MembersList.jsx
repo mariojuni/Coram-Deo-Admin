@@ -18,7 +18,7 @@ export default function MembersList() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('ActiveAndFellowship');
   const [filterLocation, setFilterLocation] = useState('All');
   
   // Modal states
@@ -136,9 +136,14 @@ export default function MembersList() {
       (m.phoneNumber || m.phone || '')?.includes(debouncedSearchTerm);
       
     // Status match
-    const statusMatch = filterStatus === 'All' 
-      ? m.membershipStatus !== 'Archived' // Hide archived by default if "All" is selected
-      : m.membershipStatus === filterStatus;
+    let statusMatch = false;
+    if (filterStatus === 'All') {
+      statusMatch = m.membershipStatus !== 'Archived';
+    } else if (filterStatus === 'ActiveAndFellowship') {
+      statusMatch = m.membershipStatus === 'Active' || m.membershipStatus === 'Fellowship' || !m.membershipStatus;
+    } else {
+      statusMatch = (m.membershipStatus || 'Active') === filterStatus;
+    }
 
     // Location match
     const locationMatch = filterLocation === 'All'
@@ -463,7 +468,8 @@ export default function MembersList() {
                 onChange={(val) => setFilterStatus(val)}
                 className="w-48"
                 options={[
-                  { value: 'All', label: 'Active & Inactive' },
+                  { value: 'ActiveAndFellowship', label: 'Active & Fellowship' },
+                  { value: 'All', label: 'All (Except Archived)' },
                   { value: 'Active', label: 'Active Only' },
                   { value: 'Visitor', label: 'Visitors' },
                   { value: 'Fellowship', label: 'Fellowship' },
