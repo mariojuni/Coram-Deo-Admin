@@ -54,7 +54,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
     if (formData.userId && !opts.some(o => o.value === formData.userId)) {
       opts.push({ value: formData.userId, label: formData.donorName || 'Selected Member' });
     }
-    if (!formData.userId && formData.donorName && formData.donorName !== 'Anonymous') {
+    if (!formData.userId && formData.donorName && formData.donorName !== 'Anonymous' && formData.donorName !== 'Loose Offering') {
       opts.push({ value: 'custom_donor', label: formData.donorName });
     }
     return opts;
@@ -64,7 +64,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
     if (activeRecord) {
       let derivedGiverType = activeRecord.giverEntityType;
       if (!derivedGiverType) {
-        derivedGiverType = (!activeRecord.userId && (!activeRecord.donorName || activeRecord.donorName === 'Anonymous')) ? 'anonymous' : 'individual';
+        derivedGiverType = (!activeRecord.userId && (!activeRecord.donorName || activeRecord.donorName === 'Anonymous' || activeRecord.donorName === 'Loose Offering')) ? 'anonymous' : 'individual';
       }
       setFormData({
         giverEntityType: derivedGiverType,
@@ -218,7 +218,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
         finalUserId = householdObj?.primaryMemberId || null;
       } else if (finalGiverType === 'anonymous') {
         finalUserId = null;
-        finalDonorName = 'Anonymous';
+        finalDonorName = 'Loose Offering';
       }
 
       const payload = {
