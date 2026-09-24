@@ -23,7 +23,10 @@ export default function AttendanceDashboard() {
       const snap = await getDocs(q);
       const activeMembers = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(m => m.membershipStatus !== 'Archived')
+        .filter(m => {
+          const status = m.membershipStatus || 'Active';
+          return ['Active', 'Visitor', 'Fellowship'].includes(status);
+        })
         .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
       
       // We must deduplicate to match the inside session logic
