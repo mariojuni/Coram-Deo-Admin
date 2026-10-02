@@ -79,6 +79,20 @@ export default function PrivacyPolicy() {
                 If you have any questions about this Privacy Policy or our privacy practices, please contact your church administrator.
               </p>
             </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-church-navy mb-3">6. Child Safety Standards & CSAE Policy</h2>
+              <p>
+                <strong>Coram Deo</strong> is strictly committed to child safety and has a zero-tolerance policy against Child Sexual Abuse Exploitation (CSAE). We explicitly prohibit any content, behavior, or activity that promotes, distributes, or encourages CSAE. 
+              </p>
+              <p className="mt-2">
+                If any user is found violating this policy, their account will be immediately terminated, and their activities will be reported to the relevant law enforcement authorities.
+              </p>
+              <p className="mt-2">
+                <strong>Child Safety Point of Contact:</strong><br />
+                If you have any concerns regarding child safety or wish to report a violation of this policy, please contact our Child Safety Point of Contact immediately at: <strong>mjuni777@gmail.com</strong>.
+              </p>
+            </section>
           </div>
         </div>
       </main>
