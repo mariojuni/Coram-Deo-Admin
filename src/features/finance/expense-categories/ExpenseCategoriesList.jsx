@@ -32,7 +32,9 @@ export default function ExpenseCategoriesList() {
       
       docs.sort((a, b) => {
         if (a.status === b.status) {
-           return a.name.localeCompare(b.name);
+           const nameA = a.name || '';
+           const nameB = b.name || '';
+           return nameA.localeCompare(nameB);
         }
         if (a.status === 'active') return -1;
         if (b.status === 'active') return 1;

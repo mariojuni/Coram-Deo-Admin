@@ -5,6 +5,13 @@ import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import {
+  getMembershipCategory,
+  getMembershipSubStatus,
+  MEMBERSHIP_CATEGORIES,
+  FULL_MEMBER_SUBSTATUSES,
+  BAPTISM_STATUSES
+} from './utils/memberStatusUtils';
 
 export default function MemberFormModal({ isOpen, onClose, member = null, existingMembers = [] }) {
   const { userProfile, currentUser } = useAuth();
@@ -19,8 +26,10 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
     birthDate: '',
     gender: 'Male',
     address: '',
+    membershipCategory: 'Full Member',
     membershipStatus: 'Active',
     baptismStatus: 'Not Baptized',
+    baptismDate: '',
     emergencyContact: '',
     notes: '',
     isAbroad: false
@@ -34,6 +43,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       const fallbackFirst = parts[0] || '';
       const fallbackLast = parts.length > 1 ? parts.slice(1).join(' ') : '';
       
+      const resolvedCategory = getMembershipCategory(member);
+      const resolvedSubStatus = getMembershipSubStatus(member);
+
       setFormData({
         firstName: member.firstName || fallbackFirst,
         middleName: member.middleName || '',
@@ -45,8 +57,10 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         birthDate: member.birthDate || member.birthday || '',
         gender: member.gender || 'Male',
         address: member.address || '',
-        membershipStatus: member.membershipStatus || 'Active',
+        membershipCategory: resolvedCategory,
+        membershipStatus: resolvedCategory === 'Full Member' ? resolvedSubStatus : (member.membershipStatus || resolvedCategory),
         baptismStatus: member.baptismStatus || 'Not Baptized',
+        baptismDate: member.baptismDate || '',
         emergencyContact: member.emergencyContact || '',
         notes: member.notes || '',
         isAbroad: member.isAbroad || false
@@ -63,8 +77,10 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         birthDate: '',
         gender: 'Male',
         address: '',
+        membershipCategory: 'Full Member',
         membershipStatus: 'Active',
         baptismStatus: 'Not Baptized',
+        baptismDate: '',
         emergencyContact: '',
         notes: '',
         isAbroad: false
@@ -100,9 +116,20 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         }
       }
 
+      const category = formData.membershipCategory || 'Full Member';
+      const status = category === 'Full Member'
+        ? (formData.membershipStatus === 'Inactive' ? 'Inactive' : 'Active')
+        : category;
+      const isBaptized = formData.baptismStatus === 'Baptized';
+      const cleanBaptismDate = isBaptized ? (formData.baptismDate || '') : '';
+
       const baseData = {
         ...formData,
-        name: computedName
+        name: computedName,
+        membershipCategory: category,
+        membershipStatus: status,
+        baptismStatus: formData.baptismStatus || 'Not Baptized',
+        baptismDate: cleanBaptismDate
       };
 
       // Firestore throws an error if any field is explicitly undefined
@@ -292,49 +319,93 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
               <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Church Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Status</label>
+                  <label className="block text-sm font-medium text-church-navy mb-1">Membership Category</label>
                   <ModernDropdown
-                    value={formData.membershipStatus}
-                    onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
-                    options={[
-                      { value: 'Active', label: 'Active' },
-                      { value: 'Inactive', label: 'Inactive' },
-                      { value: 'Visitor', label: 'Visitor' },
-                      { value: 'Fellowship', label: 'Fellowship' },
-                      { value: 'Transferred', label: 'Transferred' },
-                      { value: 'Deceased', label: 'Deceased' },
-                      { value: 'Archived', label: 'Archived' }
-                    ]}
+                    value={formData.membershipCategory}
+                    onChange={(val) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        membershipCategory: val,
+                        membershipStatus: val === 'Full Member'
+                          ? (prev.membershipStatus === 'Inactive' ? 'Inactive' : 'Active')
+                          : val
+                      }));
+                    }}
+                    options={MEMBERSHIP_CATEGORIES}
                   />
                 </div>
+
+                {formData.membershipCategory === 'Full Member' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-church-navy mb-1">Full Member Status</label>
+                    <ModernDropdown
+                      value={formData.membershipStatus}
+                      onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
+                      options={FULL_MEMBER_SUBSTATUSES}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-church-navy mb-1">System Role</label>
+                    <ModernDropdown
+                      value={formData.role}
+                      onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
+                      options={[
+                        { value: 'member', label: 'Member' },
+                        { value: 'ministry_leader', label: 'Ministry Leader' },
+                        { value: 'pastor', label: 'Pastor' },
+                        { value: 'secretary', label: 'Secretary' },
+                        { value: 'finance_admin', label: 'Finance Admin' },
+                        { value: 'church_admin', label: 'Church Admin' }
+                      ]}
+                    />
+                  </div>
+                )}
                 
-                <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">System Role</label>
-                  <ModernDropdown
-                    value={formData.role}
-                    onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
-                    options={[
-                      { value: 'member', label: 'Member' },
-                      { value: 'ministry_leader', label: 'Ministry Leader' },
-                      { value: 'pastor', label: 'Pastor' },
-                      { value: 'secretary', label: 'Secretary' },
-                      { value: 'finance_admin', label: 'Finance Admin' },
-                      { value: 'church_admin', label: 'Church Admin' }
-                    ]}
-                  />
-                </div>
+                {formData.membershipCategory === 'Full Member' && (
+                  <div>
+                    <label className="block text-sm font-medium text-church-navy mb-1">System Role</label>
+                    <ModernDropdown
+                      value={formData.role}
+                      onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
+                      options={[
+                        { value: 'member', label: 'Member' },
+                        { value: 'ministry_leader', label: 'Ministry Leader' },
+                        { value: 'pastor', label: 'Pastor' },
+                        { value: 'secretary', label: 'Secretary' },
+                        { value: 'finance_admin', label: 'Finance Admin' },
+                        { value: 'church_admin', label: 'Church Admin' }
+                      ]}
+                    />
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Baptism Status</label>
                   <ModernDropdown
                     value={formData.baptismStatus}
-                    onChange={(val) => handleChange({ target: { name: 'baptismStatus', value: val } })}
-                    options={[
-                      { value: 'Not Baptized', label: 'Not Baptized' },
-                      { value: 'Baptized', label: 'Baptized' }
-                    ]}
+                    onChange={(val) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        baptismStatus: val,
+                        baptismDate: val === 'Baptized' ? prev.baptismDate : ''
+                      }));
+                    }}
+                    options={BAPTISM_STATUSES}
                   />
                 </div>
+
+                {formData.baptismStatus === 'Baptized' && (
+                  <div>
+                    <label className="block text-sm font-medium text-church-navy mb-1">Baptism Date</label>
+                    <ModernDatePicker 
+                      name="baptismDate" 
+                      value={formData.baptismDate} 
+                      onChange={handleChange} 
+                      placeholder="Select baptism date"
+                    />
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Family / Small Group</label>

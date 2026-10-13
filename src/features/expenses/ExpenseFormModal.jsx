@@ -66,7 +66,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
           const activeFunds = snapFunds.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(f => f.allowExpenses !== false)
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           setFunds(activeFunds);
           
           // Fetch Categories
@@ -74,7 +74,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
           const snapCats = await getDocs(qCats);
           const activeCategories = snapCats.docs
             .map(d => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           
           // Prepend existing category if it's not in the active list
           if (expense?.category && !activeCategories.find(c => c.name === expense.category)) {

@@ -17,6 +17,8 @@ export default function ExpensesList() {
   const [fundsMap, setFundsMap] = useState({});
   const [fundsList, setFundsList] = useState([]);
   const [selectedFundId, setSelectedFundId] = useState('all');
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     if (!CHURCH_ID) return;
@@ -50,7 +52,7 @@ export default function ExpensesList() {
               list.push({ id: d.id, name: data.name });
             }
           });
-          list.sort((a, b) => a.name.localeCompare(b.name));
+          list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           setFundsMap(map);
           setFundsList(list);
         });
@@ -59,13 +61,36 @@ export default function ExpensesList() {
         console.error("Error fetching funds:", err);
       }
     };
+
+    const fetchCategories = async () => {
+      try {
+        const qCats = query(collection(db, 'expenseCategories'), where('churchId', '==', CHURCH_ID));
+        const unsubscribeCats = onSnapshot(qCats, (snap) => {
+          const list = [];
+          snap.forEach(d => {
+            const data = d.data();
+            if (data.status === 'active') {
+              list.push({ id: d.id, name: data.name });
+            }
+          });
+          list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+          setCategoriesList(list);
+        });
+        return unsubscribeCats;
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
     
     let unsubscribeFunds;
+    let unsubscribeCats;
     fetchFunds().then(unsub => unsubscribeFunds = unsub);
+    fetchCategories().then(unsub => unsubscribeCats = unsub);
 
     return () => {
       unsubscribe();
       if (unsubscribeFunds) unsubscribeFunds();
+      if (unsubscribeCats) unsubscribeCats();
     };
   }, [CHURCH_ID]);
 
@@ -110,6 +135,9 @@ export default function ExpensesList() {
           return false;
        }
     }
+    if (selectedCategory !== 'all' && r.category !== selectedCategory) {
+       return false;
+    }
     return true;
   });
 
@@ -132,15 +160,26 @@ export default function ExpensesList() {
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-3xl shadow-church-soft border border-gray-100 space-y-4 md:space-y-0">
-         <ModernDropdown 
-            value={selectedFundId} 
-            onChange={(val) => setSelectedFundId(val)}
-            options={[
-              { value: 'all', label: 'All Funds' },
-              ...fundsList.map(f => ({ value: f.id, label: f.name }))
-            ]}
-            className="w-full sm:w-56"
-         />
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+           <ModernDropdown 
+              value={selectedFundId} 
+              onChange={(val) => setSelectedFundId(val)}
+              options={[
+                { value: 'all', label: 'All Funds' },
+                ...fundsList.map(f => ({ value: f.id, label: f.name }))
+              ]}
+              className="w-full sm:w-56"
+           />
+           <ModernDropdown 
+              value={selectedCategory} 
+              onChange={(val) => setSelectedCategory(val)}
+              options={[
+                { value: 'all', label: 'All Categories' },
+                ...categoriesList.map(c => ({ value: c.name, label: c.name }))
+              ]}
+              className="w-full sm:w-56"
+           />
+        </div>
       </div>
 
 

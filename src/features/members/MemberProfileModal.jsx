@@ -12,7 +12,7 @@ import {
   getPrimaryRole,
   getAssignableRoles,
 } from '../../utils/permissions';
-
+import { getMembershipBadgeInfo } from './utils/memberStatusUtils';
 
 export default function MemberProfileModal({ isOpen, onClose, member = null }) {
   const { userProfile, activeChurchId } = useAuth();
@@ -388,14 +388,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
                   <dl className="space-y-3">
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Status</dt>
                       <dd className="col-span-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          member.membershipStatus === 'Active' ? 'bg-green-100 text-green-800' : 
-                          member.membershipStatus === 'Fellowship' ? 'bg-emerald-100 text-emerald-800' : 
-                          (member.membershipStatus === 'Visitor') ? 'bg-blue-100 text-blue-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {member.membershipStatus || 'Active'}
-                        </span>
+                        {(() => {
+                          const badge = getMembershipBadgeInfo(member);
+                          return (
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badge.className}`}>
+                              {badge.label}
+                            </span>
+                          );
+                        })()}
                       </dd>
                     </div>
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Role(s)</dt>
@@ -409,7 +409,31 @@ export default function MemberProfileModal({ isOpen, onClose, member = null }) {
                         </div>
                       </dd>
                     </div>
-                    <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Baptism</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.baptismStatus || 'Not specified'}</dd></div>
+                    <div className="grid grid-cols-3">
+                      <dt className="text-sm text-gray-500">Baptism</dt>
+                      <dd className="col-span-2 text-sm font-medium text-church-navy">
+                        {member?.baptismStatus === 'Baptized' ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                              Baptized
+                            </span>
+                            {member.baptismDate ? (
+                              <span className="text-xs text-church-slate font-medium">
+                                {new Date(member.baptismDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : member?.baptismStatus === 'To Be Baptized' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            To Be Baptized
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-xs font-medium">
+                            {member?.baptismStatus || 'Not Baptized'}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
                     <div className="grid grid-cols-3"><dt className="text-sm text-gray-500">Joined</dt><dd className="col-span-2 text-sm font-medium text-church-navy">{member.createdAt?.toDate ? member.createdAt.toDate().toLocaleDateString() : 'N/A'}</dd></div>
                   </dl>
                 </div>

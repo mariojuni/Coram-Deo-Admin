@@ -8,6 +8,11 @@ import MemberProfileModal from './MemberProfileModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import * as XLSX from 'xlsx';
 import HouseholdsList from './HouseholdsList';
+import {
+  getMembershipCategory,
+  getMembershipSubStatus,
+  getMembershipBadgeInfo
+} from './utils/memberStatusUtils';
 
 export default function MembersList() {
   const { userProfile } = useAuth();
@@ -136,13 +141,22 @@ export default function MembersList() {
       (m.phoneNumber || m.phone || '')?.includes(debouncedSearchTerm);
       
     // Status match
+    const cat = getMembershipCategory(m);
+    const sub = getMembershipSubStatus(m);
     let statusMatch = false;
+
     if (filterStatus === 'All') {
-      statusMatch = m.membershipStatus !== 'Archived';
+      statusMatch = cat !== 'Archived';
     } else if (filterStatus === 'ActiveAndFellowship') {
-      statusMatch = m.membershipStatus === 'Active' || m.membershipStatus === 'Fellowship' || !m.membershipStatus;
+      statusMatch = (cat === 'Full Member' && sub === 'Active') || cat === 'Fellowship';
+    } else if (filterStatus === 'FullMemberActive' || filterStatus === 'Active') {
+      statusMatch = cat === 'Full Member' && sub === 'Active';
+    } else if (filterStatus === 'FullMemberInactive' || filterStatus === 'Inactive') {
+      statusMatch = cat === 'Full Member' && sub === 'Inactive';
+    } else if (filterStatus === 'FullMemberAll') {
+      statusMatch = cat === 'Full Member';
     } else {
-      statusMatch = (m.membershipStatus || 'Active') === filterStatus;
+      statusMatch = cat === filterStatus || (m.membershipStatus || 'Active') === filterStatus;
     }
 
     // Location match
@@ -152,7 +166,7 @@ export default function MembersList() {
 
     // Exception: If they explicitly filter by Archived, show archived.
     if (filterStatus === 'Archived') {
-      return searchMatch && m.membershipStatus === 'Archived' && locationMatch;
+      return searchMatch && cat === 'Archived' && locationMatch;
     }
 
     return searchMatch && statusMatch && locationMatch;
@@ -262,20 +276,41 @@ export default function MembersList() {
         const computedName = [firstName, middleName, lastName].filter(Boolean).join(' ');
         
         const remarks = record.remarks || record.remark || '';
+        let parsedCategory = 'Full Member';
         let parsedStatus = 'Active';
-        if (remarks) {
-          const upperRemarks = remarks.toUpperCase();
-          if (upperRemarks.includes('FULL MEMBER')) {
-            parsedStatus = 'Active';
-          } else if (upperRemarks.includes('INACTIVE')) {
-            parsedStatus = 'Inactive';
-          } else if (upperRemarks.includes('VISITOR')) {
-            parsedStatus = 'Visitor';
-          }
+
+        const rawCategory = (record.category || record['membership category'] || record['membership status'] || record.status || '').trim().toUpperCase();
+        const upperRemarks = remarks.toUpperCase();
+
+        if (rawCategory.includes('VISITOR') || upperRemarks.includes('VISITOR')) {
+          parsedCategory = 'Visitor';
+          parsedStatus = 'Visitor';
+        } else if (rawCategory.includes('FELLOWSHIP') || upperRemarks.includes('FELLOWSHIP')) {
+          parsedCategory = 'Fellowship';
+          parsedStatus = 'Fellowship';
+        } else if (rawCategory.includes('TRANSFERRED') || upperRemarks.includes('TRANSFERRED')) {
+          parsedCategory = 'Transferred';
+          parsedStatus = 'Transferred';
+        } else if (rawCategory.includes('DECEASED') || upperRemarks.includes('DECEASED')) {
+          parsedCategory = 'Deceased';
+          parsedStatus = 'Deceased';
+        } else if (rawCategory.includes('INACTIVE') || upperRemarks.includes('INACTIVE')) {
+          parsedCategory = 'Full Member';
+          parsedStatus = 'Inactive';
+        } else {
+          parsedCategory = 'Full Member';
+          parsedStatus = 'Active';
         }
         
-        const baptizedVal = record.baptized || record.baptize || record.betized || record['baptism status'] || '';
-        const parsedBaptism = baptizedVal.trim().toLowerCase() === 'yes' ? 'Baptized' : 'Not Baptized';
+        const baptizedVal = (record.baptized || record.baptize || record.betized || record['baptism status'] || record.baptism || '').trim().toLowerCase();
+        let parsedBaptism = 'Not Baptized';
+        if (baptizedVal === 'yes' || baptizedVal === 'baptized') {
+          parsedBaptism = 'Baptized';
+        } else if (baptizedVal.includes('candidate') || baptizedVal.includes('to be') || baptizedVal === 'pending') {
+          parsedBaptism = 'To Be Baptized';
+        }
+
+        const parsedBaptismDate = record['baptism date'] || record.baptismdate || record['date baptized'] || record['baptized date'] || '';
         
         const sexVal = record.sex || record.gender || '';
         let parsedGender = '';
@@ -297,8 +332,10 @@ export default function MembersList() {
           gender: parsedGender,
           birthDate: parsedBirthDate,
           role: 'member',
+          membershipCategory: parsedCategory,
           membershipStatus: parsedStatus,
           baptismStatus: parsedBaptism,
+          baptismDate: parsedBaptismDate,
           notes: remarks,
           churchId: userProfile?.churchId ,
           createdAt: new Date()
@@ -333,15 +370,21 @@ export default function MembersList() {
                   existingValue === 'Active' // Might update status if it changed
               )) {
                 // Prevent overwriting core fields
-                if (key !== 'createdAt' && key !== 'churchId' && key !== 'role' && key !== 'name' && key !== 'membershipStatus') {
+                if (key !== 'createdAt' && key !== 'churchId' && key !== 'role' && key !== 'name' && key !== 'membershipStatus' && key !== 'membershipCategory') {
                   updates[key] = value;
                 }
               }
             }
             
-            // Special handling for membership status changes
-            if (newMember.membershipStatus && newMember.membershipStatus !== 'Active' && existingMember.membershipStatus !== newMember.membershipStatus) {
-                updates.membershipStatus = newMember.membershipStatus;
+            // Special handling for membership status & category changes
+            if (newMember.membershipCategory && existingMember.membershipCategory !== newMember.membershipCategory) {
+              updates.membershipCategory = newMember.membershipCategory;
+            }
+            if (newMember.membershipStatus && existingMember.membershipStatus !== newMember.membershipStatus) {
+              updates.membershipStatus = newMember.membershipStatus;
+            }
+            if (newMember.baptismDate && !existingMember.baptismDate) {
+              updates.baptismDate = newMember.baptismDate;
             }
 
             if (Object.keys(updates).length > 0) {
@@ -466,11 +509,13 @@ export default function MembersList() {
               <ModernDropdown
                 value={filterStatus}
                 onChange={(val) => setFilterStatus(val)}
-                className="w-48"
+                className="w-56"
                 options={[
                   { value: 'ActiveAndFellowship', label: 'Active & Fellowship' },
                   { value: 'All', label: 'All (Except Archived)' },
-                  { value: 'Active', label: 'Active Only' },
+                  { value: 'FullMemberActive', label: 'Full Member (Active)' },
+                  { value: 'FullMemberInactive', label: 'Full Member (Inactive)' },
+                  { value: 'FullMemberAll', label: 'All Full Members' },
                   { value: 'Visitor', label: 'Visitors' },
                   { value: 'Fellowship', label: 'Fellowship' },
                   { value: 'Transferred', label: 'Transferred' },
@@ -527,14 +572,14 @@ export default function MembersList() {
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col items-start space-y-1">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${
-                          member.membershipStatus === 'Active' ? 'bg-green-100 text-green-800' :
-                          member.membershipStatus === 'Fellowship' ? 'bg-emerald-100 text-emerald-800' :
-                          (member.membershipStatus === 'Archived' || member.membershipStatus === 'Deceased' || member.membershipStatus === 'Transferred') ? 'bg-gray-100 text-gray-600' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {member.membershipStatus || 'Active'}
-                        </span>
+                        {(() => {
+                          const badge = getMembershipBadgeInfo(member);
+                          return (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${badge.className}`}>
+                              {badge.label}
+                            </span>
+                          );
+                        })()}
                         <span className="text-[10px] uppercase font-bold text-gray-400">
                           {member.role?.replace('_', ' ') || 'Member'}
                         </span>

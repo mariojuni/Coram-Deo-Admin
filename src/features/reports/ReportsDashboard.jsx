@@ -111,13 +111,25 @@ export default function ReportsDashboard() {
           }
         });
         
-        const finalData = uniqueDocs.filter(d => d.membershipStatus !== 'Archived');
+        const finalData = uniqueDocs.filter(d => (d.membershipCategory || d.membershipStatus) !== 'Archived');
         finalData.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
 
-        const activeTotal = finalData.filter(d => d.membershipStatus === 'Active' || !d.membershipStatus).length;
-        const transferredTotal = finalData.filter(d => d.membershipStatus === 'Transferred').length;
-        const deceasedTotal = finalData.filter(d => d.membershipStatus === 'Deceased').length;
-        const fellowshipTotal = finalData.filter(d => d.membershipStatus === 'Fellowship').length;
+        const activeFullMembersTotal = finalData.filter(d => {
+          const cat = d.membershipCategory || (d.membershipStatus === 'Active' || d.membershipStatus === 'Inactive' ? 'Full Member' : d.membershipStatus);
+          const sub = d.membershipStatus || 'Active';
+          return cat === 'Full Member' && sub !== 'Inactive';
+        }).length;
+
+        const inactiveFullMembersTotal = finalData.filter(d => {
+          const cat = d.membershipCategory || (d.membershipStatus === 'Active' || d.membershipStatus === 'Inactive' ? 'Full Member' : d.membershipStatus);
+          const sub = d.membershipStatus || 'Active';
+          return cat === 'Full Member' && sub === 'Inactive';
+        }).length;
+
+        const transferredTotal = finalData.filter(d => (d.membershipCategory || d.membershipStatus) === 'Transferred').length;
+        const deceasedTotal = finalData.filter(d => (d.membershipCategory || d.membershipStatus) === 'Deceased').length;
+        const fellowshipTotal = finalData.filter(d => (d.membershipCategory || d.membershipStatus) === 'Fellowship').length;
+        const visitorsTotal = finalData.filter(d => (d.membershipCategory || d.membershipStatus) === 'Visitor').length;
 
         csvContent = `"${churchName.toUpperCase()}"\n`;
         if (cData?.district) csvContent += `"${cData.district.toUpperCase()}"\n`;
@@ -126,23 +138,25 @@ export default function ReportsDashboard() {
         csvContent += `\n`;
         
         const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        csvContent += `"Updated List of ${churchName} Full Members as of ${currentDate}"\n`;
+        csvContent += `"Updated List of ${churchName} Members as of ${currentDate}"\n`;
         if (cData?.dateOrganized) csvContent += `"Date Organized: ${cData.dateOrganized}"\n`;
         
         csvContent += `\n`;
-        csvContent += `"TOTALS: Active (${activeTotal}) - Transferred (${transferredTotal}) - Deceased (${deceasedTotal}) - Fellowship (${fellowshipTotal})"\n\n`;
+        csvContent += `"TOTALS: Active Full Members (${activeFullMembersTotal}) - Inactive Full Members (${inactiveFullMembersTotal}) - Fellowship (${fellowshipTotal}) - Visitors (${visitorsTotal}) - Transferred (${transferredTotal}) - Deceased (${deceasedTotal})"\n\n`;
 
-        csvContent += `"NAME","GENDER","BIRTHDAY","DATE RECEIVED","CATEGORY","BAPTIZED","ABROAD"\n`;
+        csvContent += `"NAME","GENDER","BIRTHDAY","DATE RECEIVED","CATEGORY","STATUS","BAPTISM STATUS","BAPTISM DATE","ABROAD"\n`;
         
         finalData.forEach(m => {
           const gender = m.gender ? m.gender.charAt(0).toUpperCase() : '';
           const birthday = m.birthDate || m.birthday ? new Date(m.birthDate || m.birthday).toLocaleDateString() : '';
           const dateReceived = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleDateString() : '';
-          const category = m.membershipStatus || 'Active';
-          const baptized = m.baptismStatus === 'Baptized' ? 'Yes' : '';
+          const category = m.membershipCategory || (m.membershipStatus === 'Active' || m.membershipStatus === 'Inactive' ? 'Full Member' : (m.membershipStatus || 'Full Member'));
+          const status = category === 'Full Member' ? (m.membershipStatus === 'Inactive' ? 'Inactive' : 'Active') : category;
+          const baptismStatus = m.baptismStatus || 'Not Baptized';
+          const baptismDate = m.baptismDate ? new Date(m.baptismDate).toLocaleDateString() : '';
           const abroad = m.isAbroad ? 'Yes' : 'No';
           
-          csvContent += `"${m.displayName}","${gender}","${birthday}","${dateReceived}","${category}","${baptized}","${abroad}"\n`;
+          csvContent += `"${m.displayName}","${gender}","${birthday}","${dateReceived}","${category}","${status}","${baptismStatus}","${baptismDate}","${abroad}"\n`;
         });
       }
       else if (reportType === 'giving') {
