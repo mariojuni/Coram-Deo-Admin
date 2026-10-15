@@ -69,17 +69,11 @@ export function canViewMinistryDashboard(userProfile) {
 
 /**
  * Can view small groups / discipleship overview card.
- * Allowed: super_admin, church_admin, pastor, secretary, ministry_leader
+ * Allowed: super_admin only (temporarily hidden for other roles)
  */
 export function canViewGroupsDashboard(userProfile) {
   if (!canViewDashboard(userProfile)) return false;
-  return hasAnyRole(userProfile, [
-    'super_admin',
-    'church_admin',
-    'pastor',
-    'secretary',
-    'ministry_leader',
-  ]);
+  return hasRole(userProfile, 'super_admin');
 }
 
 /**
@@ -117,7 +111,6 @@ export function getDashboardQuickActions(userProfile) {
   } else if (isPastor) {
     actions.push(
       { id: 'view_prayers', label: 'View Prayer Requests', path: '/admin/prayer', primary: true, color: 'bg-blue-600' },
-      { id: 'view_groups', label: 'View Groups', path: '/admin/discipleship/groups', primary: true, color: 'bg-purple-600' },
       { id: 'view_sermons', label: 'View Sermons', path: '/admin/sermons', primary: false, color: 'bg-indigo-600' },
       { id: 'view_attendance', label: 'View Attendance', path: '/admin/attendance', primary: false, color: 'bg-church-green' }
     );

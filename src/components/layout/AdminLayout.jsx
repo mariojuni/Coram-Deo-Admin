@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Menu, Bell, Search } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminLayout() {
@@ -17,21 +17,11 @@ export default function AdminLayout() {
         <header className="h-16 bg-transparent flex items-center justify-between px-2 lg:px-6 sticky top-0 z-10 mb-4">
           <div className="flex items-center">
             <button 
-              className="p-2 mr-4 text-gray-500 rounded-lg lg:hidden hover:bg-gray-100"
+              className="p-2 text-gray-500 rounded-lg lg:hidden hover:bg-gray-100"
               onClick={() => setIsSidebarOpen(true)}
             >
               <Menu size={24} />
             </button>
-            <div className="relative hidden sm:block">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search size={18} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Search..."
-              />
-            </div>
           </div>
           
           <div className="flex items-center space-x-4">

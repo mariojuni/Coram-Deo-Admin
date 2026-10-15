@@ -271,12 +271,16 @@ function AppRoutes() {
           
           <Route 
             path="discipleship" 
-            element={<Navigate to="/admin/discipleship/groups" replace />} 
+            element={
+              <RoleGuard allowedRoles={['super_admin']}>
+                <Navigate to="/admin/discipleship/groups" replace />
+              </RoleGuard>
+            } 
           />
           <Route 
             path="discipleship/groups" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <DiscipleshipGroupsPage />
               </RoleGuard>
             } 
@@ -284,7 +288,7 @@ function AppRoutes() {
           <Route 
             path="discipleship/groups/:id" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <DiscipleshipGroupDetailPage />
               </RoleGuard>
             } 
@@ -292,7 +296,7 @@ function AppRoutes() {
           <Route 
             path="discipleship/materials" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor', 'secretary', 'ministry_leader']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <DiscipleshipGroupMaterialsPage />
               </RoleGuard>
             } 
@@ -300,7 +304,7 @@ function AppRoutes() {
           <Route 
             path="discipleship/plans" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <DiscipleshipPlans />
               </RoleGuard>
             } 
@@ -308,7 +312,7 @@ function AppRoutes() {
           <Route 
             path="discipleship/plans/:id" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <DiscipleshipPlanDetail />
               </RoleGuard>
             } 
