@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Plus, Receipt, Edit, Trash2, ArrowUpRight, TrendingDown } from 'lucide-react';
 import ExpenseFormModal from './ExpenseFormModal';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function ExpensesList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const CHURCH_ID = userProfile?.churchId;
   
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +128,7 @@ export default function ExpensesList() {
   const mapFundIdToName = (fundId, fundType) => {
     if (fundId && fundsMap[fundId]) return fundsMap[fundId];
     if (fundType) return fundType;
-    return 'General'; // Default legacy fallback
+    return 'General';
   };
 
   const filteredExpenses = expenses.filter(r => {
@@ -143,139 +146,186 @@ export default function ExpensesList() {
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(amount || 0);
+  };
+
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Expenses</h1>
-          <p className="text-sm text-church-slate mt-1">Track and manage church outflows and receipts.</p>
+          <span className="text-[11px] font-extrabold text-rose-500 tracking-wider uppercase bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+            OPERATIONAL EXPENDITURES
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-church-charcoal tracking-tight mt-2">
+            Expenses
+          </h1>
+          <p className="text-xs sm:text-sm text-church-slate mt-1">
+            Track and manage church outflows, ministry receipts, and vendor payments.
+          </p>
         </div>
-        <button 
-          onClick={handleAddClick}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
-        >
-          <Plus size={18} className="mr-2" />
-          Log Expense
-        </button>
-      </div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-3xl shadow-church-soft border border-gray-100 space-y-4 md:space-y-0">
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-           <ModernDropdown 
-              value={selectedFundId} 
-              onChange={(val) => setSelectedFundId(val)}
-              options={[
-                { value: 'all', label: 'All Funds' },
-                ...fundsList.map(f => ({ value: f.id, label: f.name }))
-              ]}
-              className="w-full sm:w-56"
-           />
-           <ModernDropdown 
-              value={selectedCategory} 
-              onChange={(val) => setSelectedCategory(val)}
-              options={[
-                { value: 'all', label: 'All Categories' },
-                ...categoriesList.map(c => ({ value: c.name, label: c.name }))
-              ]}
-              className="w-full sm:w-56"
-           />
-        </div>
-      </div>
-
-
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-church-slate">Loading expenses...</p>
-        </div>
-      ) : expenses.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-12 flex flex-col items-center justify-center flex-1">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-            <Receipt size={32} className="text-gray-400" />
-          </div>
-          <h3 className="text-xl font-bold text-church-navy mb-2">No expenses logged</h3>
-          <p className="text-church-slate text-center max-w-sm mb-6">Record your first church expense to start tracking outflows.</p>
-          <button 
+        <div className="flex items-center space-x-3 shrink-0">
+          <GradientButton 
             onClick={handleAddClick}
-            className="px-6 py-3 bg-white border border-gray-300 text-church-navy rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            icon={Plus}
           >
             Log Expense
-          </button>
+          </GradientButton>
         </div>
+      </div>
+
+      {/* Overview Stat Badges */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SoftCard className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">Filtered Outflow</p>
+            <p className="text-xl font-black text-rose-500 mt-1">{formatCurrency(totalExpenses)}</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center">
+            <ArrowUpRight size={20} />
+          </div>
+        </SoftCard>
+
+        <SoftCard className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">Expense Vouchers</p>
+            <p className="text-xl font-black text-church-charcoal mt-1">{filteredExpenses.length} vouchers logged</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-gray-50 text-church-slate border border-gray-100 flex items-center justify-center">
+            <Receipt size={20} />
+          </div>
+        </SoftCard>
+      </div>
+
+      {/* Filter Row */}
+      <SoftCard className="p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <ModernDropdown 
+            value={selectedFundId} 
+            onChange={(val) => setSelectedFundId(val)}
+            options={[
+              { value: 'all', label: 'All Funds' },
+              ...fundsList.map(f => ({ value: f.id, label: f.name }))
+            ]}
+            className="w-full sm:w-56"
+          />
+          <ModernDropdown 
+            value={selectedCategory} 
+            onChange={(val) => setSelectedCategory(val)}
+            options={[
+              { value: 'all', label: 'All Categories' },
+              ...categoriesList.map(c => ({ value: c.name, label: c.name }))
+            ]}
+            className="w-full sm:w-56"
+          />
+        </div>
+      </SoftCard>
+
+      {/* Table Section */}
+      {loading ? (
+        <SoftCard className="p-16 text-center">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <p className="text-sm font-semibold text-church-slate">Loading expenses...</p>
+          </div>
+        </SoftCard>
+      ) : expenses.length === 0 ? (
+        <SoftCard className="p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+            <Receipt size={30} />
+          </div>
+          <h3 className="text-lg font-black text-church-charcoal mb-1">No expenses logged</h3>
+          <p className="text-church-slate text-sm max-w-sm mb-6">Record your first church expense to start tracking outflows.</p>
+          <GradientButton onClick={handleAddClick} icon={Plus}>
+            Log Expense
+          </GradientButton>
+        </SoftCard>
       ) : (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden">
-          <div className="overflow-x-auto">
+        <SoftCard className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center">
+            <h2 className="text-base font-extrabold text-church-charcoal">
+              Expense Records ({filteredExpenses.length})
+            </h2>
+          </div>
+          <div className="overflow-auto flex-1">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Payee</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Fund</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Amount</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Receipt</th>
-                  <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+              <thead className="sticky top-0 z-10 bg-gray-50/90 backdrop-blur-sm border-b border-gray-100">
+                <tr className="text-[11px] font-bold text-church-charcoal uppercase tracking-wider">
+                  <th className="p-4 pl-6">Date</th>
+                  <th className="p-4">Payee & Purpose</th>
+                  <th className="p-4">Category</th>
+                  <th className="p-4">Source Fund</th>
+                  <th className="p-4 text-right">Amount</th>
+                  <th className="p-4 text-center">Receipt</th>
+                  <th className="p-4 text-right pr-6">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100 text-sm">
                 {filteredExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6 text-sm text-church-slate whitespace-nowrap">
+                  <tr key={expense.id} className="hover:bg-gray-50/60 transition-colors group">
+                    <td className="p-4 pl-6 whitespace-nowrap text-xs font-semibold text-church-slate">
                       {formatDate(expense.date)}
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="text-sm font-bold text-church-navy">{expense.payee}</div>
+                    <td className="p-4">
+                      <div className="text-sm font-bold text-church-charcoal">{expense.payee}</div>
                       {expense.description && (
-                        <div className="text-xs text-gray-400 line-clamp-1 mt-0.5">{expense.description}</div>
+                        <div className="text-xs text-church-muted line-clamp-1 mt-0.5">{expense.description}</div>
                       )}
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                        {expense.category}
-                      </span>
+                    <td className="p-4 whitespace-nowrap">
+                      <StatusPill variant="slate">
+                        {expense.category || 'General'}
+                      </StatusPill>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-800">
+                    <td className="p-4 whitespace-nowrap">
+                      <StatusPill variant="violet">
                         {mapFundIdToName(expense.fundId, expense.fundType)}
-                      </span>
+                      </StatusPill>
                     </td>
-                    <td className="py-4 px-6 text-sm font-bold text-red-600 text-right whitespace-nowrap">
-                      ₱{(expense.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <td className="p-4 text-right whitespace-nowrap font-black text-base text-rose-500">
+                      -{formatCurrency(expense.amount)}
                     </td>
-                    <td className="py-4 px-6 text-center">
+                    <td className="p-4 text-center whitespace-nowrap">
                       {expense.receiptUrl ? (
                         <a 
                           href={expense.receiptUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                          className="inline-flex items-center justify-center p-2 bg-rose-50 text-church-rose rounded-xl hover:bg-rose-100 transition-colors"
                           title="View Receipt"
                         >
                           <Receipt size={16} />
                         </a>
                       ) : (
-                        <span className="text-gray-300 text-xs">-</span>
+                        <span className="text-gray-300 text-xs font-bold">-</span>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <button 
-                        onClick={() => handleEditClick(expense)}
-                        className="text-gray-400 hover:text-church-navy p-1.5 transition-colors inline-block"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteClick(expense.id, expense.payee)}
-                        className="text-gray-400 hover:text-red-600 p-1.5 transition-colors inline-block ml-2"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                    <td className="p-4 pr-6 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <button 
+                          onClick={() => handleEditClick(expense)}
+                          className="text-church-slate hover:text-church-charcoal p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(expense.id, expense.payee)}
+                          className="text-church-slate hover:text-red-500 p-2 rounded-xl hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </SoftCard>
       )}
 
       <ExpenseFormModal 

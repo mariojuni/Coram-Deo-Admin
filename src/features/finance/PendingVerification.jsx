@@ -4,6 +4,8 @@ import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { Search, CheckCircle, XCircle, FileImage, ExternalLink, Activity } from 'lucide-react';
+import SoftCard from '../../components/ui/SoftCard';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function PendingVerification() {
   const { userProfile, currentUser } = useAuth();
@@ -166,44 +168,64 @@ export default function PendingVerification() {
   });
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading pending verifications...</div>;
+    return (
+      <SoftCard className="p-16 text-center">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+          <p className="text-sm font-semibold text-church-slate">Loading pending verifications...</p>
+        </div>
+      </SoftCard>
+    );
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-church-navy">Pending Verification</h2>
+    <SoftCard className="p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span className="text-[11px] font-extrabold text-church-rose tracking-wider uppercase bg-church-rose-light px-3 py-1 rounded-full border border-pink-100">
+            AUDIT & VERIFICATION
+          </span>
+          <h2 className="text-xl sm:text-2xl font-black text-church-charcoal tracking-tight mt-2">
+            Pending Submissions ({pendingRecords.length})
+          </h2>
+          <p className="text-xs sm:text-sm text-church-slate mt-0.5">
+            Review online transfers, e-wallet submissions, and deposit slips awaiting approval.
+          </p>
+        </div>
         
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-72">
           <input
             type="text"
-            placeholder="Search by name or fund..."
+            placeholder="Search by donor or fund..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-church-green/50"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose bg-gray-50/50 transition-all"
           />
-          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <Search size={16} className="absolute left-3.5 top-2.5 text-gray-400" />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200">
+      <div className="overflow-x-auto rounded-2xl border border-gray-100">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Submitted</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Submitted By</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Fund / Campaign</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Proof</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+            <tr className="bg-gray-50/80 border-b border-gray-100 text-[11px] font-bold text-church-charcoal uppercase tracking-wider">
+              <th className="p-4 pl-6">Date Submitted</th>
+              <th className="p-4">Submitted By</th>
+              <th className="p-4">Fund Allocation</th>
+              <th className="p-4">Amount</th>
+              <th className="p-4">Proof of Payment</th>
+              <th className="p-4 pr-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+          <tbody className="divide-y divide-gray-100 bg-white text-sm">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center text-church-slate flex flex-col items-center">
-                  <CheckCircle size={32} className="mb-3 text-gray-300" />
-                  <p>No pending submissions.</p>
+                <td colSpan="6" className="p-16 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-600 flex items-center justify-center mb-3 mx-auto border border-emerald-100/60 shadow-sm">
+                    <CheckCircle size={30} />
+                  </div>
+                  <p className="text-church-charcoal font-black text-lg">All caught up!</p>
+                  <p className="text-church-slate text-sm mt-1">No pending digital transactions to review.</p>
                 </td>
               </tr>
             ) : (
@@ -211,74 +233,74 @@ export default function PendingVerification() {
                 const submittedDate = record.submittedAt?.toDate ? record.submittedAt.toDate() : new Date();
                 const donorName = getDonorName(record);
                 return (
-                  <tr key={record.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm font-medium text-church-navy">
+                  <tr key={record.id} className="hover:bg-gray-50/60 transition-colors group">
+                    <td className="p-4 pl-6 whitespace-nowrap">
+                      <p className="text-xs font-bold text-church-charcoal">
                         {submittedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-[11px] text-church-slate mt-0.5">
                         {submittedDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3">
-                          {donorName.charAt(0).toUpperCase()}
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
+                          {donorName.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-church-navy">{donorName}</p>
-                          <p className="text-xs text-gray-500">App Submission</p>
+                          <p className="text-sm font-bold text-church-charcoal">{donorName}</p>
+                          <span className="text-[11px] text-church-muted font-medium">App Submission</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg mr-2">
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-1.5">
+                        <StatusPill variant="violet">
                           {mapFundIdToName(record.fundId, record.fundType)}
-                        </span>
+                        </StatusPill>
                         {record.campaignId && (
-                          <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg">
+                          <StatusPill variant="amber" className="text-[10px] py-0 px-2">
                             Campaign
-                          </span>
+                          </StatusPill>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-church-green bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                    <td className="p-4 whitespace-nowrap">
+                      <span className="text-base font-black text-emerald-600">
                         {formatCurrency(record.amount)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="p-4 whitespace-nowrap">
                       {record.proofOfPaymentUrl ? (
                         <a 
                           href={record.proofOfPaymentUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center text-sm text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors w-max"
+                          className="inline-flex items-center text-xs font-bold text-church-rose hover:text-church-rose-dark bg-rose-50 hover:bg-rose-100/80 px-3 py-1.5 rounded-xl transition-colors border border-rose-100"
                         >
-                          <FileImage size={16} className="mr-1.5" />
+                          <FileImage size={15} className="mr-1.5" />
                           View Receipt
-                          <ExternalLink size={12} className="ml-1.5 opacity-50" />
+                          <ExternalLink size={12} className="ml-1.5 opacity-60" />
                         </a>
                       ) : (
-                        <span className="text-sm text-gray-400 italic">No receipt</span>
+                        <span className="text-xs text-church-muted italic">No receipt attached</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="p-4 pr-6 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <button 
                           onClick={() => handleApprove(record)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-xl transition-colors"
-                          title="Approve"
+                          className="flex items-center px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60 rounded-xl transition-all shadow-sm"
+                          title="Approve Transaction"
                         >
-                          <CheckCircle size={20} />
+                          <CheckCircle size={15} className="mr-1" /> Approve
                         </button>
                         <button 
                           onClick={() => handleReject(record)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                          title="Reject"
+                          className="flex items-center px-3 py-1.5 text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/60 rounded-xl transition-all"
+                          title="Reject Transaction"
                         >
-                          <XCircle size={20} />
+                          <XCircle size={15} className="mr-1" /> Decline
                         </button>
                       </div>
                     </td>
@@ -289,6 +311,6 @@ export default function PendingVerification() {
           </tbody>
         </table>
       </div>
-    </div>
+    </SoftCard>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, TrendingUp, TrendingDown, Clock, ShieldAlert } from 'lucide-react';
+import { TrendingUp, Clock } from 'lucide-react';
 import { canViewFinanceDashboard } from '../../../utils/dashboardPermissions';
 
 export default function FinanceOverviewCard({ financeData, loading, userProfile }) {
@@ -75,21 +75,37 @@ export default function FinanceOverviewCard({ financeData, loading, userProfile 
           {/* Active campaign progress */}
           {activeCampaigns.length > 0 && (
             <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs font-bold text-church-navy mb-2">Active Giving Campaign</p>
-              {activeCampaigns.slice(0, 1).map((camp) => {
-                const percent = camp.targetAmount ? Math.min(Math.round((camp.currentAmount / camp.targetAmount) * 100), 100) : 0;
-                return (
-                  <div key={camp.id} className="space-y-1">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-church-navy font-bold truncate">{camp.title || camp.name}</span>
-                      <span className="text-church-slate">{percent}%</span>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-xs font-bold text-church-navy">Active Giving Campaign</p>
+                <Link to="/admin/finance/campaigns" className="text-[11px] font-semibold text-church-green hover:underline">
+                  View all
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {activeCampaigns.slice(0, 2).map((camp) => {
+                  const goal = Number(camp.goalAmount || camp.targetAmount || 0);
+                  const raised = Number(camp.raisedAmount || camp.currentAmount || 0);
+                  const percent = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
+                  return (
+                    <div key={camp.id} className="space-y-1.5 bg-gray-50/70 p-2.5 rounded-xl border border-gray-100">
+                      <div className="flex justify-between text-xs font-medium gap-2">
+                        <span className="text-church-navy font-bold truncate">{camp.title || camp.name || 'Giving Campaign'}</span>
+                        <span className="text-church-green font-bold whitespace-nowrap">{percent}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200/80 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-church-green h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[11px] text-church-slate font-medium">
+                        <span>{formatCurrency(raised)} raised</span>
+                        {goal > 0 && <span>Goal: {formatCurrency(goal)}</span>}
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div className="bg-church-green h-2 rounded-full" style={{ width: `${percent}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

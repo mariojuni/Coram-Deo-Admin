@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Routes, Route, Navigate } from 'react-router-dom';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -38,6 +40,20 @@ import ExpenseCategoriesList from './expense-categories/ExpenseCategoriesList';
 
 export default function FinanceLayout() {
   const { userProfile } = useAuth();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!userProfile?.churchId) return;
+    const qPending = query(
+      collection(db, 'givingRecords'),
+      where('churchId', '==', userProfile.churchId),
+      where('status', '==', 'pending')
+    );
+    const unsubscribe = onSnapshot(qPending, (snap) => {
+      setPendingCount(snap.docs.length);
+    }, () => {});
+    return () => unsubscribe();
+  }, [userProfile?.churchId]);
   
   if (!canAccessFinanceModule(userProfile)) {
     return (
@@ -59,7 +75,13 @@ export default function FinanceLayout() {
   }
 
   if (canVerifyGiving(userProfile)) {
-    tabs.push({ name: 'Verification', path: '/admin/finance/verification', icon: ClipboardCheck, exact: false });
+    tabs.push({ 
+      name: 'Verification', 
+      path: '/admin/finance/verification', 
+      icon: ClipboardCheck, 
+      exact: false,
+      badge: pendingCount > 0 ? pendingCount : null
+    });
   }
 
   if (canManageExpenses(userProfile) || canViewFinanceSummary(userProfile)) {
@@ -85,8 +107,8 @@ export default function FinanceLayout() {
     <div className="flex flex-col h-full max-w-7xl mx-auto pb-10">
       
       {/* Top Navigation Tabs */}
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 mb-6 p-2 overflow-x-auto custom-scrollbar shrink-0">
-        <nav className="flex space-x-1 min-w-max">
+      <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-church-soft border border-gray-100/80 mb-6 p-2 overflow-x-auto custom-scrollbar shrink-0">
+        <nav className="flex space-x-1.5 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -95,15 +117,20 @@ export default function FinanceLayout() {
                 to={tab.path}
                 end={tab.exact}
                 className={({ isActive }) =>
-                  `flex items-center px-4 py-2.5 rounded-2xl text-sm font-bold transition-all ${
+                  `flex items-center px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-150 ${
                     isActive
-                      ? 'bg-church-green text-white shadow-sm'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-church-navy'
+                      ? 'bg-gradient-coram text-white shadow-church-glow'
+                      : 'text-church-slate hover:bg-gray-50/80 hover:text-church-charcoal'
                   }`
                 }
               >
-                <Icon size={18} className="mr-2" />
-                {tab.name}
+                <Icon size={17} className="mr-2 shrink-0" />
+                <span>{tab.name}</span>
+                {tab.badge && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-full text-[10px] font-black bg-white text-church-rose shadow-sm">
+                    {tab.badge}
+                  </span>
+                )}
               </NavLink>
             );
           })}

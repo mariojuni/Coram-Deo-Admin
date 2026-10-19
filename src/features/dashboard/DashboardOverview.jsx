@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -102,7 +102,24 @@ export default function DashboardOverview() {
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         endOfWeek.setHours(23, 59, 59, 999);
 
-        const startOfMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        const isSameMonth = (dateVal) => {
+          if (!dateVal) return false;
+          let d = null;
+          if (typeof dateVal?.toDate === 'function') {
+            d = dateVal.toDate();
+          } else if (dateVal?.seconds) {
+            d = new Date(dateVal.seconds * 1000);
+          } else if (dateVal instanceof Date) {
+            d = dateVal;
+          } else if (typeof dateVal === 'string') {
+            d = new Date(dateVal.includes('T') ? dateVal : dateVal + 'T00:00:00');
+          }
+          if (!d || isNaN(d.getTime())) return false;
+          return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+        };
 
         // Domain Permission Flags
         const canFinance = canViewFinanceDashboard(userProfile);
@@ -121,27 +138,29 @@ export default function DashboardOverview() {
           getDocs(query(collection(db, 'users'), where('churchId', '==', CHURCH_ID))),
           // 1: Events
           getDocs(query(collection(db, 'events'), where('churchId', '==', CHURCH_ID))),
-          // 2: Attendance
+          // 2: Attendance Sessions (Primary attendance tool)
+          canAttendance ? getDocs(query(collection(db, 'attendance_sessions'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
+          // 3: Flat Attendance check-ins (Scanner / legacy log)
           canAttendance ? getDocs(query(collection(db, 'attendance'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 3: Giving Records
+          // 4: Giving Records
           canFinance ? getDocs(query(collection(db, 'givingRecords'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 4: Giving Expenses
+          // 5: Giving Expenses
           canFinance ? getDocs(query(collection(db, 'givingExpenses'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 5: Giving Campaigns
+          // 6: Giving Campaigns
           canFinance ? getDocs(query(collection(db, 'givingCampaigns'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 6: Ministry Applications
+          // 7: Ministry Applications
           canMinistry ? getDocs(query(collection(db, 'ministryApplications'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 7: Ministry Assignments
+          // 8: Ministry Assignments
           canMinistry ? getDocs(query(collection(db, 'ministryAssignments'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 8: Prayer Requests
+          // 9: Prayer Requests
           canPrayer ? getDocs(collection(db, 'churches', CHURCH_ID, 'prayer_requests')) : Promise.resolve(null),
-          // 9: Discipleship Groups
+          // 10: Discipleship Groups
           canGroups ? getDocs(query(collection(db, 'discipleshipGroups'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 10: Group Materials
+          // 11: Group Materials
           canGroups ? getDocs(query(collection(db, 'discipleshipGroupMaterials'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 11: Worship Setlists
+          // 12: Worship Setlists
           canWorship ? getDocs(query(collection(db, 'worshipSetlists'), where('churchId', '==', CHURCH_ID))) : Promise.resolve(null),
-          // 12: Sermons
+          // 13: Sermons
           getDocs(query(collection(db, 'sermons'), where('churchId', '==', CHURCH_ID))),
         ]);
 
@@ -155,17 +174,18 @@ export default function DashboardOverview() {
 
         const membersDocs = extractData(0);
         const eventsDocs = extractData(1);
-        const attendanceDocs = extractData(2);
-        const givingDocs = extractData(3);
-        const expensesDocs = extractData(4);
-        const campaignsDocs = extractData(5);
-        const applicationsDocs = extractData(6);
-        const assignmentsDocs = extractData(7);
-        const prayerDocs = extractData(8);
-        const groupsDocs = extractData(9);
-        const groupMaterialsDocs = extractData(10);
-        const setlistDocs = extractData(11);
-        const sermonDocs = extractData(12);
+        const attendanceSessionsDocs = extractData(2);
+        const attendanceDocs = extractData(3);
+        const givingDocs = extractData(4);
+        const expensesDocs = extractData(5);
+        const campaignsDocs = extractData(6);
+        const applicationsDocs = extractData(7);
+        const assignmentsDocs = extractData(8);
+        const prayerDocs = extractData(9);
+        const groupsDocs = extractData(10);
+        const groupMaterialsDocs = extractData(11);
+        const setlistDocs = extractData(12);
+        const sermonDocs = extractData(13);
 
         // Process Events This Week
         const publishedEvents = eventsDocs.filter((e) => e.status !== 'cancelled' && e.status !== 'draft');
@@ -183,18 +203,73 @@ export default function DashboardOverview() {
         let monthlyAttTotal = 0;
         let worshipAvg = 0;
         let groupsAvg = 0;
-        if (canAttendance && attendanceDocs.length > 0) {
-          const thisMonthRecords = attendanceDocs.filter((a) => a.date && a.date >= startOfMonthStr);
-          monthlyAttTotal = thisMonthRecords.length;
-          const worshipRecords = thisMonthRecords.filter((a) => (a.category || '').toLowerCase().includes('worship'));
-          const groupRecords = thisMonthRecords.filter((a) => (a.category || '').toLowerCase().includes('group') || (a.category || '').toLowerCase().includes('study'));
-          worshipAvg = worshipRecords.length > 0 ? Math.round(worshipRecords.length / 4) : 0;
-          groupsAvg = groupRecords.length > 0 ? Math.round(groupRecords.length / 4) : 0;
+        let sessionsThisMonthCount = 0;
+
+        if (canAttendance) {
+          // 1. Process attendance_sessions (where roll call / service sessions are tracked)
+          const monthlySessions = [];
+          attendanceSessionsDocs.forEach((s) => {
+            const linkedEvent = eventsDocs.find((e) => e.id === (s.eventId || s.id));
+            const sDate = s.date || s.eventDate || linkedEvent?.date || linkedEvent?.startDateTime || s.createdAt;
+            
+            if (isSameMonth(sDate)) {
+              const present = Number(s.metrics?.present ?? (s.totalAttendance ?? s.present ?? 0));
+              const late = Number(s.metrics?.late || 0);
+              const visitors = Number(s.metrics?.visitors || s.firstTimeVisitors || 0);
+              const totalAttendees = present + late + visitors;
+
+              const cat = (s.category || linkedEvent?.category || s.eventTitle || s.title || linkedEvent?.title || '').toLowerCase();
+
+              monthlySessions.push({
+                id: s.id,
+                date: s.date || linkedEvent?.date || '',
+                totalAttendees,
+                isWorship: cat.includes('worship') || cat.includes('service') || cat.includes('sunday'),
+                isGroup: cat.includes('group') || cat.includes('study') || cat.includes('discipleship') || cat.includes('cell'),
+              });
+            }
+          });
+
+          // 2. Process flat attendance records (from scanner or manual check-in log)
+          const sessionDates = new Set(monthlySessions.map((s) => s.date).filter(Boolean));
+          const monthlyCheckins = attendanceDocs.filter((a) => {
+            const aDate = a.date || a.timestamp || a.createdAt;
+            return isSameMonth(aDate);
+          });
+
+          if (monthlySessions.length > 0) {
+            sessionsThisMonthCount = monthlySessions.length;
+            monthlyAttTotal = monthlySessions.reduce((sum, s) => sum + s.totalAttendees, 0);
+
+            // Add any check-ins on dates not covered by attendance sessions to prevent undercounting
+            const extraCheckins = monthlyCheckins.filter((a) => !sessionDates.has(a.date));
+            monthlyAttTotal += extraCheckins.length;
+
+            const worshipSessions = monthlySessions.filter((s) => s.isWorship);
+            const worshipTotal = worshipSessions.reduce((sum, s) => sum + s.totalAttendees, 0);
+            worshipAvg = worshipSessions.length > 0 ? Math.round(worshipTotal / worshipSessions.length) : 0;
+
+            const groupSessions = monthlySessions.filter((s) => s.isGroup);
+            const groupTotal = groupSessions.reduce((sum, s) => sum + s.totalAttendees, 0);
+            groupsAvg = groupSessions.length > 0 ? Math.round(groupTotal / groupSessions.length) : 0;
+          } else if (monthlyCheckins.length > 0) {
+            monthlyAttTotal = monthlyCheckins.length;
+            const checkinsByDate = {};
+            monthlyCheckins.forEach((a) => {
+              const d = a.date || 'unknown';
+              checkinsByDate[d] = (checkinsByDate[d] || 0) + 1;
+            });
+            const uniqueDates = Object.keys(checkinsByDate);
+            worshipAvg = uniqueDates.length > 0 ? Math.round(monthlyAttTotal / uniqueDates.length) : 0;
+            groupsAvg = 0;
+          }
 
           setAttendanceData({
             totalThisMonth: monthlyAttTotal,
             worshipAvg,
             groupsAvg,
+            sessionsCount: sessionsThisMonthCount,
+            monthName: now.toLocaleString('default', { month: 'long', year: 'numeric' }),
           });
         }
 
@@ -203,26 +278,30 @@ export default function DashboardOverview() {
         let pendingGivingCount = 0;
         let totalExpensesThisMonth = 0;
         if (canFinance) {
-          const thisMonthGiving = givingDocs.filter((g) => {
-            const gDate = g.transactionDate || g.date || '';
-            return gDate >= startOfMonthStr;
-          });
-          thisMonthGiving.forEach((g) => {
-            if (g.status === 'approved' || g.status === 'completed' || !g.status) {
-              approvedGivingTotal += g.amount || 0;
-            } else if (g.status === 'pending') {
+          givingDocs.forEach((g) => {
+            if (g.status === 'pending') {
               pendingGivingCount++;
             }
+            const gDate = g.transactionDate || g.date || g.createdAt;
+            if (isSameMonth(gDate)) {
+              if (g.status === 'approved' || g.status === 'completed' || !g.status) {
+                approvedGivingTotal += Number(g.amount || 0);
+              }
+            }
           });
-          expensesDocs.filter((ex) => ex.date && ex.date >= startOfMonthStr).forEach((ex) => {
-            totalExpensesThisMonth += ex.amount || 0;
+
+          expensesDocs.forEach((ex) => {
+            const exDate = ex.date || ex.createdAt;
+            if (isSameMonth(exDate)) {
+              totalExpensesThisMonth += Number(ex.amount || 0);
+            }
           });
 
           setFinanceData({
             approvedGivingThisMonth: approvedGivingTotal,
             expensesThisMonth: totalExpensesThisMonth,
             pendingVerificationCount: pendingGivingCount,
-            activeCampaigns: campaignsDocs.filter((c) => c.status === 'active'),
+            activeCampaigns: campaignsDocs.filter((c) => (c.status || '').toLowerCase() === 'active'),
           });
         }
 

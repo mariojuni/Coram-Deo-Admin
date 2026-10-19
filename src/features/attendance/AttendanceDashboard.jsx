@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, onSnapshot, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { ClipboardCheck, Plus, Calendar, Users, ArrowRight } from 'lucide-react';
+import { ClipboardCheck, Plus, Calendar, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NewAttendanceSessionModal from '../../components/Modals/NewAttendanceSessionModal';
 import { deduplicateMembers } from '../../utils/nameUtils';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function AttendanceDashboard() {
-  const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const { userProfile, activeChurchId } = useAuth();
+  const CHURCH_ID = activeChurchId || userProfile?.churchId;
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,12 +32,11 @@ export default function AttendanceDashboard() {
         })
         .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
       
-      // We must deduplicate to match the inside session logic
       const dedupedMembers = deduplicateMembers(activeMembers, {});
       setTotalMembers(dedupedMembers.length);
     };
     fetchMembers();
-  }, []);
+  }, [CHURCH_ID]);
 
   useEffect(() => {
     if (!CHURCH_ID) return;
@@ -63,90 +65,113 @@ export default function AttendanceDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Attendance</h1>
-          <p className="text-sm text-church-slate mt-1">Track service participation and monitor church growth.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Service Check-in & Member Care
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Attendance</h1>
+          <p className="text-sm text-church-slate mt-1">Track worship service participation, visitor arrivals, and church family growth.</p>
         </div>
-        <button 
-          onClick={handleCreateSession}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-bold hover:bg-church-green/90 transition-opacity"
-        >
-          <Plus size={18} className="mr-2" />
-          New Session
-        </button>
+
+        <div>
+          <GradientButton 
+            onClick={handleCreateSession}
+            icon={Plus}
+            size="md"
+            className="shadow-church-glow"
+          >
+            New Session
+          </GradientButton>
+        </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden min-h-[400px]">
-        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-          <h2 className="font-bold text-church-navy flex items-center">
-            <Calendar size={18} className="mr-2 text-church-green" /> 
-            Recent Sessions
-          </h2>
+      {/* ── Session Cards Grid ── */}
+      {loading ? (
+        <div className="py-16 text-center text-church-slate text-sm font-semibold animate-pulse">
+          Loading attendance sessions...
         </div>
+      ) : sessions.length === 0 ? (
+        <SoftCard className="p-16 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl flex items-center justify-center mb-4 border border-pink-100 shadow-sm">
+            <ClipboardCheck size={30} />
+          </div>
+          <h3 className="text-xl font-black text-church-charcoal mb-1">No attendance records yet</h3>
+          <p className="text-church-slate text-sm max-w-sm mb-6">
+            Start a new attendance session for Sunday worship, prayer meetings, or special gatherings.
+          </p>
+          <GradientButton onClick={handleCreateSession} icon={Plus} size="sm">
+            Start First Session
+          </GradientButton>
+        </SoftCard>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {sessions.map(session => {
+            const dateObj = new Date(session.date);
+            const isToday = dateObj.toDateString() === new Date().toDateString();
+            const totalPresent = (session.metrics?.present || 0) + (session.metrics?.visitors || 0);
+            const memberCount = session.metrics?.present || 0;
+            const visitorCount = session.metrics?.visitors || 0;
+            const attendancePct = totalMembers > 0 ? Math.min(100, Math.round((memberCount / totalMembers) * 100)) : 0;
+            const isOpen = session.status === 'Open';
 
-        <div className="p-6">
-          {loading ? (
-            <div className="text-center text-church-slate py-12">Loading sessions...</div>
-          ) : sessions.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="flex justify-center text-gray-300 mb-4"><ClipboardCheck size={40} /></div>
-              <p className="text-church-navy font-bold text-lg">No attendance records yet</p>
-              <p className="text-church-slate text-sm">Click "New Session" to start tracking attendance for your next service.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sessions.map(session => {
-                const dateObj = new Date(session.date);
-                const isToday = dateObj.toDateString() === new Date().toDateString();
-                
-                return (
-                  <div 
-                    key={session.id} 
-                    onClick={() => navigate(`/admin/attendance/${session.id}`)}
-                    className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-church-green/30 transition-all cursor-pointer group flex flex-col"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                          {isToday ? 'Today' : dateObj.toLocaleDateString()}
-                        </span>
-                        <h3 className="text-lg font-bold text-church-navy group-hover:text-church-green transition-colors line-clamp-1">{session.eventTitle || session.eventName}</h3>
+            return (
+              <SoftCard 
+                key={session.id} 
+                hover
+                onClick={() => navigate(`/admin/attendance/${session.id}`)}
+                className="p-6 flex flex-col justify-between group transition-all"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <StatusPill variant={isToday ? "rose" : "slate"}>
+                      {isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </StatusPill>
+                    <StatusPill variant={isOpen ? "emerald" : "slate"}>
+                      {session.status}
+                    </StatusPill>
+                  </div>
+
+                  <h3 className="text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors line-clamp-1 mb-4">
+                    {session.eventTitle || session.eventName || 'Sunday Gathering'}
+                  </h3>
+
+                  {/* Metrics Box (Styled after CoramDeo Mobile Goal & Journey Cards) */}
+                  <div className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 space-y-3">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs font-bold text-church-slate uppercase tracking-wider">Attendance Roll</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-black text-church-charcoal">{totalPresent}</span>
+                        <span className="text-xs font-bold text-church-muted ml-1">/ {totalMembers} members</span>
                       </div>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${session.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {session.status}
-                      </span>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 gap-4 flex-1">
-                      <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div className="text-xs text-gray-500 mb-1">Total Present</div>
-                        <div className="text-2xl font-black text-church-navy">
-                          {(session.metrics?.present || 0) + (session.metrics?.visitors || 0)} <span className="text-lg text-gray-400">/ {totalMembers}</span>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col justify-center">
-                        <div className="text-xs text-gray-500 mb-1 flex justify-between">
-                          <span>Members:</span>
-                          <span className="font-bold text-church-navy">{session.metrics?.present || 0} / {totalMembers}</span>
-                        </div>
-                        <div className="text-xs text-gray-500 flex justify-between">
-                          <span>Visitors:</span>
-                          <span className="font-bold text-church-navy">{session.metrics?.visitors || 0}</span>
-                        </div>
-                      </div>
+                    {/* Gradient Progress Bar */}
+                    <div className="w-full bg-gray-200/80 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-gradient-coram h-full rounded-full transition-all duration-700"
+                        style={{ width: `${Math.max(5, attendancePct)}%` }}
+                      />
                     </div>
-                    
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex items-center text-sm font-bold text-church-green">
-                      View Details <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+
+                    <div className="flex justify-between text-xs font-medium text-church-slate pt-1">
+                      <span>Members: <strong className="text-church-charcoal">{memberCount}</strong> ({attendancePct}%)</span>
+                      <span>Visitors: <strong className="text-church-rose">{visitorCount}</strong></span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
+                
+                <div className="mt-5 pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-church-rose group-hover:text-church-rose-hover">
+                  <span>Take Attendance &bull; Roster</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </div>
+              </SoftCard>
+            );
+          })}
         </div>
-      </div>
+      )}
+
       <NewAttendanceSessionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );

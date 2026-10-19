@@ -102,17 +102,17 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-3xl w-full max-w-md shadow-church-soft flex flex-col my-8" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-church-navy">New Attendance Session</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
+          <h2 className="text-xl font-black text-church-charcoal">New Attendance Session</h2>
+          <button onClick={onClose} className="text-church-slate hover:text-church-charcoal transition-colors">
+            <X size={22} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col space-y-4">
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">Select Event</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Select Event</label>
             {loading ? (
-              <div className="text-sm text-church-slate py-2">Loading upcoming events...</div>
+              <div className="text-xs text-church-slate py-2 font-medium">Loading upcoming events...</div>
             ) : (
               <ModernDropdown
                 value={selectedEventId}
@@ -129,14 +129,14 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
               type="button" 
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 transition-colors"
+              className="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-xs font-bold text-church-slate hover:bg-gray-50 transition-colors shadow-sm"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={isSubmitting || !selectedEventId || loading}
-              className="px-5 py-2.5 bg-church-green text-white rounded-full text-sm font-medium hover:bg-church-green/90 transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-gradient-coram text-white rounded-full text-xs font-bold shadow-church-glow hover:opacity-95 active:scale-95 transition-all disabled:opacity-50"
             >
               {isSubmitting ? 'Creating...' : 'Create Session'}
             </button>

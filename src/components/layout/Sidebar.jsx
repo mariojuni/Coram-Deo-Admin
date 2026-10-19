@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { 
-  Home, 
   Users, 
   BookOpen, 
   Calendar, 
   CreditCard, 
   HeartHandshake, 
   Settings,
-  Bell,
-  Search,
-  Menu,
   X,
   Shield,
   LayoutDashboard,
@@ -25,28 +21,51 @@ import {
   Check,
   BookOpenCheck,
   Music,
-  ListMusic
+  ListMusic,
+  Search,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
+import logo from '../../assets/logo.svg';
 
-const churchNavItems = [
-  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary'] },
-  { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-  { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
-  { name: 'Events', path: '/admin/events', icon: Calendar, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-  { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
-  { name: 'Attendance', path: '/admin/attendance', icon: ClipboardCheck, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-  { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
-  { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
-  { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
-  { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
-  { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin'] },
-  { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-  { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor'] },
-  { name: 'Finance', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },
-  { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
-  { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin'] },
+const churchNavCategories = [
+  {
+    category: 'CORE',
+    items: [
+      { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary'] },
+      { name: 'Events', path: '/admin/events', icon: Calendar, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
+      { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Attendance', path: '/admin/attendance', icon: ClipboardCheck, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
+    ]
+  },
+  {
+    category: 'MINISTRY & WORD',
+    items: [
+      { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
+      { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
+      { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin'] },
+    ]
+  },
+  {
+    category: 'PEOPLE & CARE',
+    items: [
+      { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
+      { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor'] },
+      { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
+    ]
+  },
+  {
+    category: 'FINANCE & ADMIN',
+    items: [
+      { name: 'Finance & Giving', path: '/admin/finance', icon: CreditCard, roles: ['super_admin', 'church_admin', 'finance_admin', 'pastor'] },
+      { name: 'Reports', path: '/admin/reports', icon: Activity, roles: ['super_admin', 'church_admin', 'pastor', 'finance_admin'] },
+      { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super_admin', 'church_admin'] },
+    ]
+  }
 ];
 
 const systemNavItems = [
@@ -62,14 +81,10 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
   const [churches, setChurches] = useState([]);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  const [churchSearch, setChurchSearch] = useState('');
 
   const isSuperAdmin = hasRole(originalUserProfile, 'super_admin');
   const primaryRole = getPrimaryRole(originalUserProfile);
-
-  const activeNavItems = activeChurchId === 'system' ? systemNavItems : churchNavItems;
-  const filteredNavItems = activeNavItems.filter(item =>
-    hasAnyRole(originalUserProfile, item.roles)
-  );
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -85,133 +100,256 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     }
   }, [isSuperAdmin]);
 
+  const activeChurchName = activeChurchId === 'system' 
+    ? 'System Administration' 
+    : (churches.find(c => c.id === activeChurchId)?.name || 'Local Church Workspace');
+
+  const filteredChurches = churches.filter(c => 
+    (c.name || '').toLowerCase().includes(churchSearch.toLowerCase())
+  );
+
   return (
     <>
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-church-navy/20 backdrop-blur-sm z-20 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-20 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Container */}
       <aside className={`
-        fixed inset-y-0 left-0 z-30 w-64 bg-white rounded-2xl transform transition-transform duration-300 ease-in-out shadow-church-soft
-        lg:translate-x-0 lg:static lg:inset-0 lg:h-[calc(100vh-2rem)] flex flex-col
+        fixed inset-y-0 left-0 z-30 w-72 bg-white rounded-3xl transform transition-transform duration-300 ease-in-out shadow-church-elevated border border-gray-100/80
+        lg:translate-x-0 lg:static lg:inset-0 lg:h-[calc(100vh-2rem)] flex flex-col overflow-hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex flex-col h-full overflow-y-auto">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-20 px-6">
-            <span className="text-xl font-bold text-church-navy flex items-center">
-              <div className="w-8 h-8 bg-church-green rounded-full mr-2 flex items-center justify-center">
-                <span className="text-white text-xs">C</span>
-              </div>
-              ChurchAdmin
-            </span>
-            <button className="lg:hidden text-gray-500 hover:text-gray-700" onClick={() => setIsOpen(false)}>
-              <X size={20} />
-            </button>
+        {/* Top Header & Brand Mark */}
+        <div className="flex items-center justify-between h-20 px-6 shrink-0 border-b border-gray-50">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
+              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
+            </div>
+            <div>
+              <span className="text-lg font-black text-church-charcoal tracking-tight">CoramDeo</span>
+              <span className="ml-1.5 text-[10px] font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-pink-100 uppercase tracking-wider">
+                Admin
+              </span>
+            </div>
           </div>
+          <button 
+            className="lg:hidden text-gray-400 hover:text-church-charcoal p-1.5 rounded-xl hover:bg-gray-50"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-          {/* Workspace Switcher */}
-          {isSuperAdmin && (
-            <div className="px-4 mb-2 relative">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-2">Workspace</p>
-              <button 
-                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                className="w-full bg-gray-50 border border-gray-100 hover:border-church-green/50 text-church-navy text-sm rounded-xl px-3 py-2.5 font-bold flex items-center justify-between transition-colors shadow-sm"
-              >
-                <div className="flex items-center truncate">
-                  <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center mr-2 shrink-0">
-                    <Building size={14} />
-                  </div>
-                  <span className="truncate">
-                    {activeChurchId === 'system' ? 'System Administration' : (churches.find(c => c.id === activeChurchId)?.name || 'Select Church')}
-                  </span>
-                </div>
-                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isSwitcherOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {isSwitcherOpen && (
-                <div className="absolute top-full mt-1 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 overflow-hidden">
-                  <div className="max-h-64 overflow-y-auto">
-                    <button
-                      onClick={() => {
-                        setActiveChurchId('system');
-                        setIsSwitcherOpen(false);
-                        navigate('/super-admin/churches');
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors ${activeChurchId === 'system' ? 'bg-church-green/5 text-church-green font-bold' : 'text-church-navy hover:bg-gray-50'}`}
-                    >
-                      <span className="truncate pr-2 font-semibold">System Administration</span>
-                      {activeChurchId === 'system' && <Check size={16} className="text-church-green shrink-0" />}
-                    </button>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    {churches.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => {
-                          setActiveChurchId(c.id);
-                          setIsSwitcherOpen(false);
-                          navigate('/admin');
-                        }}
-                        className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors ${activeChurchId === c.id ? 'bg-church-green/5 text-church-green font-bold' : 'text-church-navy hover:bg-gray-50'}`}
-                      >
-                        <span className="truncate pr-2">{c.name}</span>
-                        {activeChurchId === c.id && <Check size={16} className="text-church-green shrink-0" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+        {/* Church / Workspace Switcher (for Super Admin) */}
+        {isSuperAdmin && (
+          <div className="px-5 pt-4 pb-2 relative shrink-0">
+            <div className="text-[10px] font-bold text-church-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center justify-between">
+              <span>Active Workspace</span>
+              <span className={`w-2 h-2 rounded-full ${activeChurchId === 'system' ? 'bg-church-violet' : 'bg-church-emerald'}`} />
             </div>
-          )}
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-1">
-            <div className="text-xs font-semibold text-gray-400 mb-4 ml-2 tracking-wider">
-              {activeChurchId === 'system' ? 'SYSTEM MENU' : 'CHURCH MENU'}
-            </div>
-            {filteredNavItems.map((item) => {
-              const Icon = item.icon;
-              const isDiscipleshipActive = item.name === 'Discipleship' && location.pathname.startsWith('/admin/discipleship');
-              
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.path}
-                  end={item.path === '/admin'}
-                  onClick={() => setIsOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center px-4 py-3 mb-1 rounded-xl transition-all duration-200 border-l-4 ${
-                      isActive || isDiscipleshipActive
-                        ? 'border-church-green bg-church-green/5 text-church-green font-bold'
-                        : 'border-transparent text-church-slate hover:bg-gray-50 hover:text-church-navy font-medium'
-                    }`
-                  }
-                >
-                  <Icon size={20} className="mr-3" />
-                  {item.name}
-                </NavLink>
-              );
-            })}
-          </nav>
-
-          {/* User Profile */}
-          <div className="mt-auto p-4 m-4 bg-gray-50 rounded-2xl relative">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-church-green flex items-center justify-center text-white font-bold shadow-sm">
-                {originalUserProfile?.name?.charAt(0).toUpperCase() || 'U'}
+            <button 
+              onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+              className="w-full bg-gray-50/80 border border-gray-200/70 hover:border-church-rose/40 text-church-charcoal text-xs rounded-2xl px-3.5 py-2.5 font-bold flex items-center justify-between transition-all duration-150 shadow-sm"
+            >
+              <div className="flex items-center truncate">
+                <div className={`w-6 h-6 rounded-lg ${activeChurchId === 'system' ? 'bg-purple-100 text-church-violet' : 'bg-pink-100 text-church-rose'} flex items-center justify-center mr-2 shrink-0`}>
+                  <Building size={13} />
+                </div>
+                <span className="truncate">{activeChurchName}</span>
               </div>
-              <div className="ml-3 truncate">
-                <p className="text-sm font-bold text-church-navy truncate">
-                  {originalUserProfile?.name || 'User'}
-                </p>
-                <p className="text-xs text-church-slate uppercase font-medium">
+              <ChevronDown size={14} className={`text-church-muted transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isSwitcherOpen && (
+              <div className="absolute top-full mt-1.5 left-5 right-5 bg-white rounded-2xl shadow-church-elevated border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-2 pt-1 pb-2">
+                  <div className="relative">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-church-muted" />
+                    <input
+                      type="text"
+                      placeholder="Search church..."
+                      value={churchSearch}
+                      onChange={(e) => setChurchSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-church-rose focus:border-church-rose"
+                    />
+                  </div>
+                </div>
+
+                <div className="max-h-56 overflow-y-auto space-y-0.5">
+                  <button
+                    onClick={() => {
+                      setActiveChurchId('system');
+                      setIsSwitcherOpen(false);
+                      navigate('/super-admin/churches');
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === 'system' ? 'bg-purple-50 text-church-violet font-bold' : 'text-church-charcoal hover:bg-gray-50'}`}
+                  >
+                    <span className="truncate pr-2">System Administration</span>
+                    {activeChurchId === 'system' && <Check size={14} className="text-church-violet shrink-0" />}
+                  </button>
+
+                  <div className="border-t border-gray-100 my-1"></div>
+
+                  {filteredChurches.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setActiveChurchId(c.id);
+                        setIsSwitcherOpen(false);
+                        navigate('/admin');
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === c.id ? 'bg-church-rose-light text-church-rose font-bold' : 'text-church-charcoal hover:bg-gray-50'}`}
+                    >
+                      <span className="truncate pr-2">{c.name}</span>
+                      {activeChurchId === c.id && <Check size={14} className="text-church-rose shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Navigation Categories */}
+        <nav className="flex-1 px-3.5 py-2.5 overflow-y-auto space-y-4 custom-scrollbar">
+          {activeChurchId === 'system' ? (
+            <div>
+              <div className="text-[10px] font-extrabold text-church-muted uppercase tracking-wider mb-1.5 ml-2">
+                System Administration
+              </div>
+              <div className="space-y-1">
+                {systemNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className={({ isActive }) =>
+                        `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-150 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-[#FF5E85] via-[#EA63AA] to-[#A66CF5] text-white shadow-[0_3px_12px_rgba(234,99,170,0.22)] font-bold'
+                            : 'text-[#475569] hover:bg-gray-50/80 hover:text-church-navy font-semibold'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                                isActive
+                                  ? 'bg-white/20 backdrop-blur-xs text-white'
+                                  : 'bg-[#F1F4F9] text-[#5A6A80] group-hover:bg-[#E4E9F2] group-hover:text-church-navy'
+                              }`}
+                            >
+                              <Icon size={15} strokeWidth={2.2} />
+                            </div>
+                            <span className="truncate">{item.name}</span>
+                          </div>
+                          <ChevronRight
+                            size={13}
+                            strokeWidth={isActive ? 2.6 : 2.2}
+                            className={`shrink-0 transition-all ${
+                              isActive ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
+                            }`}
+                          />
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            churchNavCategories.map((cat) => {
+              const accessibleItems = cat.items.filter(item =>
+                hasAnyRole(originalUserProfile, item.roles)
+              );
+
+              if (accessibleItems.length === 0) return null;
+
+              return (
+                <div key={cat.category}>
+                  <div className="text-[10px] font-extrabold text-church-muted uppercase tracking-wider mb-1.5 ml-2">
+                    {cat.category}
+                  </div>
+                  <div className="space-y-1">
+                    {accessibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const isDiscipleshipActive = item.name === 'Discipleship' && location.pathname.startsWith('/admin/discipleship');
+
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.path}
+                          end={item.path === '/admin'}
+                          onClick={() => setIsOpen(false)}
+                          className={({ isActive }) => {
+                            const isCurrent = isActive || isDiscipleshipActive;
+                            return `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-150 ${
+                              isCurrent
+                                ? 'bg-gradient-to-r from-[#FF5E85] via-[#EA63AA] to-[#A66CF5] text-white shadow-[0_3px_12px_rgba(234,99,170,0.22)] font-bold'
+                                : 'text-[#475569] hover:bg-gray-50/80 hover:text-church-navy font-semibold'
+                            }`;
+                          }}
+                        >
+                          {({ isActive }) => {
+                            const isCurrent = isActive || isDiscipleshipActive;
+                            return (
+                              <>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div
+                                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                                      isCurrent
+                                        ? 'bg-white/20 backdrop-blur-xs text-white'
+                                        : 'bg-[#F1F4F9] text-[#5A6A80] group-hover:bg-[#E4E9F2] group-hover:text-church-navy'
+                                    }`}
+                                  >
+                                    <Icon size={15} strokeWidth={2.2} />
+                                  </div>
+                                  <span className="truncate">{item.name}</span>
+                                </div>
+                                <ChevronRight
+                                  size={13}
+                                  strokeWidth={isCurrent ? 2.6 : 2.2}
+                                  className={`shrink-0 transition-all ${
+                                    isCurrent ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
+                                  }`}
+                                />
+                              </>
+                            );
+                          }}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </nav>
+
+        {/* Bottom User Profile Section */}
+        <div className="p-4 mx-4 mb-4 bg-gray-50/90 rounded-2xl border border-gray-100 shrink-0">
+          <div className="flex items-center">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-coram flex items-center justify-center text-white font-black text-sm shadow-church-glow shrink-0">
+              {originalUserProfile?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="ml-3 truncate flex-1 min-w-0">
+              <p className="text-xs font-bold text-church-charcoal truncate">
+                {originalUserProfile?.name || 'Leader'}
+              </p>
+              <div className="inline-flex items-center mt-0.5">
+                <span className="text-[10px] font-bold text-church-amber bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 uppercase tracking-tight truncate">
                   {primaryRole.replace(/_/g, ' ')}
-                </p>
+                </span>
               </div>
             </div>
           </div>

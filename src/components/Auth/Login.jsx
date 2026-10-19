@@ -15,12 +15,18 @@ import {
   Loader2,
   ArrowLeft,
   Phone,
-  Key
+  Key,
+  BookOpen,
+  Heart,
+  Calendar,
+  Users
 } from 'lucide-react';
 import { RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider, signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getActiveAuth, getActiveApp } from '../../firebase';
 import logo from '../../assets/logo.svg';
+import GradientButton from '../ui/GradientButton';
+import StatusPill from '../ui/StatusPill';
 
 // ---------------------------------------------------------------------------
 // Error copy constants
@@ -229,7 +235,7 @@ export default function Login() {
   }
 
   function openForgotPassword() {
-    setResetIdentifier(email); // prefill with whatever the user typed
+    setResetIdentifier(email);
     setResetSuccess(false);
     setResetError('');
     setForgotMode(true);
@@ -245,105 +251,160 @@ export default function Login() {
     setConfirmationResult(null);
   }
 
-  // ------------------------------------------------------------------
-  // Render
-  // ------------------------------------------------------------------
   return (
-    <div className="min-h-screen flex bg-church-bg">
-      {/* ── Left decorative panel (desktop only) ── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-church-green flex-col justify-between p-12 relative overflow-hidden">
-        {/* Background pattern circles */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5" />
-        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/5" />
-        <div className="absolute top-1/2 right-8 w-48 h-48 rounded-full bg-white/5" />
+    <div className="min-h-screen flex bg-church-canvas relative overflow-hidden">
+      {/* Ambient background glow orbs */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-pink-100/60 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 right-1/4 w-[30rem] h-[30rem] rounded-full bg-purple-100/50 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-rose-50/70 blur-3xl pointer-events-none" />
 
-        {/* Brand mark */}
-        <div className="relative z-10 flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg p-1">
-            <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain" />
+      {/* ── Left Showcase Panel (Desktop lg:flex) ── */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 lg:p-16 relative z-10 border-r border-gray-100/60">
+        {/* Brand Header */}
+        <div className="flex items-center space-x-3">
+          <div className="w-11 h-11 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
+            <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
           </div>
-          <span className="text-white font-bold text-xl tracking-tight">ChurchAdmin</span>
-        </div>
-
-        {/* Hero copy */}
-        <div className="relative z-10 space-y-6">
-          <h1 className="text-4xl font-bold text-white leading-snug">
-            Empowering<br />church leaders<br />to serve better.
-          </h1>
-          <p className="text-white/70 text-base leading-relaxed max-w-sm">
-            Manage your ministry operations, members, events, giving records, and more — all in one place.
-          </p>
-
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {['Members', 'Attendance', 'Giving', 'Events', 'Reports'].map((f) => (
-              <span
-                key={f}
-                className="px-3 py-1 bg-white/10 text-white/90 rounded-full text-sm font-medium border border-white/20"
-              >
-                {f}
-              </span>
-            ))}
+          <div>
+            <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
+            <span className="ml-2 text-xs font-bold text-church-rose bg-church-rose-light px-2.5 py-0.5 rounded-full border border-pink-100">
+              Admin Portal
+            </span>
           </div>
         </div>
 
-        {/* Footer quote */}
-        <p className="relative z-10 text-white/40 text-sm">
-          &ldquo;Serve one another humbly in love.&rdquo; — Galatians 5:13
-        </p>
+        {/* Central Showcase Content */}
+        <div className="my-auto max-w-lg space-y-8">
+          <div className="space-y-4">
+            <StatusPill variant="rose" dot>
+              CoramDeo Life Management Suite
+            </StatusPill>
+            <h1 className="text-4xl md:text-5xl font-black text-church-charcoal tracking-tight leading-[1.15]">
+              Where ministry and community <span className="bg-gradient-to-r from-church-rose to-church-violet bg-clip-text text-transparent">thrive together.</span>
+            </h1>
+            <p className="text-church-slate text-base leading-relaxed">
+              Designed for pastors, worship directors, secretaries, and leadership teams to steward God's house with joy, clarity, and excellence.
+            </p>
+          </div>
+
+          {/* Authentic Replica: Mobile Verse of the Day Card */}
+          <div className="bg-gradient-coram-hero rounded-3xl p-6 text-white shadow-church-glow relative overflow-hidden group">
+            {/* Background watermark quote */}
+            <div className="absolute -right-4 -bottom-6 text-white/10 text-9xl font-serif font-black select-none pointer-events-none">
+              &rdquo;
+            </div>
+
+            <div className="relative z-10 space-y-4">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase glass-pill">
+                Verse of the Day
+              </div>
+
+              <blockquote className="text-base md:text-lg font-medium leading-relaxed text-white/95">
+                &ldquo;The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.&rdquo;
+              </blockquote>
+
+              <div className="flex items-center gap-2 pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold glass-pill">
+                  <BookOpen size={12} />
+                  John 10:10
+                </span>
+                <span className="text-xs font-semibold text-white/80 pl-2">
+                  Daily Scripture &bull; CoramDeo Life
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Real-time Ministry Pulse Micro-cards */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+              <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center mb-2">
+                <Calendar size={16} />
+              </div>
+              <div className="text-lg font-bold text-church-charcoal">Worship</div>
+              <div className="text-xs text-church-slate">Setlists & Rosters</div>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-church-violet flex items-center justify-center mb-2">
+                <Users size={16} />
+              </div>
+              <div className="text-lg font-bold text-church-charcoal">Members</div>
+              <div className="text-xs text-church-slate">Directory & Care</div>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-church-emerald flex items-center justify-center mb-2">
+                <Heart size={16} />
+              </div>
+              <div className="text-lg font-bold text-church-charcoal">Giving</div>
+              <div className="text-xs text-church-slate">Causes & Records</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scriptural Footer Quote */}
+        <div className="flex items-center gap-2 text-church-slate text-xs font-medium">
+          <span className="w-2 h-2 rounded-full bg-church-rose" />
+          <span>&ldquo;Serve one another humbly in love.&rdquo; — Galatians 5:13</span>
+        </div>
       </div>
 
-      {/* ── Right login panel ── */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+      {/* ── Right Authentication Panel ── */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative z-10">
         <div className="w-full max-w-md">
-
-          {/* Mobile logo */}
-          <div className="flex items-center space-x-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm p-1">
-              <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain" />
+          {/* Mobile brand header (shown on small screens) */}
+          <div className="flex items-center space-x-3 mb-8 lg:hidden">
+            <div className="w-10 h-10 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
+              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
             </div>
-            <span className="text-church-navy font-bold text-lg">ChurchAdmin</span>
+            <div>
+              <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
+              <span className="ml-2 text-xs font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-pink-100">
+                Admin
+              </span>
+            </div>
           </div>
 
-          {/* ── Login form ── */}
+          {/* ── Main Login Card ── */}
           {!forgotMode && (
-            <div className="bg-white rounded-2xl shadow-church-soft p-8 sm:p-10">
+            <div className="bg-white rounded-3xl shadow-church-elevated border border-gray-100/90 p-8 sm:p-10 transition-all duration-300">
               {/* Header */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-church-navy tracking-tight">Welcome back</h2>
-                <p className="text-church-slate text-sm mt-1 leading-relaxed">
-                  Sign in to manage your Coram Deo operations.
+                <h2 className="text-3xl font-black text-church-charcoal tracking-tight">Welcome back</h2>
+                <p className="text-church-slate text-sm mt-1.5 leading-relaxed">
+                  Sign in with your authorized leader account to continue.
                 </p>
               </div>
 
               {/* Error banner */}
               {error && (
-                <div className="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 rounded-xl px-4 py-3 mb-6 text-sm leading-snug">
-                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 rounded-2xl px-4 py-3.5 mb-6 text-sm leading-snug">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
                   <span>{error}</span>
                 </div>
               )}
 
               {/* Form */}
               <form onSubmit={handleLoginSubmit} className="space-y-5" noValidate>
-                {/* Email */}
+                {/* Email or Username */}
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="block text-sm font-medium text-church-navy">
+                  <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-church-charcoal">
                     Email address
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                      <Mail size={16} className="text-church-slate" />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-church-muted">
+                      <Mail size={18} />
                     </div>
                     <input
                       id="email"
                       type="email"
                       autoComplete="email"
                       required
-                      placeholder="you@church.org"
+                      placeholder="pastor@church.org"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                      className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
                     />
                   </div>
                 </div>
@@ -351,20 +412,20 @@ export default function Login() {
                 {/* Password */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="block text-sm font-medium text-church-navy">
+                    <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-church-charcoal">
                       Password
                     </label>
                     <button
                       type="button"
                       onClick={openForgotPassword}
-                      className="text-xs text-church-green hover:text-church-green-light font-medium transition-colors"
+                      className="text-xs text-church-rose hover:text-church-rose-hover font-bold transition-colors"
                     >
                       Forgot password?
                     </button>
                   </div>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                      <Lock size={16} className="text-church-slate" />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-church-muted">
+                      <Lock size={18} />
                     </div>
                     <input
                       id="password"
@@ -374,60 +435,54 @@ export default function Login() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                      className="w-full pl-11 pr-11 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-church-slate hover:text-church-navy transition-colors"
+                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-church-muted hover:text-church-charcoal transition-colors"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
 
                 {/* Remember me */}
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 cursor-pointer select-none py-1">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-church-green accent-church-green"
+                    className="w-4 h-4 rounded border-gray-300 text-church-rose accent-church-rose focus:ring-church-rose"
                   />
-                  <span className="text-sm text-church-slate">Remember me</span>
+                  <span className="text-sm font-medium text-church-slate">Keep me signed in</span>
                 </label>
 
-                {/* Submit */}
-                <button
+                {/* Submit button */}
+                <GradientButton
                   type="submit"
-                  disabled={submitting}
-                  className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                  loading={submitting}
+                  size="md"
+                  className="w-full text-base font-bold tracking-tight shadow-church-glow"
                 >
-                  {submitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Signing in…
-                    </>
-                  ) : (
-                    'Sign In'
-                  )}
-                </button>
+                  Sign In to Workspace
+                </GradientButton>
               </form>
 
               {/* Divider */}
-              <div className="flex items-center gap-3 my-5">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-church-slate">or continue with</span>
-                <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs uppercase tracking-wider font-semibold text-church-muted">or continue with</span>
+                <div className="flex-1 h-px bg-gray-100" />
               </div>
 
-              {/* Google */}
+              {/* Google OAuth Button */}
               <button
                 type="button"
                 disabled={submitting}
                 onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-2.5 border border-gray-200 bg-white hover:bg-gray-50 text-church-navy font-medium py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 border border-gray-200 bg-white hover:bg-gray-50 text-church-charcoal font-bold py-3 px-4 rounded-full transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                   <g fill="none" fillRule="evenodd">
@@ -441,34 +496,36 @@ export default function Login() {
               </button>
 
               {/* Footer */}
-              <p className="text-center text-xs text-church-slate/70 mt-6 leading-relaxed">
-                Secure access for authorized church leaders only.<br/>
-                <Link to="/privacy-policy" className="text-church-green hover:underline mt-1 inline-block">
-                  Privacy Policy
+              <p className="text-center text-xs text-church-slate mt-6 leading-relaxed">
+                Authorized church leaders and staff only.<br/>
+                <Link to="/privacy-policy" className="text-church-rose hover:underline font-bold mt-1 inline-block">
+                  Privacy Policy &bull; Terms of Service
                 </Link>
               </p>
             </div>
           )}
 
-          {/* ── Forgot password form ── */}
+          {/* ── Forgot password / OTP form ── */}
           {forgotMode && (
-            <div className="bg-white rounded-2xl shadow-church-soft p-8 sm:p-10">
-              {/* Back button */}
+            <div className="bg-white rounded-3xl shadow-church-elevated border border-gray-100/90 p-8 sm:p-10 transition-all duration-300">
               <button
                 type="button"
                 onClick={closeForgotPassword}
-                className="flex items-center gap-1.5 text-sm text-church-slate hover:text-church-navy mb-6 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold text-church-slate hover:text-church-charcoal mb-6 transition-colors"
               >
-                <ArrowLeft size={15} />
+                <ArrowLeft size={14} />
                 Back to sign in
               </button>
 
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-church-navy tracking-tight">Reset password</h2>
-                <p className="text-church-slate text-sm mt-1 leading-relaxed">
+                <StatusPill variant="rose" className="mb-2">
+                  Account Recovery
+                </StatusPill>
+                <h2 className="text-2xl font-black text-church-charcoal tracking-tight">Reset password</h2>
+                <p className="text-church-slate text-sm mt-1.5 leading-relaxed">
                   {otpMode 
                     ? `Enter the code sent to ${resetIdentifier} and your new password.` 
-                    : 'Enter your email address or phone number.'}
+                    : 'Enter your registered email address or phone number.'}
                 </p>
               </div>
 
@@ -476,18 +533,17 @@ export default function Login() {
 
               {/* Success state */}
               {resetSuccess ? (
-                <div className="flex items-start gap-3 bg-green-50 border border-green-100 text-green-700 rounded-xl px-4 py-4 text-sm leading-snug">
-                  <CheckCircle size={16} className="mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl px-4 py-4 text-sm leading-snug">
+                  <CheckCircle size={18} className="mt-0.5 shrink-0 text-emerald-600" />
                   <span>
-                    Password reset link sent. Please check your email.
+                    Password reset link sent! Please check your email inbox to proceed.
                   </span>
                 </div>
               ) : (
                 <>
-                  {/* Reset error */}
                   {resetError && (
-                    <div className="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 rounded-xl px-4 py-3 mb-5 text-sm leading-snug">
-                      <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                    <div className="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 rounded-2xl px-4 py-3.5 mb-5 text-sm leading-snug">
+                      <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
                       <span>{resetError}</span>
                     </div>
                   )}
@@ -495,12 +551,12 @@ export default function Login() {
                   {otpMode ? (
                     <form onSubmit={handleOtpSubmit} className="space-y-5" noValidate>
                       <div className="space-y-1.5">
-                        <label htmlFor="otpCode" className="block text-sm font-medium text-church-navy">
-                          6-digit OTP Code
+                        <label htmlFor="otpCode" className="block text-xs font-bold uppercase tracking-wider text-church-charcoal">
+                          6-digit SMS Code
                         </label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <Key size={16} className="text-church-slate" />
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-church-muted">
+                            <Key size={18} />
                           </div>
                           <input
                             id="otpCode"
@@ -509,18 +565,18 @@ export default function Login() {
                             placeholder="123456"
                             value={otpCode}
                             onChange={(e) => setOtpCode(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label htmlFor="newPassword" className="block text-sm font-medium text-church-navy">
+                        <label htmlFor="newPassword" className="block text-xs font-bold uppercase tracking-wider text-church-charcoal">
                           New Password
                         </label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            <Lock size={16} className="text-church-slate" />
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-church-muted">
+                            <Lock size={18} />
                           </div>
                           <input
                             id="newPassword"
@@ -529,35 +585,29 @@ export default function Login() {
                             placeholder="Min 6 characters"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
                           />
                         </div>
                       </div>
 
-                      <button
+                      <GradientButton
                         type="submit"
-                        disabled={resetSubmitting}
-                        className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        loading={resetSubmitting}
+                        size="md"
+                        className="w-full text-sm font-bold"
                       >
-                        {resetSubmitting ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" />
-                            Verifying…
-                          </>
-                        ) : (
-                          'Reset Password'
-                        )}
-                      </button>
+                        Verify & Reset Password
+                      </GradientButton>
                     </form>
                   ) : (
                     <form onSubmit={handleResetSubmit} className="space-y-5" noValidate>
                       <div className="space-y-1.5">
-                        <label htmlFor="reset-input" className="block text-sm font-medium text-church-navy">
+                        <label htmlFor="reset-input" className="block text-xs font-bold uppercase tracking-wider text-church-charcoal">
                           Email or Phone number
                         </label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                            {resetIdentifier.includes('@') ? <Mail size={16} className="text-church-slate" /> : <Phone size={16} className="text-church-slate" />}
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-church-muted">
+                            {resetIdentifier.includes('@') ? <Mail size={18} /> : <Phone size={18} />}
                           </div>
                           <input
                             id="reset-input"
@@ -566,25 +616,19 @@ export default function Login() {
                             placeholder="you@church.org or +639123456789"
                             value={resetIdentifier}
                             onChange={(e) => setResetIdentifier(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 text-church-navy placeholder-church-slate/60 focus:outline-none focus:ring-2 focus:ring-church-green/30 focus:border-church-green transition"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
                           />
                         </div>
                       </div>
 
-                      <button
+                      <GradientButton
                         type="submit"
-                        disabled={resetSubmitting}
-                        className="w-full flex items-center justify-center gap-2 bg-church-green hover:bg-church-green-light text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        loading={resetSubmitting}
+                        size="md"
+                        className="w-full text-sm font-bold"
                       >
-                        {resetSubmitting ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" />
-                            Sending…
-                          </>
-                        ) : (
-                          'Send Reset Link / OTP'
-                        )}
-                      </button>
+                        Send Reset Instructions
+                      </GradientButton>
                     </form>
                   )}
                 </>

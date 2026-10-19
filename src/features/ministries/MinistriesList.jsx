@@ -7,6 +7,9 @@ import MinistryFormModal from './MinistryFormModal';
 import MinistryApplicationsList from './MinistryApplicationsList';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function MinistriesList() {
   const [ministries, setMinistries] = useState([]);
@@ -22,7 +25,7 @@ export default function MinistriesList() {
 
   const navigate = useNavigate();
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const CHURCH_ID = userProfile?.churchId;
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -99,41 +102,44 @@ export default function MinistriesList() {
 
   return (
     <div className="space-y-6">
+      {/* Header aligned to CoramDeo Design System */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Ministries</h1>
-          <p className="text-sm text-church-slate mt-1">Organize volunteer teams and review membership applications.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Ministry Teams & Service
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Ministries</h1>
+          <p className="text-sm text-church-slate mt-1">Organize volunteer teams, leadership roles, and review membership applications.</p>
         </div>
         
         {activeTab === 'ministries' && (
-          <button 
+          <GradientButton 
             onClick={handleAddClick}
-            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-bold hover:bg-church-green/90 transition-opacity self-start md:self-auto"
+            icon={Plus}
           >
-            <Plus size={18} className="mr-2" />
             Create Ministry
-          </button>
+          </GradientButton>
         )}
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 flex space-x-8">
+      <div className="border-b border-gray-100 flex space-x-8">
         <button
           onClick={() => setActiveTab('ministries')}
-          className={`pb-3 text-sm font-bold transition-colors border-b-2 ${
+          className={`pb-3 text-sm font-bold transition-all border-b-2 ${
             activeTab === 'ministries'
-              ? 'border-church-green text-church-green'
-              : 'border-transparent text-gray-400 hover:text-gray-600'
+              ? 'border-church-rose text-church-rose'
+              : 'border-transparent text-church-slate hover:text-church-charcoal'
           }`}
         >
           All Ministries
         </button>
         <button
           onClick={() => setActiveTab('applications')}
-          className={`pb-3 text-sm font-bold transition-colors border-b-2 ${
+          className={`pb-3 text-sm font-bold transition-all border-b-2 ${
             activeTab === 'applications'
-              ? 'border-church-green text-church-green'
-              : 'border-transparent text-gray-400 hover:text-gray-600'
+              ? 'border-church-rose text-church-rose'
+              : 'border-transparent text-church-slate hover:text-church-charcoal'
           }`}
         >
           Applications
@@ -143,24 +149,25 @@ export default function MinistriesList() {
       {activeTab === 'applications' ? (
         <MinistryApplicationsList />
       ) : (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden flex flex-col relative min-h-[400px]">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="relative w-80">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search size={18} className="text-gray-400" />
+        <div className="space-y-6">
+          {/* Search & Filter Toolbar */}
+          <SoftCard className="p-3">
+            <div className="flex items-center space-x-4 flex-1 flex-wrap gap-y-2">
+              <div className="relative w-80 max-w-full">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                  <Search size={17} className="text-church-muted" />
                 </div>
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-church-green"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose transition-all"
                   placeholder="Search ministries..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               
-              <div className="flex items-center border border-gray-300 rounded-full bg-white px-1 py-1 shadow-sm">
-                <span className="text-xs font-bold text-gray-400 pl-3 pr-2 uppercase">Status:</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-bold text-church-slate uppercase tracking-wider">Status:</span>
                 <ModernDropdown
                   value={filterStatus}
                   onChange={(val) => setFilterStatus(val)}
@@ -172,47 +179,62 @@ export default function MinistriesList() {
                 />
               </div>
             </div>
-          </div>
+          </SoftCard>
 
-          <div className="p-6">
+          {/* Cards Grid */}
+          <div>
             {loading ? (
-              <div className="text-center text-church-slate py-12">Loading ministries...</div>
-            ) : filteredMinistries.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="flex justify-center text-gray-300 mb-4"><Shield size={40} /></div>
-                <p className="text-church-navy font-bold text-lg">No ministries found</p>
-                <p className="text-church-slate text-sm">Create a new ministry to get started.</p>
+              <div className="py-20 text-center">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                  <p className="text-sm font-medium text-church-slate">Loading ministries...</p>
+                </div>
               </div>
+            ) : filteredMinistries.length === 0 ? (
+              <SoftCard className="p-16 text-center my-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+                  <Shield size={30} />
+                </div>
+                <p className="text-church-charcoal font-black text-lg">No ministries found</p>
+                <p className="text-church-slate text-sm mt-1 mb-6">Create a new ministry to begin organizing volunteer teams.</p>
+                <GradientButton 
+                  onClick={handleAddClick}
+                  icon={Plus}
+                >
+                  Create Ministry
+                </GradientButton>
+              </SoftCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMinistries.map(ministry => (
-                  <div 
+                  <SoftCard 
                     key={ministry.id} 
+                    hover
                     onClick={() => navigate(`/admin/ministries/${ministry.id}`)}
-                    className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-church-green/30 transition-all cursor-pointer relative group"
+                    className="p-6 flex flex-col relative group"
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <div className="w-12 h-12 bg-church-green/10 rounded-xl flex items-center justify-center text-church-green">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose border border-rose-100/60 flex items-center justify-center shadow-sm">
                         <Shield size={24} />
                       </div>
                       
                       <button 
                         onClick={(e) => toggleMenu(e, ministry.id)}
-                        className="text-gray-400 hover:text-church-navy p-2 -mr-2 -mt-2 rounded-lg hover:bg-gray-100 transition-colors z-10"
+                        className="text-church-slate hover:text-church-charcoal p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
                       >
-                        <MoreVertical size={20} />
+                        <MoreVertical size={18} />
                       </button>
 
                       {activeMenuId === ministry.id && (
                         <>
                           <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} />
-                          <div className="absolute right-6 top-10 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 z-30 py-1 text-left">
-                            <button onClick={(e) => handleEditClick(e, ministry)} className="w-full flex items-center px-4 py-2 text-sm font-medium text-church-navy hover:bg-gray-50">
-                              <Edit size={16} className="mr-2" /> Edit Details
+                          <div className="absolute right-6 top-10 mt-1 w-40 bg-white rounded-xl shadow-church-elevated border border-gray-100 z-30 py-1 text-left overflow-hidden">
+                            <button onClick={(e) => handleEditClick(e, ministry)} className="w-full flex items-center px-4 py-2 text-xs font-semibold text-church-charcoal hover:bg-gray-50">
+                              <Edit size={14} className="mr-2 text-church-muted" /> Edit Details
                             </button>
                             {ministry.status !== 'Archived' && (
-                              <button onClick={(e) => handleArchiveClick(e, ministry)} className="w-full flex items-center px-4 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50 border-t border-gray-50 mt-1">
-                                <Archive size={16} className="mr-2" /> Archive
+                              <button onClick={(e) => handleArchiveClick(e, ministry)} className="w-full flex items-center px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 border-t border-gray-50 mt-1">
+                                <Archive size={14} className="mr-2" /> Archive
                               </button>
                             )}
                           </div>
@@ -220,20 +242,24 @@ export default function MinistriesList() {
                       )}
                     </div>
 
-                    <h3 className="text-lg font-bold text-church-navy group-hover:text-church-green transition-colors">{ministry.name}</h3>
-                    <p className="text-sm text-church-slate mt-1 line-clamp-2 min-h-[40px]">{ministry.description || 'No description provided.'}</p>
+                    <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors">{ministry.name}</h3>
+                    <p className="text-xs sm:text-sm text-church-slate mt-1 line-clamp-2 min-h-[40px] leading-relaxed">{ministry.description || 'No description provided.'}</p>
                     
                     <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
-                      <div className="flex items-center text-sm font-medium text-church-slate">
-                        <Users size={16} className="mr-2 text-gray-400" />
+                      <div className="flex items-center text-xs font-semibold text-church-slate">
+                        <Users size={14} className="mr-1.5 text-church-muted" />
                         {ministry.members?.length || 0} Members
                       </div>
                       
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${ministry.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {ministry.status}
-                      </span>
+                      <StatusPill 
+                        variant={ministry.status === 'Active' ? 'emerald' : 'slate'} 
+                        dot 
+                        className="text-[11px] py-0.5"
+                      >
+                        {ministry.status || 'Active'}
+                      </StatusPill>
                     </div>
-                  </div>
+                  </SoftCard>
                 ))}
               </div>
             )}
@@ -249,3 +275,4 @@ export default function MinistriesList() {
     </div>
   );
 }
+

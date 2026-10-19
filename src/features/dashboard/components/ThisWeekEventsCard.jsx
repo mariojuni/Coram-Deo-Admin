@@ -1,83 +1,107 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Calendar, Clock, MapPin, ChevronRight } from 'lucide-react';
+import SoftCard from '../../../components/ui/SoftCard';
 
 export default function ThisWeekEventsCard({ events, loading }) {
+  const navigate = useNavigate();
+
   const formatDate = (dateStr, startDateTime) => {
     const d = startDateTime ? new Date(startDateTime) : (dateStr ? new Date(dateStr + 'T00:00:00') : new Date());
     return {
-      month: d.toLocaleDateString('en-US', { month: 'short' }),
+      month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
       day: d.getDate(),
+      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
       time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
     };
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-church-soft border border-gray-100 flex flex-col h-full">
+    <SoftCard className="p-6 flex flex-col h-full">
+      {/* ── Header matching Mobile App Screenshot 2 ── */}
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-lg font-bold text-church-navy">This Week's Events</h2>
-          <p className="text-xs text-church-slate">Published scheduled services & gatherings</p>
+          <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider block mb-0.5">
+            WHAT'S NEXT
+          </span>
+          <h2 className="text-lg font-black text-church-charcoal tracking-tight">Upcoming Events</h2>
         </div>
-        <Link to="/admin/events" className="text-xs font-bold text-church-green hover:underline">
-          View All
-        </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-16 bg-gray-50 rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : !events || events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center text-gray-400">
+          <div className="flex flex-col items-center justify-center py-10 text-center text-church-muted">
             <Calendar size={36} className="mb-2 stroke-1" />
-            <p className="text-sm font-medium">No events scheduled for this week.</p>
+            <p className="text-sm font-semibold text-church-charcoal">No events scheduled for this week.</p>
+            <p className="text-xs text-church-slate mt-0.5">Check the calendar to schedule a new gathering.</p>
           </div>
         ) : (
           events.map((event) => {
             const dateInfo = formatDate(event.date, event.startDateTime);
+            const timeDisplay = (event.startTime || event.time)
+              ? (event.endTime ? `${(event.startTime || event.time)} – ${event.endTime}` : (event.startTime || event.time))
+              : dateInfo.time;
+
             return (
               <div
                 key={event.id}
-                className="flex items-center p-3.5 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors"
+                onClick={() => navigate(`/admin/events/${event.id}`)}
+                className="flex items-center p-3.5 border border-gray-100 rounded-2xl hover:border-gray-200 hover:shadow-xs transition-all duration-150 group cursor-pointer bg-white"
               >
-                <div className="w-12 h-12 rounded-xl bg-church-green/10 flex flex-col items-center justify-center shrink-0 mr-3">
-                  <span className="text-[10px] font-bold text-church-green uppercase">{dateInfo.month}</span>
-                  <span className="text-base font-bold text-church-navy leading-none">{dateInfo.day}</span>
+                {/* Date Column matching Mobile App */}
+                <div className="flex flex-col items-center justify-center w-11 shrink-0 text-center">
+                  <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider">{dateInfo.month}</span>
+                  <span className="text-xl font-black text-church-charcoal leading-none my-0.5">{dateInfo.day}</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{dateInfo.weekday}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2">
-                    <h4 className="text-sm font-bold text-church-navy truncate">{event.title}</h4>
-                    {event.category && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-semibold shrink-0">
-                        {event.category}
-                      </span>
-                    )}
+
+                {/* Vertical Divider */}
+                <div className="h-10 w-[1px] bg-gray-100 mx-3 shrink-0" />
+
+                <div className="flex-1 min-w-0 pr-2">
+                  <h4 className="text-sm font-black text-church-charcoal truncate tracking-tight group-hover:text-church-rose transition-colors">
+                    {event.title}
+                  </h4>
+                  
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    {/* Time Pill matching Mobile App */}
+                    <div className="inline-flex items-center px-2.5 py-0.5 bg-gray-50 border border-gray-100 text-gray-500 rounded-full text-[11px] font-medium">
+                      <Clock size={11} className="mr-1 text-gray-400 shrink-0" />
+                      <span>{timeDisplay}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center text-xs text-church-slate mt-1 space-x-3 truncate">
-                    <span className="flex items-center shrink-0">
-                      <Clock size={12} className="mr-1" /> {event.time || dateInfo.time}
-                    </span>
-                    <span className="flex items-center truncate">
-                      <MapPin size={12} className="mr-1 shrink-0" /> {event.location || 'Campus'}
-                    </span>
+
+                  <div className="flex items-center text-[11px] text-gray-400 mt-1 font-medium truncate">
+                    <MapPin size={11} className="mr-1 text-gray-400 shrink-0" />
+                    <span className="truncate">{event.location || 'Church Sanctuary'}</span>
                   </div>
                 </div>
-                <div className="ml-2 flex flex-col items-end shrink-0">
-                  {event.attendanceEnabled && (
-                    <span className="text-[10px] bg-purple-50 text-purple-600 font-bold px-2 py-0.5 rounded-md flex items-center mb-1">
-                      <CheckCircle size={10} className="mr-1" /> Roll
-                    </span>
-                  )}
+
+                <div className="ml-2 shrink-0 text-gray-300 group-hover:text-church-rose group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight size={16} />
                 </div>
               </div>
             );
           })
         )}
       </div>
-    </div>
+
+      {/* Footer Link matching Mobile App */}
+      <div className="pt-3 border-t border-gray-100 text-center mt-2">
+        <Link 
+          to="/admin/events" 
+          className="text-xs font-bold text-church-rose hover:text-church-rose-hover hover:underline inline-flex items-center gap-1 transition-colors"
+        >
+          <span>See all events</span>
+          <span>&gt;</span>
+        </Link>
+      </div>
+    </SoftCard>
   );
 }

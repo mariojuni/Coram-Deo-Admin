@@ -4,10 +4,13 @@ import { db } from '../../firebase';
 import { Megaphone, Plus, MoreVertical, Edit, Trash2, Clock, Calendar, CheckCircle, Smartphone } from 'lucide-react';
 import AnnouncementFormModal from './AnnouncementFormModal';
 import { useAuth } from '../../context/AuthContext';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function AnnouncementsList() {
   const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const CHURCH_ID = userProfile?.churchId;
 
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,36 +85,38 @@ export default function AnnouncementsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header aligned to CoramDeo Design System */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Announcements</h1>
-          <p className="text-sm text-church-slate mt-1">Broadcast updates and manage notifications for the church.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Church Communications & News
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Announcements</h1>
+          <p className="text-sm text-church-slate mt-1">Broadcast updates, push notifications, and timely bulletins for the congregation.</p>
         </div>
-        <button 
+        <GradientButton 
           onClick={openCreate}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-bold hover:bg-church-green/90 transition-opacity"
+          icon={Plus}
         >
-          <Plus size={18} className="mr-2" />
           Create Post
-        </button>
+        </GradientButton>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden min-h-[500px] flex flex-col">
+      <div className="space-y-6">
         {/* Tabs */}
-        <div className="flex border-b border-gray-100 bg-gray-50/50 px-6 pt-4 space-x-6">
+        <div className="flex border-b border-gray-100 space-x-6 overflow-x-auto">
           {['Active', 'Scheduled', 'Drafts', 'Expired'].map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 text-sm font-bold transition-colors border-b-2 ${
+              className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab 
-                  ? 'border-church-green text-church-green' 
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
+                  ? 'border-church-rose text-church-rose' 
+                  : 'border-transparent text-church-slate hover:text-church-charcoal'
               }`}
             >
               {tab}
-              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${activeTab === tab ? 'bg-church-green/10' : 'bg-gray-100'}`}>
-                {/* Count for this tab (simplified for UI) */}
+              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-rose-50 text-church-rose border border-rose-100' : 'bg-gray-100 text-church-slate'}`}>
                 {tab === 'Active' ? announcements.filter(a => a.status === 'Published' && (!a.publishDate || new Date(a.publishDate) <= now) && (!a.expiryDate || new Date(a.expiryDate) >= now)).length :
                  tab === 'Scheduled' ? announcements.filter(a => a.status === 'Published' && a.publishDate && new Date(a.publishDate) > now).length :
                  tab === 'Drafts' ? announcements.filter(a => a.status === 'Draft').length :
@@ -122,43 +127,59 @@ export default function AnnouncementsList() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 bg-gray-50/30">
+        <div>
           {loading ? (
-            <div className="text-center text-church-slate py-12">Loading announcements...</div>
-          ) : filteredAnnouncements.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="flex justify-center text-gray-300 mb-4"><Megaphone size={40} /></div>
-              <p className="text-church-navy font-bold text-lg">No {activeTab.toLowerCase()} announcements</p>
-              <p className="text-church-slate text-sm">Create a new post to engage with your congregation.</p>
+            <div className="py-20 text-center">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                <p className="text-sm font-medium text-church-slate">Loading announcements...</p>
+              </div>
             </div>
+          ) : filteredAnnouncements.length === 0 ? (
+            <SoftCard className="p-16 text-center my-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+                <Megaphone size={30} />
+              </div>
+              <p className="text-church-charcoal font-black text-lg">No {activeTab.toLowerCase()} announcements</p>
+              <p className="text-church-slate text-sm mt-1 mb-6">Create a new post to engage and inform your church community.</p>
+              <GradientButton 
+                onClick={openCreate}
+                icon={Plus}
+              >
+                Create Post
+              </GradientButton>
+            </SoftCard>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAnnouncements.map(post => (
-                <div key={post.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col relative group">
-                  
+                <SoftCard 
+                  key={post.id} 
+                  hover
+                  className="p-6 flex flex-col relative group"
+                >
                   {/* Action Menu */}
                   <div className="absolute top-4 right-4 z-10">
                     <button 
                       onClick={() => setActiveMenuId(activeMenuId === post.id ? null : post.id)}
-                      className="text-gray-400 hover:text-church-navy p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="text-church-slate hover:text-church-charcoal p-2 rounded-full hover:bg-gray-100 transition-colors"
                     >
-                      <MoreVertical size={20} />
+                      <MoreVertical size={18} />
                     </button>
                     {activeMenuId === post.id && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
-                        <div className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
+                        <div className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-church-elevated border border-gray-100 z-20 py-1 overflow-hidden">
                           <button 
                             onClick={() => { setActiveMenuId(null); openEdit(post); }}
-                            className="w-full flex items-center px-4 py-2 text-sm font-medium text-church-navy hover:bg-gray-50"
+                            className="w-full flex items-center px-4 py-2 text-xs font-semibold text-church-charcoal hover:bg-gray-50"
                           >
-                            <Edit size={16} className="mr-2" /> Edit
+                            <Edit size={14} className="mr-2 text-church-muted" /> Edit
                           </button>
                           <button 
                             onClick={() => { setActiveMenuId(null); handleDelete(post.id); }}
-                            className="w-full flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                            className="w-full flex items-center px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                           >
-                            <Trash2 size={16} className="mr-2" /> Delete
+                            <Trash2 size={14} className="mr-2" /> Delete
                           </button>
                         </div>
                       </>
@@ -166,38 +187,51 @@ export default function AnnouncementsList() {
                   </div>
 
                   {/* Badges */}
-                  <div className="flex flex-wrap gap-2 mb-4 pr-8">
-                    {post.pushNotification && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700">
-                        <Smartphone size={12} className="mr-1" /> Push Sent
-                      </span>
-                    )}
+                  <div className="flex flex-wrap gap-1.5 mb-4 pr-8">
+                    {post.notificationSent ? (
+                      <StatusPill variant="green" icon={Smartphone} className="text-[11px] py-0.5 font-bold">
+                        Push Delivered
+                      </StatusPill>
+                    ) : post.pushNotification ? (
+                      <StatusPill variant="violet" icon={Smartphone} className="text-[11px] py-0.5">
+                        Push Enabled
+                      </StatusPill>
+                    ) : null}
                     {post.targetAudience?.map(aud => (
-                      <span key={aud} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600">
+                      <StatusPill key={aud} variant="slate" className="text-[11px] py-0.5">
                         {aud}
-                      </span>
+                      </StatusPill>
                     ))}
                   </div>
 
-                  <h3 className="text-lg font-bold text-church-navy mb-2 line-clamp-2">{post.title}</h3>
-                  <p className="text-sm text-church-slate line-clamp-3 mb-6 flex-1">{post.message}</p>
+                  <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors mb-2 line-clamp-2 leading-snug">
+                    {post.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-church-slate line-clamp-3 mb-6 flex-1 leading-relaxed">
+                    {post.message}
+                  </p>
 
-                  <div className="pt-4 border-t border-gray-100 text-xs text-gray-400 space-y-2">
+                  <div className="pt-4 border-t border-gray-100 text-xs text-church-slate space-y-1.5 mt-auto">
                     {post.publishDate && (
-                      <div className="flex items-center">
-                        <Calendar size={14} className="mr-2" /> 
-                        {activeTab === 'Scheduled' ? 'Publishes: ' : 'Published: '}
-                        {new Date(post.publishDate).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      <div className="flex items-center text-xs">
+                        <Calendar size={13} className="mr-1.5 text-church-muted shrink-0" /> 
+                        <span className="text-church-muted mr-1 font-medium">{activeTab === 'Scheduled' ? 'Publishes:' : 'Published:'}</span>
+                        <span className="font-semibold text-church-charcoal">
+                          {new Date(post.publishDate).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                        </span>
                       </div>
                     )}
                     {post.expiryDate && (
-                      <div className="flex items-center">
-                        <Clock size={14} className="mr-2" /> 
-                        Expires: {new Date(post.expiryDate).toLocaleString(undefined, { month: 'short', day: 'numeric' })}
+                      <div className="flex items-center text-xs">
+                        <Clock size={13} className="mr-1.5 text-church-muted shrink-0" /> 
+                        <span className="text-church-muted mr-1 font-medium">Expires:</span>
+                        <span className="font-semibold text-church-charcoal">
+                          {new Date(post.expiryDate).toLocaleString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
                       </div>
                     )}
                   </div>
-                </div>
+                </SoftCard>
               ))}
             </div>
           )}
@@ -212,3 +246,4 @@ export default function AnnouncementsList() {
     </div>
   );
 }
+

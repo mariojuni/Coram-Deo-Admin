@@ -202,18 +202,18 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-church-navy/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-church-navy">{existingAssignment ? 'Edit Assignment' : 'Create Assignment'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-church-navy transition-colors">
-            <X size={24} />
+          <h2 className="text-xl font-black text-church-charcoal">{existingAssignment ? 'Edit Assignment' : 'Create Assignment'}</h2>
+          <button onClick={onClose} className="text-church-slate hover:text-church-charcoal transition-colors">
+            <X size={22} />
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4">
           <div>
-            <label className="block text-sm font-bold text-church-navy mb-1">Event *</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Event *</label>
             <ModernDropdown 
               value={selectedEvent}
               onChange={(val) => setSelectedEvent(val)}
@@ -223,7 +223,7 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-church-navy mb-1">Ministry *</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Ministry *</label>
             <ModernDropdown 
               value={selectedMinistry}
               onChange={(val) => {
@@ -237,9 +237,9 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
             {selectedMinistry && activeMinistry && (
               <div className="mt-2">
                 {activeMinistry.type === 'worship' && activeMinistry.features?.songListEnabled ? (
-                  <div className="p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-xs font-semibold text-indigo-900 flex items-center justify-between">
+                  <div className="p-2.5 bg-purple-50 border border-purple-100 rounded-2xl text-xs font-bold text-church-violet flex items-center justify-between">
                     <span>Song List Access Enabled</span>
-                    <span className="px-2 py-0.5 bg-indigo-600 text-white font-bold text-[10px] rounded-full uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 bg-church-violet text-white font-black text-[10px] rounded-full uppercase tracking-wider">
                       Active
                     </span>
                   </div>
@@ -251,7 +251,7 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
           {selectedMinistry && (
             <>
               <div>
-                <label className="block text-sm font-bold text-church-navy mb-1">Role *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Role *</label>
                 <ModernDropdown 
                   value={selectedRole}
                   onChange={(val) => setSelectedRole(val)}
@@ -261,14 +261,14 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-church-navy mb-1">Search & Select Member *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Search & Select Member *</label>
                 {(() => {
                   const ministryMemberIds = (activeMinistry?.members || []).map(m => m.memberId);
                   const membersToDisplay = allMembers.filter(m => ministryMemberIds.includes(m.id));
                   
                   if ((activeMinistry?.members || []).length === 0) {
                     return (
-                      <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium">
+                      <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs font-bold">
                         No members assigned to this ministry yet. Please add members to {activeMinistry?.name || 'this ministry'} in Team Roster first.
                       </div>
                     );
@@ -289,15 +289,15 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
           )}
 
           {conflictWarning && (
-            <div className="bg-orange-50 border border-orange-200 text-orange-800 p-3 rounded-lg text-sm flex items-start">
-              <AlertCircle size={16} className="mr-2 mt-0.5 shrink-0" />
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-2xl text-xs font-bold flex items-start">
+              <AlertCircle size={15} className="mr-2 mt-0.5 shrink-0" />
               <span>{conflictWarning}</span>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-church-navy mb-1">Call Time</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Call Time</label>
               <ModernTimePicker 
                 name="callTime"
                 value={callTime}
@@ -305,7 +305,7 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-church-navy mb-1">Status</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Status</label>
               <ModernDropdown 
                 value={status}
                 onChange={(val) => setStatus(val)}
@@ -321,20 +321,28 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-church-navy mb-1">Notes</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Notes</label>
             <textarea 
               value={notes} 
               onChange={e => setNotes(e.target.value)} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-sm h-20"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl bg-white text-xs font-medium focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all h-20 resize-none"
               placeholder="Any specific instructions..."
             />
           </div>
 
-          <div className="pt-4 flex justify-end">
-            <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-full mr-3">
+          <div className="pt-4 flex justify-end items-center space-x-3 border-t border-gray-100">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-xs font-bold text-church-slate hover:bg-gray-50 transition-colors shadow-sm"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="px-5 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 shadow-md">
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="px-6 py-2.5 bg-gradient-coram text-white rounded-full text-xs font-bold shadow-church-glow hover:opacity-95 active:scale-95 transition-all disabled:opacity-50"
+            >
               {loading ? 'Saving...' : 'Save Assignment'}
             </button>
           </div>

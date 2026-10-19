@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Sun, Moon, CloudSun, Sparkles } from 'lucide-react';
+import { Sun, Moon, CloudSun, BookOpen, Building } from 'lucide-react';
+import StatusPill from '../../../components/ui/StatusPill';
 
 export default function DashboardHeader({ userProfile, activeChurchName }) {
   const [greeting, setGreeting] = useState('Welcome back');
@@ -26,57 +27,98 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
   const roleTitleMap = {
     super_admin: 'Super Administrator',
     church_admin: 'Church Administrator',
-    pastor: 'Pastor / Ministry Overseer',
+    pastor: 'Pastor / Overseer',
     secretary: 'Executive Secretary',
     finance_admin: 'Finance Administrator',
     ministry_leader: 'Ministry Leader',
-    member: 'Member',
-  };
-
-  const getGreetingSummary = () => {
-    if (roles.includes('finance_admin')) return "Your financial & giving verification overview is ready.";
-    if (roles.includes('ministry_leader')) return "Here's what needs your team's attention today.";
-    if (roles.includes('secretary')) return "Your schedule and attendance summary for the week.";
-    return "Here's what needs your attention this week.";
+    member: 'Leader',
   };
 
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
-    year: 'numeric',
   });
 
   return (
-    <div className="relative overflow-hidden min-h-[240px] bg-white rounded-3xl p-6 lg:p-8 shadow-church-soft border border-gray-100 group transition-all duration-500 hover:shadow-lg flex items-center">
-      {/* Dynamic Background Elements - Light Theme */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-church-green/10 rounded-full blur-3xl opacity-60 group-hover:scale-110 transition-transform duration-700"></div>
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl opacity-60 group-hover:translate-x-4 transition-transform duration-700"></div>
-      <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-500 hidden md:block">
-        <Calendar size={140} strokeWidth={1} className="text-church-navy transform group-hover:rotate-3 transition-transform duration-500" />
+    <div className="space-y-6">
+      {/* ── Top Greeting Bar ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          {/* Mobile-aligned Date Eyebrow Pill */}
+          <StatusPill variant="rose" dot className="mb-2">
+            {currentDateFormatted}
+          </StatusPill>
+
+          <p className="text-church-slate text-sm font-medium">
+            {greeting},
+          </p>
+          <h1 className="text-3xl md:text-4xl font-black text-church-charcoal tracking-tight flex items-center gap-2">
+            <span>{name}!</span>
+            <GreetingIcon className="text-amber-400 shrink-0" size={28} />
+          </h1>
+        </div>
+
+        {/* Church & Role Pill Badge */}
+        <div className="flex items-center gap-2">
+          <div className="bg-white px-4 py-2.5 rounded-2xl border border-gray-100/90 shadow-church-soft flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center">
+              <Building size={16} />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-church-charcoal">
+                {activeChurchName || 'Local Church Workspace'}
+              </div>
+              <div className="text-[10px] font-semibold text-church-slate uppercase tracking-wider">
+                {roleTitleMap[primaryRole] || primaryRole}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-church-green/5 backdrop-blur-sm rounded-full border border-church-green/10 text-xs font-semibold tracking-wide uppercase">
-            <span className="text-church-green flex items-center gap-1"><Sparkles size={14} className="text-church-green" /> {activeChurchName || 'Local Church Workspace'}</span>
-            <span className="text-gray-300">•</span>
-            <span className="text-church-navy/70">{roleTitleMap[primaryRole] || primaryRole}</span>
+      {/* ── CoramDeo Signature Verse of the Day Card (Directly adopting CoramDeo Mobile System Design) ── */}
+      <div className="relative overflow-hidden rounded-3xl p-6 md:p-7 text-white shadow-[0_10px_25px_-5px_rgba(224,64,160,0.22)] bg-gradient-to-r from-[#FC709D] via-[#BD6DF2] to-[#B069F5] border border-white/20 group transition-all duration-300">
+        {/* Top hairline shine bar */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-white/35 via-white/10 to-transparent" />
+
+        {/* Ambient atmospheric luminous orbs */}
+        <div className="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-white/[0.08] blur-xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-6 w-36 h-36 rounded-full bg-white/[0.06] blur-lg pointer-events-none" />
+
+        {/* Top-right dot matrix grid */}
+        <div className="absolute top-5 right-6 grid grid-cols-5 gap-2 opacity-20 pointer-events-none">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="w-1 h-1 rounded-full bg-white" />
+          ))}
+        </div>
+
+        {/* Subtle decorative watermark open-quote (matching mobile's decorativeQuote) */}
+        <div className="absolute -top-6 right-6 text-[130px] font-serif font-black text-white/[0.07] select-none pointer-events-none leading-none">
+          &ldquo;
+        </div>
+
+        <div className="relative z-10 max-w-3xl space-y-3.5">
+          {/* Eyebrow badge */}
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/18 border border-white/30 backdrop-blur-sm text-[9.5px] font-bold tracking-[1.4px] uppercase text-white/95">
+            <span>VERSE OF THE DAY</span>
           </div>
-          
-          <div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-church-navy mb-3 flex items-center gap-3">
-              {greeting}, {name}! <GreetingIcon className="text-yellow-500" size={36} />
-            </h1>
-            <p className="text-church-green text-sm md:text-base font-medium flex items-center gap-2">
-              <Calendar size={16} />
-              {currentDateFormatted}
-            </p>
+
+          {/* Scripture verse text */}
+          <blockquote className="font-serif text-base md:text-lg lg:text-xl font-normal leading-relaxed text-white/95 tracking-wide">
+            &ldquo;10The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.&rdquo;
+          </blockquote>
+
+          {/* Divider */}
+          <div className="h-px bg-white/15 my-3" />
+
+          {/* Bottom row: Scripture Reference */}
+          <div className="pt-0.5">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/18 border border-white/30 text-xs font-bold text-white tracking-wide">
+              <BookOpen size={12} className="text-white/90" />
+              <span>John 10:10</span>
+            </div>
           </div>
-          
-          <p className="text-church-slate text-sm md:text-base max-w-lg leading-relaxed pt-2">
-            {getGreetingSummary()}
-          </p>
         </div>
       </div>
     </div>

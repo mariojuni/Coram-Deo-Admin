@@ -24,3 +24,5 @@ serviceAccountKey.json
 
 # Debug directory
 debug/
+
+.firebase/

@@ -6,6 +6,9 @@ import PrayerRequestModal from './PrayerRequestModal';
 import { canModeratePrayerRequests } from '../../utils/permissions';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { useAuth } from '../../context/AuthContext';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function PrayerModeration() {
   const { userProfile, currentUser } = useAuth();
@@ -106,15 +109,15 @@ export default function PrayerModeration() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'approved':
-        return <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Approved</span>;
+        return <StatusPill variant="emerald" dot className="text-[11px] py-0.5">Approved</StatusPill>;
       case 'pending':
-        return <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase animate-pulse">Pending</span>;
+        return <StatusPill variant="amber" dot className="text-[11px] py-0.5 animate-pulse">Pending Review</StatusPill>;
       case 'answered':
-        return <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Answered</span>;
+        return <StatusPill variant="violet" dot className="text-[11px] py-0.5">Answered</StatusPill>;
       case 'rejected':
-        return <span className="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Rejected</span>;
+        return <StatusPill variant="rose" className="text-[11px] py-0.5">Rejected</StatusPill>;
       default:
-        return <span className="bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-1 rounded-md uppercase">{status}</span>;
+        return <StatusPill variant="slate" className="text-[11px] py-0.5 capitalize">{status}</StatusPill>;
     }
   };
 
@@ -128,19 +131,19 @@ export default function PrayerModeration() {
       thanksgiving: 'Thanksgiving',
       other: 'Other'
     };
-    const colors = {
-      healing: 'bg-blue-50 text-blue-600 border-blue-100',
-      family: 'bg-pink-50 text-pink-600 border-pink-100',
-      spiritual_growth: 'bg-purple-50 text-purple-600 border-purple-100',
-      provision: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-      thanksgiving: 'bg-orange-50 text-orange-600 border-orange-100',
-      other: 'bg-gray-50 text-gray-600 border-gray-200'
+    const variants = {
+      healing: 'rose',
+      family: 'violet',
+      spiritual_growth: 'violet',
+      provision: 'emerald',
+      thanksgiving: 'amber',
+      other: 'slate'
     };
     
     return (
-      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[cat] || colors.other}`}>
+      <StatusPill variant={variants[cat] || 'slate'} className="text-[10px] py-0.5">
         {labels[cat] || labels.other}
-      </span>
+      </StatusPill>
     );
   };
 
@@ -183,38 +186,41 @@ export default function PrayerModeration() {
 
   return (
     <div className="space-y-6 flex flex-col h-full max-w-5xl mx-auto">
-      <div className="flex justify-between items-center">
+      {/* Header aligned to CoramDeo Design System */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Prayer Wall</h1>
-          <p className="text-sm text-church-slate mt-1">Review, approve, or mark prayer requests as answered.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Intercession & Prayer Care
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Prayer Requests</h1>
+          <p className="text-sm text-church-slate mt-1">Review, moderate, and celebrate answered prayers from the congregation.</p>
         </div>
-        <button 
+        <GradientButton 
           onClick={handleAddClick}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+          icon={Plus}
         >
-          <Plus size={18} className="mr-2" />
           Add Request
-        </button>
+        </GradientButton>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <SoftCard className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <Search size={18} className="text-gray-400" />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+            <Search size={17} className="text-church-muted" />
           </div>
           <input
             type="text"
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-church-green"
-            placeholder="Search requests..."
+            className="w-full pl-10 pr-4 py-2 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose transition-all"
+            placeholder="Search prayer requests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center border border-gray-300 rounded-full bg-white px-1 py-1 shadow-sm">
-            <span className="text-xs font-bold text-gray-400 pl-3 pr-2 uppercase">Status:</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs font-bold text-church-slate uppercase tracking-wider pl-1">Status:</span>
             <ModernDropdown
               value={statusFilter}
               onChange={(val) => setStatusFilter(val)}
@@ -228,8 +234,8 @@ export default function PrayerModeration() {
             />
           </div>
 
-          <div className="flex items-center border border-gray-300 rounded-full bg-white px-1 py-1 shadow-sm">
-            <span className="text-xs font-bold text-gray-400 pl-3 pr-2 uppercase">Category:</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs font-bold text-church-slate uppercase tracking-wider pl-1">Category:</span>
             <ModernDropdown
               value={categoryFilter}
               onChange={(val) => setCategoryFilter(val)}
@@ -245,8 +251,8 @@ export default function PrayerModeration() {
             />
           </div>
 
-          <div className="flex items-center border border-gray-300 rounded-full bg-white px-1 py-1 shadow-sm">
-            <span className="text-xs font-bold text-gray-400 pl-3 pr-2 uppercase">Visibility:</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs font-bold text-church-slate uppercase tracking-wider pl-1">Visibility:</span>
             <ModernDropdown
               value={visibilityFilter}
               onChange={(val) => setVisibilityFilter(val)}
@@ -258,8 +264,8 @@ export default function PrayerModeration() {
             />
           </div>
 
-          <div className="flex items-center border border-gray-300 rounded-full bg-white px-1 py-1 shadow-sm">
-            <span className="text-xs font-bold text-gray-400 pl-3 pr-2 uppercase">Date:</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs font-bold text-church-slate uppercase tracking-wider pl-1">Date:</span>
             <ModernDropdown
               value={dateFilter}
               onChange={(val) => setDateFilter(val)}
@@ -272,39 +278,51 @@ export default function PrayerModeration() {
             />
           </div>
         </div>
-      </div>
+      </SoftCard>
       
       {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-church-slate">Loading prayer requests...</p>
+        <div className="flex-1 flex items-center justify-center py-20">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <p className="text-sm font-medium text-church-slate">Loading prayer requests...</p>
+          </div>
         </div>
       ) : filteredRequests.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-12 flex flex-col items-center justify-center flex-1">
-          <div className="w-20 h-20 bg-church-green/10 rounded-full flex items-center justify-center mb-6">
-            <HeartHandshake size={32} className="text-church-green" />
+        <SoftCard className="p-16 flex flex-col items-center justify-center text-center flex-1 my-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+            <HeartHandshake size={30} />
           </div>
-          <h3 className="text-xl font-bold text-church-navy mb-2">No prayer requests found</h3>
-          <p className="text-church-slate text-center max-w-sm mb-6">
+          <h3 className="text-xl font-black text-church-charcoal mb-1">No prayer requests found</h3>
+          <p className="text-church-slate text-sm max-w-sm mb-6">
             {categoryFilter !== 'all' || statusFilter !== 'all' || searchTerm !== ''
-              ? "No prayer requests found for this category or filter." 
-              : "All caught up. No prayer requests to review right now."}
+              ? "No prayer requests matching this filter criteria." 
+              : "All caught up. No prayer requests currently pending review."}
           </p>
-        </div>
+          <GradientButton 
+            onClick={handleAddClick}
+            icon={Plus}
+          >
+            Add Request
+          </GradientButton>
+        </SoftCard>
       ) : (
         <div className="space-y-4">
           {filteredRequests.map(request => (
-            <div key={request.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col sm:flex-row gap-4 hover:shadow-md transition-shadow">
-              
+            <SoftCard 
+              key={request.id} 
+              hover
+              className="p-5 flex flex-col sm:flex-row gap-4 relative group"
+            >
               <div className="flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-bold text-church-navy">{request.requesterName}</span>
-                    <span className="text-xs text-gray-400">{formatDate(request.createdAt)}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-black text-sm text-church-charcoal">{request.requesterName}</span>
+                    <span className="text-xs text-church-slate font-medium">• {formatDate(request.createdAt)}</span>
                     {renderCategoryBadge(request.category)}
                     {request.visibility === 'leaders_only' && (
-                      <span className="flex items-center text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">
-                        <Shield size={12} className="mr-1" /> Pastors Only
-                      </span>
+                      <StatusPill variant="amber" icon={Shield} className="text-[10px] py-0.5">
+                        Pastors Only
+                      </StatusPill>
                     )}
                   </div>
                   <div className="sm:hidden">
@@ -312,25 +330,33 @@ export default function PrayerModeration() {
                   </div>
                 </div>
                 
-                <p className="text-church-slate text-sm leading-relaxed whitespace-pre-wrap mb-4">
+                <p className="text-church-charcoal/90 text-sm leading-relaxed whitespace-pre-wrap mb-4">
                   "{request.requestText}"
                 </p>
 
                 {isModerator && (
                   <div className="mt-auto flex items-center space-x-2 pt-3 border-t border-gray-100">
-                    <button onClick={() => handleEditClick(request)} className="text-gray-400 hover:text-church-navy p-1 transition-colors">
-                      <Edit size={16} />
+                    <button 
+                      onClick={() => handleEditClick(request)} 
+                      className="text-church-slate hover:text-church-charcoal p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                      title="Edit Request"
+                    >
+                      <Edit size={15} />
                     </button>
-                    <button onClick={() => handleDeleteClick(request.id)} className="text-gray-400 hover:text-red-600 p-1 transition-colors">
-                      <Trash2 size={16} />
+                    <button 
+                      onClick={() => handleDeleteClick(request.id)} 
+                      className="text-church-slate hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-colors"
+                      title="Delete Request"
+                    >
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Status and Actions Sidebar */}
-              <div className="sm:w-48 shrink-0 flex flex-col space-y-3 sm:border-l sm:border-gray-100 sm:pl-4">
-                <div className="hidden sm:block mb-2">
+              <div className="sm:w-48 shrink-0 flex flex-col space-y-2 sm:border-l sm:border-gray-100 sm:pl-4 justify-center">
+                <div className="hidden sm:block mb-1">
                   {renderStatusBadge(request.status)}
                 </div>
 
@@ -338,15 +364,15 @@ export default function PrayerModeration() {
                   <>
                     <button 
                       onClick={() => handleUpdateStatus(request.id, 'approved')}
-                      className="w-full flex items-center justify-center px-3 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-bold transition-colors"
+                      className="w-full flex items-center justify-center px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-full text-xs font-bold transition-colors border border-emerald-100"
                     >
-                      <CheckCircle size={16} className="mr-2" /> Approve
+                      <CheckCircle size={14} className="mr-1.5" /> Approve
                     </button>
                     <button 
                       onClick={() => handleUpdateStatus(request.id, 'rejected')}
-                      className="w-full flex items-center justify-center px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-bold transition-colors"
+                      className="w-full flex items-center justify-center px-3 py-2 bg-gray-50 text-church-slate hover:bg-gray-100 rounded-full text-xs font-bold transition-colors border border-gray-200"
                     >
-                      <XCircle size={16} className="mr-2" /> Reject
+                      <XCircle size={14} className="mr-1.5" /> Reject
                     </button>
                   </>
                 )}
@@ -354,23 +380,22 @@ export default function PrayerModeration() {
                 {isModerator && request.status === 'approved' && (
                   <button 
                     onClick={() => handleUpdateStatus(request.id, 'answered')}
-                    className="w-full flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-sm font-bold transition-colors"
+                    className="w-full flex items-center justify-center px-3 py-2 bg-violet-50 text-church-violet hover:bg-violet-100 rounded-full text-xs font-bold transition-colors border border-violet-100"
                   >
-                    <Check size={16} className="mr-2" /> Mark Answered
+                    <Check size={14} className="mr-1.5" /> Mark Answered
                   </button>
                 )}
                 
                 {isModerator && (request.status === 'rejected' || request.status === 'answered') && (
                   <button 
                     onClick={() => handleUpdateStatus(request.id, 'pending')}
-                    className="w-full flex items-center justify-center px-3 py-2 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 rounded-lg text-sm font-bold transition-colors"
+                    className="w-full flex items-center justify-center px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-full text-xs font-bold transition-colors border border-amber-100"
                   >
                     Revert to Pending
                   </button>
                 )}
               </div>
-
-            </div>
+            </SoftCard>
           ))}
         </div>
       )}
@@ -384,3 +409,4 @@ export default function PrayerModeration() {
     </div>
   );
 }
+

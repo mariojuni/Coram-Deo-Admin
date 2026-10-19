@@ -80,8 +80,8 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-      <div className="w-48">
+    <div className="relative z-30 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+      <div className="w-48 relative z-30">
         <ModernDropdown
           options={FILTER_OPTIONS}
           value={filterType}
@@ -91,7 +91,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
       </div>
       
       {filterType === 'custom' && (
-        <div className="flex items-center space-x-2 bg-gray-50 p-1 rounded-xl border border-gray-200">
+        <div className="flex items-center space-x-2 bg-gray-50/80 p-1 rounded-2xl border border-gray-200">
           <div className="w-36">
             <ModernDatePicker
               value={customStart}
@@ -99,7 +99,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
               placeholder="Start Date"
             />
           </div>
-          <span className="text-gray-400">-</span>
+          <span className="text-gray-400 font-bold">-</span>
           <div className="w-36">
             <ModernDatePicker
               value={customEnd}
@@ -110,7 +110,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
           <button
             onClick={handleApplyCustom}
             disabled={!customStart || !customEnd}
-            className="px-3 py-1.5 bg-church-navy text-white text-sm rounded-lg hover:bg-church-navy/90 disabled:opacity-50"
+            className="px-3.5 py-1.5 bg-church-charcoal text-white text-xs font-bold rounded-xl hover:bg-black disabled:opacity-50 transition-colors shadow-sm"
           >
             Apply
           </button>
@@ -120,7 +120,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
       {filterType !== defaultFilter && (
         <button
           onClick={handleClear}
-          className="text-sm text-gray-500 hover:text-church-navy underline"
+          className="text-xs font-bold text-church-slate hover:text-church-rose transition-colors underline"
         >
           Clear Filter
         </button>

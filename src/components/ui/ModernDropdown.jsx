@@ -41,23 +41,27 @@ export default function ModernDropdown({
     : options;
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-50' : ''} ${className}`} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-church-green flex justify-between items-center hover:bg-gray-100 transition-colors"
+        className={`w-full px-4 py-2 border rounded-2xl text-xs sm:text-sm focus:outline-none flex justify-between items-center transition-all bg-white font-bold ${
+          isOpen 
+            ? 'border-church-rose ring-2 ring-church-rose/20 text-church-charcoal shadow-sm' 
+            : 'border-gray-200/80 hover:border-gray-300 text-church-charcoal hover:bg-gray-50/50'
+        }`}
       >
-        <span className={`block truncate ${!selectedOption ? 'text-gray-500' : 'text-church-navy font-medium'}`}>
+        <span className={`block truncate ${!selectedOption ? 'text-gray-400' : 'text-church-charcoal font-bold'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown 
           size={16} 
-          className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          className={`text-church-slate transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
         />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-72 overflow-hidden flex flex-col">
+        <div className="absolute z-[100] w-full mt-1.5 bg-white border border-gray-200/90 rounded-2xl shadow-xl max-h-72 overflow-hidden flex flex-col">
           {searchable && (
             <div className="p-2 border-b border-gray-100 flex items-center bg-gray-50/50">
               <Search size={16} className="text-gray-400 ml-2 mr-2" />
@@ -67,55 +71,55 @@ export default function ModernDropdown({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-full bg-transparent text-sm focus:outline-none text-church-navy"
+                className="w-full bg-transparent text-xs sm:text-sm focus:outline-none text-church-charcoal font-medium"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
           )}
           
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto flex-1 custom-scrollbar">
             {filteredOptions.length === 0 && (!allowCustom || !searchQuery) ? (
-              <div className="px-4 py-3 text-sm text-gray-500 italic text-center">
+              <div className="px-4 py-3 text-xs sm:text-sm text-gray-500 italic text-center">
                 {searchable && searchQuery ? 'No matching options' : 'No options available'}
               </div>
             ) : (
               <div className="py-1">
                 {filteredOptions.map((opt) => {
-                const isSelected = value === opt.value;
-                return (
+                  const isSelected = value === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        onChange(opt.value);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between transition-colors
+                        ${isSelected 
+                          ? 'bg-rose-50 text-church-rose font-bold' 
+                          : 'text-church-charcoal hover:bg-gray-50 font-medium'
+                        }
+                      `}
+                    >
+                      <span className="truncate pr-4">{opt.label}</span>
+                      {isSelected && <Check size={15} className="text-church-rose shrink-0 ml-2" />}
+                    </button>
+                  );
+                })}
+                {allowCustom && searchQuery && !options.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase()) && (
                   <button
-                    key={opt.value}
                     type="button"
                     onClick={() => {
-                      onChange(opt.value);
+                      onChange(`custom:${searchQuery}`);
                       setIsOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors
-                      ${isSelected 
-                        ? 'bg-church-green/10 text-church-green font-bold' 
-                        : 'text-church-navy hover:bg-gray-50 font-medium'
-                      }
-                    `}
+                    className="w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between transition-colors text-church-charcoal hover:bg-gray-50 font-medium"
                   >
-                    <span className="truncate pr-4">{opt.label}</span>
-                    {isSelected && <Check size={16} className="text-church-green shrink-0" />}
+                    <span className="truncate pr-4">Use "{searchQuery}"</span>
                   </button>
-                );
-              })}
-              {allowCustom && searchQuery && !options.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase()) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(`custom:${searchQuery}`);
-                    setIsOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors text-church-navy hover:bg-gray-50 font-medium"
-                >
-                  <span className="truncate pr-4">Use "{searchQuery}"</span>
-                </button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

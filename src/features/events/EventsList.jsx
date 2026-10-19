@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, onSnapshot, deleteDoc, updateDoc, doc, writeBatch, getDocs, where } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, Calendar as CalendarIcon, Edit, Trash2, MapPin, Clock, MoreVertical, Users, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CalendarPlus, Edit, Trash2, MapPin, Clock, MoreVertical, CheckCircle2, ChevronRight } from 'lucide-react';
 import EventFormModal from './EventFormModal';
 import { useNavigate } from 'react-router-dom';
 import { canManageEvents } from '../../utils/permissions';
 import GenerateMonthlyEventsModal from './GenerateMonthlyEventsModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function EventsList() {
-  const { userProfile } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const { userProfile, activeChurchId } = useAuth();
+  const CHURCH_ID = activeChurchId || userProfile?.churchId;
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +24,7 @@ export default function EventsList() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState([]);
+  const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' | 'completed' | 'all'
   const [filterMonth, setFilterMonth] = useState('all');
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
   const canManage = canManageEvents(userProfile);
@@ -41,9 +45,9 @@ export default function EventsList() {
         id: doc.id,
         ...doc.data()
       }));
-      // Legacy support for multi-tenant
+      // Multi-tenant filter
       docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
-      // Sort in memory
+      // Sort in memory by date
       docs.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
       setEvents(docs);
       setLoading(false);
@@ -99,27 +103,15 @@ export default function EventsList() {
     if (window.confirm(`Are you sure you want to mark ${selectedEvents.length} selected events as completed?`)) {
       try {
         const batch = writeBatch(db);
-        const completedAt = new Date().toISOString();
-        
-        for (const id of selectedEvents) {
-          batch.update(doc(db, 'events', id), { 
-            status: 'completed',
-            completedAt: completedAt
-          });
-          
-          // Close attendance sessions
-          const sessionsQ = query(collection(db, 'attendance_sessions'), where('eventId', '==', id));
-          const sessionsSnap = await getDocs(sessionsQ);
-          sessionsSnap.forEach(sessionDoc => {
-            batch.update(doc(db, 'attendance_sessions', sessionDoc.id), { status: 'Closed' });
-          });
-        }
-        
+        selectedEvents.forEach(id => {
+          const docRef = doc(db, 'events', id);
+          batch.update(docRef, { status: 'completed' });
+        });
         await batch.commit();
         setSelectedEvents([]);
         setIsSelectionMode(false);
       } catch (error) {
-        console.error("Error updating documents: ", error);
+        console.error("Error completing documents: ", error);
         alert("Failed to complete selected events.");
       }
     }
@@ -127,26 +119,14 @@ export default function EventsList() {
 
   const handleCompleteEvent = async (id) => {
     setActiveMenuId(null);
-    if (window.confirm(`Are you sure you want to mark this event as completed?`)) {
-      try {
-        const batch = writeBatch(db);
-        batch.update(doc(db, 'events', id), {
-          status: 'completed',
-          completedAt: new Date().toISOString()
-        });
-
-        // Close attendance sessions
-        const sessionsQ = query(collection(db, 'attendance_sessions'), where('eventId', '==', id));
-        const sessionsSnap = await getDocs(sessionsQ);
-        sessionsSnap.forEach(sessionDoc => {
-          batch.update(doc(db, 'attendance_sessions', sessionDoc.id), { status: 'Closed' });
-        });
-
-        await batch.commit();
-      } catch (error) {
-        console.error("Error updating document: ", error);
-        alert("Failed to complete event.");
-      }
+    try {
+      const docRef = doc(db, 'events', id);
+      const batch = writeBatch(db);
+      batch.update(docRef, { status: 'completed' });
+      await batch.commit();
+    } catch (error) {
+      console.error("Error completing event: ", error);
+      alert("Failed to complete event.");
     }
   };
   
@@ -170,16 +150,28 @@ export default function EventsList() {
     setActiveMenuId(activeMenuId === id ? null : id);
   };
 
-  // Format date helper
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-    const dateObj = new Date(dateStr + 'T00:00:00'); // Ensure it parses as local time
-    return dateObj.toLocaleDateString(undefined, options);
-  };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  const upcomingCount = events.filter(e => {
+    const isCompleted = e.status?.toLowerCase() === 'completed';
+    if (isCompleted) return false;
+    return !e.date || e.date >= todayStr;
+  }).length;
+
+  const completedCount = events.filter(e => {
+    const isCompleted = e.status?.toLowerCase() === 'completed';
+    return isCompleted || (e.date && e.date < todayStr);
+  }).length;
 
   const filteredEvents = events.filter(event => {
-    if (!event.date) return false;
+    const isCompleted = event.status?.toLowerCase() === 'completed' || (event.date && event.date < todayStr);
+    
+    if (activeTab === 'upcoming' && isCompleted) return false;
+    if (activeTab === 'completed' && !isCompleted) return false;
+
+    if (!event.date) return activeTab !== 'completed';
     const [y, m] = event.date.split('-');
     
     const yearMatch = filterYear === 'all' || y === filterYear;
@@ -190,34 +182,39 @@ export default function EventsList() {
 
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Events</h1>
-          <p className="text-sm text-church-slate mt-1">Manage upcoming church events and schedules.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Church Gatherings & Services
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Events</h1>
+          <p className="text-sm text-church-slate mt-1">Manage upcoming worship gatherings, services, and special events.</p>
         </div>
+
         {canManage && (
-          <div className="flex flex-wrap gap-2 items-center justify-end">
+          <div className="flex flex-wrap gap-2.5 items-center justify-start md:justify-end">
             {isSelectionMode ? (
               <>
                 <button 
                   onClick={handleBulkComplete}
                   disabled={selectedEvents.length === 0}
-                  className="flex items-center px-4 py-2 bg-green-50 text-green-600 rounded-full text-sm font-medium hover:bg-green-100 transition-colors disabled:opacity-50 border border-green-200"
+                  className="flex items-center px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold hover:bg-emerald-100 transition-colors disabled:opacity-50 border border-emerald-200"
                 >
-                  <CheckCircle2 size={16} className="mr-2" />
+                  <CheckCircle2 size={15} className="mr-1.5" />
                   Mark Completed ({selectedEvents.length})
                 </button>
                 <button 
                   onClick={handleBulkDelete}
                   disabled={selectedEvents.length === 0}
-                  className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50 border border-red-200"
+                  className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-full text-xs font-bold hover:bg-red-100 transition-colors disabled:opacity-50 border border-red-200"
                 >
-                  <Trash2 size={16} className="mr-2" />
-                  Delete Selected ({selectedEvents.length})
+                  <Trash2 size={15} className="mr-1.5" />
+                  Delete ({selectedEvents.length})
                 </button>
                 <button 
                   onClick={toggleSelectionMode}
-                  className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-slate rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex items-center px-4 py-2 bg-white border border-gray-200 text-church-charcoal rounded-full text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm"
                 >
                   Cancel
                 </button>
@@ -227,191 +224,279 @@ export default function EventsList() {
                 {events.length > 0 && (
                   <button 
                     onClick={toggleSelectionMode}
-                    className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-slate rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors"
+                    className="flex items-center px-4 py-2 bg-white border border-gray-200 hover:border-gray-300 text-church-charcoal rounded-full text-xs font-bold shadow-sm transition-all hover:bg-gray-50"
                   >
                     Select
                   </button>
                 )}
                 <button 
                   onClick={() => setIsGeneratorOpen(true)}
-                  className="flex items-center px-4 py-2 bg-white border border-church-green text-church-green rounded-full shadow-sm text-sm font-medium hover:bg-green-50 transition-colors hidden sm:flex"
+                  className="flex items-center px-4 py-2 bg-white border border-gray-200 hover:border-church-rose/40 hover:bg-pink-50/30 text-church-charcoal rounded-full text-xs font-bold shadow-sm transition-all hidden sm:flex"
                 >
-                  <CalendarIcon size={16} className="mr-2" />
-                  Generate Events
+                  <CalendarIcon size={14} className="mr-1.5 text-church-rose" />
+                  Generate
                 </button>
                 <button 
                   onClick={handleAddClick}
-                  className="flex items-center px-4 py-2 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+                  title="Create New Event"
+                  className="w-10 h-10 rounded-2xl bg-white border border-pink-100 shadow-sm flex items-center justify-center text-church-rose hover:bg-pink-50 transition-colors"
                 >
-                  <Plus size={16} className="mr-1" />
-                  Create Event
+                  <CalendarPlus size={20} />
                 </button>
+                <GradientButton
+                  onClick={handleAddClick}
+                  icon={Plus}
+                  size="md"
+                  className="shadow-church-glow"
+                >
+                  Create Event
+                </GradientButton>
               </>
             )}
           </div>
         )}
       </div>
 
-      <div className="bg-white p-4 rounded-2xl shadow-church-soft border border-gray-100 flex flex-wrap gap-4 items-end z-10 relative">
-        <div className="w-48">
-          <label className="block text-sm font-medium text-church-navy mb-1">Month</label>
-          <ModernDropdown
-            value={filterMonth}
-            onChange={setFilterMonth}
-            options={[
-              { value: 'all', label: 'All Months' },
-              ...MONTHS.map((m, i) => ({ value: String(i), label: m }))
-            ]}
-          />
+      {/* ── Segmented Control Pills (Exact Mobile App Styling) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setActiveTab('upcoming')}
+            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all shadow-sm ${
+              activeTab === 'upcoming'
+                ? 'bg-church-rose text-white'
+                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+            }`}
+          >
+            Upcoming ({upcomingCount})
+          </button>
+          <button
+            onClick={() => setActiveTab('completed')}
+            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all shadow-sm ${
+              activeTab === 'completed'
+                ? 'bg-church-rose text-white'
+                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+            }`}
+          >
+            Completed ({completedCount})
+          </button>
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
+              activeTab === 'all'
+                ? 'bg-church-rose text-white shadow-sm'
+                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+            }`}
+          >
+            All ({events.length})
+          </button>
         </div>
-        <div className="w-32">
-          <label className="block text-sm font-medium text-church-navy mb-1">Year</label>
-          <ModernDropdown
-            value={filterYear}
-            onChange={setFilterYear}
-            options={[
-              { value: 'all', label: 'All Years' },
-              { value: String(new Date().getFullYear() - 1), label: String(new Date().getFullYear() - 1) },
-              { value: String(new Date().getFullYear()), label: String(new Date().getFullYear()) },
-              { value: String(new Date().getFullYear() + 1), label: String(new Date().getFullYear() + 1) }
-            ]}
-          />
+
+        {/* Filter Bar */}
+        <div className="flex items-center space-x-2">
+          <div className="w-36">
+            <ModernDropdown
+              value={filterMonth}
+              onChange={setFilterMonth}
+              options={[
+                { value: 'all', label: 'All Months' },
+                ...MONTHS.map((m, i) => ({ value: String(i), label: m }))
+              ]}
+            />
+          </div>
+          <div className="w-28">
+            <ModernDropdown
+              value={filterYear}
+              onChange={setFilterYear}
+              options={[
+                { value: 'all', label: 'All Years' },
+                { value: String(new Date().getFullYear() - 1), label: String(new Date().getFullYear() - 1) },
+                { value: String(new Date().getFullYear()), label: String(new Date().getFullYear()) },
+                { value: String(new Date().getFullYear() + 1), label: String(new Date().getFullYear() + 1) }
+              ]}
+            />
+          </div>
         </div>
       </div>
       
+      {/* ── Events Grid / Empty State ── */}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-church-slate">Loading events...</p>
+        <div className="flex-1 flex items-center justify-center py-16">
+          <p className="text-church-slate text-sm font-semibold animate-pulse">Loading church events...</p>
         </div>
       ) : filteredEvents.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-12 flex flex-col items-center justify-center flex-1">
-          <div className="w-20 h-20 bg-church-green/10 rounded-full flex items-center justify-center mb-6">
-            <CalendarIcon size={32} className="text-church-green" />
+        <SoftCard className="p-12 flex flex-col items-center justify-center flex-1 text-center">
+          <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl flex items-center justify-center mb-4 shadow-sm border border-pink-100">
+            <CalendarIcon size={28} />
           </div>
-          <h3 className="text-xl font-bold text-church-navy mb-2">No events found</h3>
-          <p className="text-church-slate text-center max-w-sm mb-6">No events match the selected filters or schedule.</p>
-          {canManage && filterMonth === 'all' && filterYear === 'all' && (
-            <button 
-              onClick={handleAddClick}
-              className="px-6 py-3 bg-white border border-gray-300 text-church-navy rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              Create Event
-            </button>
+          <h3 className="text-xl font-black text-church-charcoal mb-1">No events found</h3>
+          <p className="text-church-slate text-sm max-w-sm mb-6">No scheduled events match your selected view. Add a new service or generate scheduled monthly events.</p>
+          {canManage && (
+            <GradientButton onClick={handleAddClick} icon={Plus} size="sm">
+              Create First Event
+            </GradientButton>
           )}
-        </div>
+        </SoftCard>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filteredEvents.map(event => (
-            <div 
-              key={event.id} 
-              onClick={(e) => isSelectionMode ? toggleEventSelect(e, event.id) : navigate(`/admin/events/${event.id}`)}
-              className={`bg-white rounded-2xl p-5 shadow-church-soft border flex items-center relative group transition-all hover:shadow-md cursor-pointer ${
-                selectedEvents.includes(event.id) ? 'border-church-green bg-green-50/10' : 'border-gray-100'
-              }`}
-            >
-              {/* Selection Checkbox */}
-              {isSelectionMode && (
-                <div className="mr-4">
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                    selectedEvents.includes(event.id) ? 'bg-church-green border-church-green text-white' : 'border-gray-300 bg-white'
-                  }`}>
-                    {selectedEvents.includes(event.id) && <CheckCircle2 size={14} className="text-white" />}
+          {filteredEvents.map(event => {
+            const dateObj = event.date ? new Date(event.date + 'T00:00:00') : null;
+            const monthStr = dateObj ? dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'TBD';
+            const dayStr = dateObj ? String(dateObj.getDate()) : '--';
+            const dayOfWeekStr = dateObj ? dateObj.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() : '';
+            const isCancelled = event.status?.toLowerCase() === 'cancelled';
+            const isCompleted = event.status?.toLowerCase() === 'completed' || (event.date && event.date < todayStr);
+            const isPublished = event.status?.toLowerCase() === 'published';
+            const isDraft = !event.status || event.status?.toLowerCase() === 'draft';
+            const timeDisplay = (event.startTime || event.time) 
+              ? (event.endTime ? `${(event.startTime || event.time)} - ${event.endTime}` : (event.startTime || event.time)) 
+              : 'TBD';
+
+            return (
+              <div 
+                key={event.id} 
+                onClick={(e) => isSelectionMode ? toggleEventSelect(e, event.id) : navigate(`/admin/events/${event.id}`)}
+                className={`bg-white rounded-3xl p-5 border border-gray-100/90 shadow-church-soft hover:shadow-church-elevated hover:border-gray-200 transition-all flex items-center relative cursor-pointer group ${
+                  selectedEvents.includes(event.id) ? 'ring-2 ring-church-rose bg-pink-50/20' : ''
+                }`}
+              >
+                {/* Selection Checkbox */}
+                {isSelectionMode && (
+                  <div className="mr-3.5 shrink-0">
+                    <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
+                      selectedEvents.includes(event.id) ? 'bg-church-rose border-church-rose text-white' : 'border-gray-300 bg-white'
+                    }`}>
+                      {selectedEvents.includes(event.id) && <CheckCircle2 size={14} className="text-white" />}
+                    </div>
                   </div>
+                )}
+                
+                {/* Mobile-aligned Date Column */}
+                <div className="flex flex-col items-center justify-center w-12 sm:w-14 shrink-0 text-center">
+                  <span className="text-[11px] font-bold text-church-rose uppercase tracking-wider">{monthStr}</span>
+                  <span className="text-2xl font-black text-church-charcoal leading-none my-0.5">{dayStr}</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{dayOfWeekStr}</span>
                 </div>
-              )}
-              
-              {/* Date Box */}
-              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-church-green/10 flex flex-col items-center justify-center text-church-green mr-5 border border-church-green/20">
-                <span className="text-xs font-semibold uppercase">
-                  {event.date ? new Date(event.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short' }) : 'TBD'}
-                </span>
-                <span className="text-2xl font-bold leading-none mt-0.5">
-                  {event.date ? new Date(event.date + 'T00:00:00').getDate() : '--'}
-                </span>
-              </div>
-              
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <h3 className={`text-lg font-bold truncate ${event.status?.toLowerCase() === 'cancelled' ? 'text-gray-400 line-through' : 'text-church-navy'}`}>
+
+                {/* Clean Vertical Divider matching Mobile Screenshot */}
+                <div className="h-11 w-[1px] bg-gray-100 mx-3 sm:mx-4 shrink-0" />
+                
+                {/* Content Column */}
+                <div className="flex-1 min-w-0 pr-2">
+                  <div className="mb-1 flex items-center gap-1.5 flex-wrap">
+                    {isPublished && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-black text-[9px] tracking-wider uppercase">
+                        PUBLISHED
+                      </span>
+                    )}
+                    {isCompleted && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-black text-[9px] tracking-wider uppercase">
+                        COMPLETED
+                      </span>
+                    )}
+                    {isCancelled && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-black text-[9px] tracking-wider uppercase">
+                        CANCELLED
+                      </span>
+                    )}
+                    {(!event.status || isDraft) && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-black text-[9px] tracking-wider uppercase">
+                        DRAFT
+                      </span>
+                    )}
+                    {event.category && (
+                      <span className="text-[10px] font-bold text-church-muted hidden sm:inline">
+                        &bull; {event.category}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className={`text-base font-black text-church-charcoal tracking-tight truncate group-hover:text-church-rose transition-colors ${
+                    isCancelled ? 'line-through text-gray-400' : ''
+                  }`}>
                     {event.title}
                   </h3>
-                  {event.status?.toLowerCase() === 'published' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] uppercase font-bold rounded">Published</span>}
-                  {event.status?.toLowerCase() === 'completed' && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] uppercase font-bold rounded">Completed</span>}
-                  {(!event.status || event.status?.toLowerCase() === 'draft') && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">Draft</span>}
-                  {event.status?.toLowerCase() === 'cancelled' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] uppercase font-bold rounded">Cancelled</span>}
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 mt-1 text-xs text-church-slate font-medium">
+                    <div className="flex items-center text-church-slate">
+                      <Clock size={12} className="mr-1.5 text-gray-400 shrink-0" />
+                      <span>{timeDisplay}</span>
+                    </div>
+                    <div className="flex items-center text-church-slate truncate">
+                      <MapPin size={12} className="mr-1.5 text-gray-400 shrink-0" />
+                      <span className="truncate">{event.location || 'Church Sanctuary'}</span>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-church-slate">
-                  {event.category && (
-                    <div className="flex items-center text-church-navy font-medium">
-                      {event.category}
+                {/* Right Action Icons matching Mobile App Screenshot */}
+                <div className="flex items-center space-x-1.5 shrink-0 ml-2">
+                  {canManage && !isCompleted && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleCompleteEvent(event.id); }}
+                      title="Mark Completed"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-emerald-500 hover:bg-emerald-50 transition-colors"
+                    >
+                      <CheckCircle2 size={18} />
+                    </button>
+                  )}
+                  {canManage && isCompleted && (
+                    <div className="w-8 h-8 flex items-center justify-center text-emerald-500" title="Completed">
+                      <CheckCircle2 size={18} />
                     </div>
                   )}
-                  <div className="flex items-center">
-                    <Clock size={14} className="mr-1.5 opacity-70" />
-                    {(event.startTime || event.time) ? (event.endTime ? `${(event.startTime || event.time)} - ${event.endTime}` : (event.startTime || event.time)) : 'TBD'}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin size={14} className="mr-1.5 opacity-70" />
-                    <span className="truncate max-w-[150px]">{event.location || 'TBD'}</span>
-                  </div>
+                  {canManage && (
+                    <button 
+                      onClick={(e) => handleEditClick(e, event)}
+                      title="Edit Details"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-church-charcoal hover:bg-gray-100 transition-colors"
+                    >
+                      <Edit size={16} />
+                    </button>
+                  )}
+                  {canManage && (
+                    <button 
+                      onClick={(e) => toggleMenu(e, event.id)}
+                      title="More Options"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-church-charcoal hover:bg-gray-100 transition-colors"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                  )}
                 </div>
                 
-                <div className="flex items-center space-x-3 mt-3">
-                  {event.enableRSVP && (
-                    <span className="flex items-center text-xs text-church-slate"><CheckCircle2 size={12} className="mr-1 text-church-green" /> RSVP</span>
-                  )}
-                  {event.enableVolunteer && (
-                    <span className="flex items-center text-xs text-church-slate"><CheckCircle2 size={12} className="mr-1 text-church-green" /> Volunteers</span>
-                  )}
-                  {event.enableAttendance && (
-                    <span className="flex items-center text-xs text-church-slate"><CheckCircle2 size={12} className="mr-1 text-church-green" /> Tracking</span>
-                  )}
-                </div>
+                {/* Popup Menu */}
+                {activeMenuId === event.id && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }} />
+                    <div className="absolute right-4 top-14 w-40 bg-white rounded-2xl shadow-church-elevated border border-gray-100 z-20 py-1.5 animate-in fade-in zoom-in-95 duration-150">
+                      <button 
+                        onClick={(e) => handleEditClick(e, event)}
+                        className="w-full flex items-center px-3.5 py-2 text-xs font-bold text-church-charcoal hover:bg-gray-50"
+                      >
+                        <Edit size={14} className="mr-2 text-church-muted" /> Edit Details
+                      </button>
+                      {!isCompleted && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleCompleteEvent(event.id); }}
+                          className="w-full flex items-center px-3.5 py-2 text-xs font-bold text-church-emerald hover:bg-emerald-50"
+                        >
+                          <CheckCircle2 size={14} className="mr-2" /> Mark Completed
+                        </button>
+                      )}
+                      <div className="border-t border-gray-100 my-1" />
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(event.id, event.title); }}
+                        className="w-full flex items-center px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 size={14} className="mr-2" /> Delete Event
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
-              
-              {/* Actions Dropdown */}
-              {canManage && (
-                <div className="ml-4 relative">
-                  <button 
-                    onClick={(e) => toggleMenu(e, event.id)}
-                    className="p-2 text-gray-400 hover:text-church-navy rounded-full hover:bg-gray-50 transition-colors"
-                  >
-                    <MoreVertical size={20} />
-                  </button>
-                  
-                  {activeMenuId === event.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
-                      <div className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
-                        <button 
-                          onClick={(e) => handleEditClick(e, event)}
-                          className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
-                        >
-                          <Edit size={14} className="mr-2" /> Edit
-                        </button>
-                        {event.status !== 'completed' && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleCompleteEvent(event.id); }}
-                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
-                          >
-                            <CheckCircle2 size={14} className="mr-2" /> Mark Completed
-                          </button>
-                        )}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeleteClick(event.id, event.title); }}
-                          className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 size={14} className="mr-2" /> Delete
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

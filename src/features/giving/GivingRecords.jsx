@@ -2,10 +2,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc, where, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, CreditCard, Edit, Trash2, Search, ExternalLink } from 'lucide-react';
+import { Plus, CreditCard, Edit, Trash2, Search, ExternalLink, ArrowDownLeft, DollarSign } from 'lucide-react';
 import GivingFormModal from './GivingFormModal';
 import DateRangeFilter from '../../components/ui/DateRangeFilter';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 const normalizeMethod = (m) => {
   if (!m) return 'Cash';
@@ -223,85 +226,139 @@ export default function GivingRecords() {
     return dateObj.toLocaleDateString(undefined, options);
   };
 
+  const totalFilteredAmount = useMemo(() => filteredLedgerRecords.reduce((sum, r) => sum + (r.amount || 0), 0), [filteredLedgerRecords]);
+  const averageGift = useMemo(() => filteredLedgerRecords.length > 0 ? Math.round(totalFilteredAmount / filteredLedgerRecords.length) : 0, [totalFilteredAmount, filteredLedgerRecords.length]);
+
   return (
     <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Giving Ledger</h1>
-          <p className="text-sm text-church-slate mt-1">Manage tithes, offerings, and donations.</p>
+          <span className="text-[11px] font-extrabold text-church-rose tracking-wider uppercase bg-church-rose-light px-3 py-1 rounded-full border border-pink-100">
+            TRANSACTION LEDGER
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-church-charcoal tracking-tight mt-2">
+            Giving Ledger
+          </h1>
+          <p className="text-xs sm:text-sm text-church-slate mt-1">
+            Manage tithes, offerings, pledges, and digital donations.
+          </p>
         </div>
-        <div className="flex items-center space-x-3">
 
-          <button 
+        <div className="flex items-center space-x-3 shrink-0">
+          <GradientButton 
             onClick={handleAddClick}
-            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+            icon={Plus}
           >
-            <Plus size={18} className="mr-2" />
             Add Record
-          </button>
+          </GradientButton>
         </div>
+      </div>
+
+      {/* Overview Stat Badges */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <SoftCard className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">Filtered Inflow</p>
+            <p className="text-xl font-black text-emerald-600 mt-1">{formatCurrency(totalFilteredAmount)}</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+            <ArrowDownLeft size={20} />
+          </div>
+        </SoftCard>
+
+        <SoftCard className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">Total Gifts</p>
+            <p className="text-xl font-black text-church-charcoal mt-1">{filteredLedgerRecords.length} contributions</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-purple-50 text-church-violet border border-purple-100 flex items-center justify-center">
+            <CreditCard size={20} />
+          </div>
+        </SoftCard>
+
+        <SoftCard className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">Average Contribution</p>
+            <p className="text-xl font-black text-church-charcoal mt-1">{formatCurrency(averageGift)}</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+            <DollarSign size={20} />
+          </div>
+        </SoftCard>
       </div>
 
       {/* Date Filter & Search Row */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-3xl shadow-church-soft border border-gray-100 space-y-4 md:space-y-0">
-        <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-          <DateRangeFilter onChange={setDateFilter} defaultFilter="thisMonth" />
-          <ModernDropdown 
-            value={selectedFundId} 
-            onChange={(val) => setSelectedFundId(val)}
-            options={[
-              { value: 'all', label: 'All Funds' },
-              ...fundsList.map(f => ({ value: f.id, label: f.name }))
-            ]}
-            className="w-full sm:w-52"
-          />
-        </div>
-        <div className="relative w-full md:w-72">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={16} className="text-gray-400" />
+      <SoftCard className="p-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <DateRangeFilter onChange={setDateFilter} defaultFilter="thisMonth" />
+            <ModernDropdown 
+              value={selectedFundId} 
+              onChange={(val) => setSelectedFundId(val)}
+              options={[
+                { value: 'all', label: 'All Funds' },
+                ...fundsList.map(f => ({ value: f.id, label: f.name }))
+              ]}
+              className="w-full sm:w-52"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search donor or fund..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent text-sm transition-shadow"
-          />
+          <div className="relative w-full md:w-72">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <Search size={16} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search donor or fund..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose text-xs sm:text-sm transition-all bg-gray-50/50"
+            />
+          </div>
         </div>
-      </div>
+      </SoftCard>
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 flex-1 flex flex-col overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
-          <h2 className="text-lg font-bold text-church-navy">
-            Recent Transactions
+      <SoftCard className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="text-base font-extrabold text-church-charcoal">
+            Transactions ({filteredLedgerRecords.length})
           </h2>
+          <span className="text-xs text-church-slate font-medium">
+            Showing verified contributions
+          </span>
         </div>
         
         <div className="overflow-auto flex-1">
-          <table className="w-full text-left border-collapse relative">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr className="bg-church-bg/50 text-church-slate text-xs uppercase tracking-wider">
-                <th className="px-6 py-4 font-semibold rounded-tl-3xl">Date</th>
-                <th className="px-6 py-4 font-semibold">Donor Name</th>
-                <th className="px-6 py-4 font-semibold">Fund Type</th>
-                <th className="px-6 py-4 font-semibold">Method</th>
-                <th className="px-6 py-4 font-semibold">Amount</th>
-                <th className="px-6 py-4 font-semibold rounded-tr-3xl text-right">Actions</th>
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 bg-gray-50/90 backdrop-blur-sm border-b border-gray-100">
+              <tr className="text-[11px] font-bold text-church-charcoal uppercase tracking-wider">
+                <th className="p-4 pl-6">Date</th>
+                <th className="p-4">Donor Name</th>
+                <th className="p-4">Fund Type</th>
+                <th className="p-4">Payment Method</th>
+                <th className="p-4">Amount</th>
+                <th className="p-4 text-right pr-6">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-church-slate">
-                    Loading records...
+                  <td colSpan="6" className="p-16 text-center">
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                      <p className="text-sm font-semibold text-church-slate">Loading records...</p>
+                    </div>
                   </td>
                 </tr>
               ) : filteredLedgerRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-church-slate flex flex-col items-center">
-                    <CreditCard size={32} className="mb-3 text-gray-300" />
-                    <p>No giving transactions found for the selected date range.</p>
+                  <td colSpan="6" className="p-16 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+                      <CreditCard size={30} />
+                    </div>
+                    <p className="text-church-charcoal font-black text-lg">No transactions found</p>
+                    <p className="text-church-slate text-sm mt-1">Try expanding your date filter or search query.</p>
                   </td>
                 </tr>
               ) : (
@@ -313,72 +370,83 @@ export default function GivingRecords() {
                   const proofUrl = record.proofUrl || record.proofOfPaymentUrl || '';
 
                   return (
-                  <tr key={record.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap text-church-slate font-medium">
-                      {formatDate(date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="font-bold text-church-navy">
-                        {donorName}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {record.giverEntityType === 'household' ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 uppercase tracking-wider">
-                            Household
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-church-slate">{record.userId ? 'Member' : 'Guest'}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
-                        {fundType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-church-slate">
-                      {method}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-green-600">
-                      {formatCurrency(record.amount)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {proofUrl && (
-                          <a 
-                            href={proofUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-church-blue hover:text-church-blue/80 p-1 rounded-md hover:bg-blue-50 transition-colors"
-                            title="View Proof"
+                    <tr key={record.id} className="hover:bg-gray-50/60 transition-colors group">
+                      <td className="p-4 pl-6 whitespace-nowrap text-xs font-semibold text-church-slate">
+                        {formatDate(date)}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
+                            {donorName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-church-charcoal group-hover:text-church-rose transition-colors">
+                              {donorName}
+                            </p>
+                            <div className="flex items-center space-x-1.5 mt-0.5">
+                              {record.giverEntityType === 'household' ? (
+                                <StatusPill variant="violet" className="text-[10px] py-0 px-2">
+                                  Household
+                                </StatusPill>
+                              ) : (
+                                <span className="text-[11px] text-church-muted font-medium">
+                                  {record.userId ? 'Registered Member' : 'Guest Donor'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <StatusPill variant="violet">
+                          {fundType}
+                        </StatusPill>
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <span className="inline-flex items-center text-xs font-semibold text-church-slate bg-gray-100 px-2.5 py-1 rounded-full">
+                          {method}
+                        </span>
+                      </td>
+                      <td className="p-4 whitespace-nowrap font-black text-base text-emerald-600">
+                        +{formatCurrency(record.amount)}
+                      </td>
+                      <td className="p-4 pr-6 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end space-x-1.5">
+                          {proofUrl && (
+                            <a 
+                              href={proofUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-church-slate hover:text-church-rose p-2 rounded-xl hover:bg-rose-50 transition-colors"
+                              title="View Proof of Payment"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          )}
+                          <button 
+                            onClick={() => handleEditClick(record)}
+                            className="text-church-slate hover:text-church-charcoal p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                            title="Edit"
                           >
-                            <ExternalLink size={18} />
-                          </a>
-                        )}
-                        <button 
-                          onClick={() => handleEditClick(record)}
-                          className="text-church-slate hover:text-church-navy p-1 rounded-md hover:bg-gray-100 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteClick(record)}
-                          className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteClick(record)}
+                            className="text-church-slate hover:text-red-500 p-2 rounded-xl hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </SoftCard>
 
       <GivingFormModal 
         isOpen={isModalOpen} 

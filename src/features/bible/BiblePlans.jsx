@@ -6,7 +6,9 @@ import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical, Upload, Do
 import BiblePlanFormModal from './BiblePlanFormModal';
 import BiblePlanImportModal from './BiblePlanImportModal';
 import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
-
+import SoftCard from '../../components/ui/SoftCard';
+import GradientButton from '../../components/ui/GradientButton';
+import StatusPill from '../../components/ui/StatusPill';
 
 export default function BiblePlans() {
   const { userProfile, activeChurchId } = useAuth();
@@ -133,59 +135,61 @@ export default function BiblePlans() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'active':
-        return <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Active</span>;
-      case 'draft':
-        return <span className="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Draft</span>;
+        return <StatusPill variant="emerald" dot className="text-[11px] py-0.5">Active</StatusPill>;
       case 'completed':
-        return <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Completed</span>;
+        return <StatusPill variant="slate" className="text-[11px] py-0.5">Completed</StatusPill>;
+      case 'draft':
       default:
-        return <span className="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-1 rounded-full uppercase">{status}</span>;
+        return <StatusPill variant="amber" dot className="text-[11px] py-0.5">Draft</StatusPill>;
     }
   };
 
   return (
     <div className="space-y-6 flex flex-col h-full">
+      {/* Header aligned to CoramDeo Design System */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-church-navy">Bible Reading Plans</h1>
-          <p className="text-sm text-church-slate mt-1">Manage guided scripture reading plans for members.</p>
+          <StatusPill variant="rose" dot className="mb-2">
+            Scripture & Devotionals
+          </StatusPill>
+          <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Bible Reading Plans</h1>
+          <p className="text-sm text-church-slate mt-1">Manage guided scripture reading journeys, reading tracks, and devotions for church members.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <button 
             onClick={handleBulkExport}
             disabled={plans.length === 0}
-            className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-opacity disabled:opacity-50"
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-charcoal rounded-full shadow-sm text-xs font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            <Download size={18} className="mr-2" />
+            <Download size={15} className="mr-1.5 text-church-muted" />
             {selectedPlanIds.length > 0 ? `Export Selected (${selectedPlanIds.length})` : 'Export All JSON'}
           </button>
           <button 
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-white border border-gray-300 text-church-navy rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 transition-opacity"
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-charcoal rounded-full shadow-sm text-xs font-bold hover:bg-gray-50 transition-colors"
           >
-            <Upload size={18} className="mr-2" />
+            <Upload size={15} className="mr-1.5 text-church-violet" />
             Import JSON
           </button>
-          <button 
+          <GradientButton 
             onClick={handleAddClick}
-            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+            icon={Plus}
           >
-            <Plus size={18} className="mr-2" />
             Create Plan
-          </button>
+          </GradientButton>
         </div>
       </div>
 
       {plans.length > 0 && (
-        <div className="flex justify-end border-b border-gray-200 pb-2">
+        <div className="flex justify-end pb-1">
           <button
             onClick={toggleSelectAll}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-church-navy px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
+            className="flex items-center gap-2 text-xs font-bold text-church-slate hover:text-church-charcoal px-3.5 py-1.5 rounded-full bg-white border border-gray-200/80 shadow-sm transition-all"
           >
             {selectedPlanIds.length === plans.length ? (
-              <CheckSquare size={16} className="text-church-green" />
+              <CheckSquare size={15} className="text-church-rose" />
             ) : (
-              <Square size={16} />
+              <Square size={15} className="text-gray-400" />
             )}
             {selectedPlanIds.length === plans.length ? 'Deselect All' : 'Select All for Export'}
           </button>
@@ -193,85 +197,89 @@ export default function BiblePlans() {
       )}
       
       {fetchError ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-8 bg-white rounded-3xl shadow-church-soft border border-gray-100 max-w-md w-full">
-            <p className="text-red-600 font-bold text-lg mb-2">⚠️ Could not load reading plans</p>
-            <p className="text-sm text-church-slate">{fetchError}</p>
+        <SoftCard className="flex-1 flex items-center justify-center p-8 my-4">
+          <div className="text-center max-w-md">
+            <p className="text-rose-600 font-bold mb-2">⚠️ Could not load reading plans</p>
+            <p className="text-xs text-church-slate">{fetchError}</p>
           </div>
-        </div>
+        </SoftCard>
       ) : loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-church-slate">Loading reading plans...</p>
+        <div className="flex-1 flex items-center justify-center py-20">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <p className="text-sm font-medium text-church-slate">Loading reading plans...</p>
+          </div>
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-12 flex flex-col items-center justify-center flex-1">
-          <div className="w-20 h-20 bg-church-green/10 rounded-full flex items-center justify-center mb-6">
-            <BookOpen size={32} className="text-church-green" />
+        <SoftCard className="p-12 flex flex-col items-center justify-center text-center flex-1 my-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+            <BookOpen size={30} />
           </div>
-          <h3 className="text-xl font-bold text-church-navy mb-2">No reading plans active</h3>
-          <p className="text-church-slate text-center max-w-sm mb-6">Draft a new Bible reading plan to share with the church.</p>
-          <button 
+          <h3 className="text-xl font-black text-church-charcoal mb-1">No reading plans active</h3>
+          <p className="text-church-slate text-sm max-w-sm mb-6">Draft a new Bible reading plan to share scripture and devotions with your congregation.</p>
+          <GradientButton 
             onClick={handleAddClick}
-            className="px-6 py-3 bg-white border border-gray-300 text-church-navy rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            icon={Plus}
           >
             Create Plan
-          </button>
-        </div>
+          </GradientButton>
+        </SoftCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {plans.map(plan => {
             const isSelected = selectedPlanIds.includes(plan.id);
             return (
-              <div 
+              <SoftCard 
                 key={plan.id} 
-                className={`bg-white rounded-3xl overflow-hidden shadow-church-soft border flex flex-col relative group transition-all hover:shadow-md ${
-                  isSelected ? 'border-church-green ring-2 ring-church-green/20' : 'border-gray-100'
+                hover
+                className={`overflow-hidden flex flex-col relative group ${
+                  isSelected ? 'ring-2 ring-church-rose border-church-rose/40' : ''
                 }`}
               >
-                
                 {/* Header Banner */}
-                <div className="h-28 bg-church-green/10 relative border-b border-gray-100 flex items-center justify-center">
+                <div className="h-28 bg-gradient-to-br from-rose-50/70 via-violet-50/40 to-white relative border-b border-gray-100 flex items-center justify-center">
                   <div 
                     onClick={() => toggleSelectPlan(plan.id)}
-                    className="absolute top-4 left-4 bg-white/90 p-1.5 rounded-lg cursor-pointer hover:bg-white shadow-sm"
+                    className="absolute top-3 left-3 bg-white/90 p-1.5 rounded-full cursor-pointer hover:bg-white shadow-sm border border-gray-100 transition-colors"
                   >
                     {isSelected ? (
-                      <CheckSquare size={18} className="text-church-green" />
+                      <CheckSquare size={16} className="text-church-rose" />
                     ) : (
-                      <Square size={18} className="text-gray-400" />
+                      <Square size={16} className="text-gray-400" />
                     )}
                   </div>
 
-                  <BookOpen size={48} className="text-church-green/30" />
+                  <BookOpen size={42} className="text-church-rose/25" />
                   
                   {/* Actions Dropdown */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-3 right-3">
                     <button 
                       onClick={() => toggleMenu(plan.id)}
-                      className="p-2 text-gray-500 hover:text-church-navy bg-white/80 hover:bg-white rounded-full transition-colors backdrop-blur-sm shadow-sm border border-gray-100"
+                      className="p-1.5 text-church-slate hover:text-church-charcoal bg-white/80 hover:bg-white rounded-full transition-colors shadow-sm border border-gray-100"
+                      title="Plan Options"
                     >
-                      <MoreVertical size={18} />
+                      <MoreVertical size={16} />
                     </button>
                     
                     {activeMenuId === plan.id && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
-                        <div className="absolute right-0 top-10 w-36 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1">
+                        <div className="absolute right-0 top-9 w-36 bg-white rounded-xl shadow-church-elevated border border-gray-100 z-20 py-1 overflow-hidden">
                           <button 
                             onClick={() => handleSingleExport(plan)}
-                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
+                            className="w-full flex items-center px-4 py-2 text-xs font-semibold text-church-charcoal hover:bg-gray-50"
                           >
-                            <Download size={14} className="mr-2 text-blue-600" /> Export JSON
+                            <Download size={14} className="mr-2 text-church-violet" /> Export JSON
                           </button>
                           <button 
                             onClick={() => handleEditClick(plan)}
-                            className="w-full flex items-center px-4 py-2 text-sm text-church-navy hover:bg-gray-50"
+                            className="w-full flex items-center px-4 py-2 text-xs font-semibold text-church-charcoal hover:bg-gray-50"
                           >
-                            <Edit size={14} className="mr-2" /> Edit
+                            <Edit size={14} className="mr-2 text-church-muted" /> Edit
                           </button>
                           <button 
                             onClick={() => handleDeleteClick(plan.id, plan.title)}
-                            className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            className="w-full flex items-center px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                           >
                             <Trash2 size={14} className="mr-2" /> Delete
                           </button>
@@ -282,34 +290,39 @@ export default function BiblePlans() {
                 </div>
                 
                 {/* Content */}
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-bold text-church-navy line-clamp-2 pr-2">{plan.title}</h3>
-                    {renderStatusBadge(plan.status)}
+                <div className="p-5 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors line-clamp-2 leading-snug">
+                      {plan.title}
+                    </h3>
+                    <div className="shrink-0">
+                      {renderStatusBadge(plan.status)}
+                    </div>
                   </div>
                   
-                  <p className="text-sm text-church-slate line-clamp-3 mb-6 flex-1">
+                  <p className="text-xs sm:text-sm text-church-slate line-clamp-3 mb-5 flex-1 leading-relaxed">
                     {plan.description || 'No description provided.'}
                   </p>
 
-                  <div className="flex flex-col space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    
+                  <div className="flex flex-col space-y-2.5 p-3.5 bg-gray-50/70 rounded-2xl border border-gray-100/80 mt-auto">
                     <div className="flex justify-between items-center">
-                      {plan.durationDays > 0 && (
-                        <div className="flex items-center text-sm font-medium text-church-navy">
-                          <Clock size={16} className="text-church-green mr-2" />
+                      {plan.durationDays > 0 ? (
+                        <div className="flex items-center text-xs font-bold text-church-charcoal">
+                          <Clock size={14} className="text-church-rose mr-1.5" />
                           {plan.durationDays} Days Total
                         </div>
+                      ) : (
+                        <div className="text-xs text-church-muted font-medium">Self-Paced</div>
                       )}
                       
-                      <div className="text-xs font-bold text-church-green bg-church-green/10 px-2 py-1 rounded-md">
-                        {plan.readings?.length || 0} Readings Loaded
+                      <div className="text-[11px] font-bold text-church-violet bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100/60">
+                        {plan.readings?.length || 0} Readings
                       </div>
                     </div>
                     
                     {(plan.startDate || plan.endDate) && (
-                      <div className="flex items-center text-sm font-medium text-church-slate">
-                        <Calendar size={16} className="text-gray-400 mr-2 shrink-0" />
+                      <div className="flex items-center text-xs font-medium text-church-slate pt-1 border-t border-gray-100/60">
+                        <Calendar size={13} className="text-church-muted mr-1.5 shrink-0" />
                         <span className="truncate">
                           {plan.startDate ? formatDate(plan.startDate) : 'TBD'}
                           {plan.endDate && ` - ${formatDate(plan.endDate)}`}
@@ -318,7 +331,7 @@ export default function BiblePlans() {
                     )}
                   </div>
                 </div>
-              </div>
+              </SoftCard>
             );
           })}
         </div>
