@@ -205,20 +205,20 @@ export default function WebAdminShowcase() {
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-church-soft">
           <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-3">
             <span className="text-xs font-bold text-church-charcoal">Worship Setlist · Sunday Service</span>
-            <span className="text-xs font-bold text-church-rose">4 Songs (22 mins)</span>
+            <span className="text-xs font-bold text-church-rose">3 Songs (16 mins)</span>
           </div>
           <div className="space-y-2 text-xs">
             <div className="p-2 rounded-lg bg-church-canvas flex items-center justify-between">
-              <span className="font-bold text-church-charcoal">1. 10,000 Reasons (Bless The Lord)</span>
+              <span className="font-bold text-church-charcoal">1. All I Have Is Christ</span>
+              <span className="px-2 py-0.5 rounded bg-white font-black text-church-charcoal border">Key: C</span>
+            </div>
+            <div className="p-2 rounded-lg bg-church-canvas flex items-center justify-between">
+              <span className="font-bold text-church-charcoal">2. Christ Is Our Hope in Life and Death</span>
+              <span className="px-2 py-0.5 rounded bg-white font-black text-church-charcoal border">Key: D</span>
+            </div>
+            <div className="p-2 rounded-lg bg-church-canvas flex items-center justify-between">
+              <span className="font-bold text-church-charcoal">3. As For Me and My House</span>
               <span className="px-2 py-0.5 rounded bg-white font-black text-church-charcoal border">Key: G</span>
-            </div>
-            <div className="p-2 rounded-lg bg-church-canvas flex items-center justify-between">
-              <span className="font-bold text-church-charcoal">2. Goodness of God</span>
-              <span className="px-2 py-0.5 rounded bg-white font-black text-church-charcoal border">Key: D</span>
-            </div>
-            <div className="p-2 rounded-lg bg-church-canvas flex items-center justify-between">
-              <span className="font-bold text-church-charcoal">3. King of Kings</span>
-              <span className="px-2 py-0.5 rounded bg-white font-black text-church-charcoal border">Key: D</span>
             </div>
           </div>
         </div>
