@@ -7,9 +7,11 @@ import {
   signInWithPopup,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { getActiveAuth, getActiveDb, googleProvider } from '../firebase';
 import { isAuthorizedAdminUser } from '../utils/adminRoles';
+import { DEFAULT_CURRENCY_CONFIG, normalizeCurrencyConfig } from '../config/currencies';
+import { formatCurrency as formatCurrencyUtil } from '../utils/currency';
 
 const defaultAuthContext = {
   currentUser: null,
@@ -18,6 +20,9 @@ const defaultAuthContext = {
   originalUserProfile: null,
   activeChurchId: null,
   setActiveChurchId: () => {},
+  churchData: null,
+  churchCurrency: DEFAULT_CURRENCY_CONFIG,
+  formatCurrency: (amount) => String(amount || 0),
   isLoading: true,
   isAuthorizedAdmin: false,
   signup: async () => {},
@@ -183,6 +188,43 @@ export function AuthProvider({ children }) {
 
   const isAuthorizedAdmin = isAuthorizedAdminUser(profileWithActiveChurch);
 
+  const [churchData, setChurchData] = useState(null);
+  const [churchCurrency, setChurchCurrency] = useState(DEFAULT_CURRENCY_CONFIG);
+
+  const effectiveChurchId = (activeChurchId && activeChurchId !== 'system')
+    ? activeChurchId
+    : userProfile?.churchId;
+
+  // Real-time listener to church document for currency and global localization
+  useEffect(() => {
+    if (!effectiveChurchId || effectiveChurchId === 'system') {
+      setChurchData(null);
+      setChurchCurrency(DEFAULT_CURRENCY_CONFIG);
+      return;
+    }
+
+    const churchRef = doc(getActiveDb(), 'churches', effectiveChurchId);
+    const unsubscribe = onSnapshot(churchRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setChurchData(data);
+        const normCurrency = normalizeCurrencyConfig(data.currency || {
+          code: data.currencyCode,
+          symbol: data.currencySymbol,
+        });
+        setChurchCurrency(normCurrency);
+      }
+    }, (err) => {
+      console.warn('Real-time church doc listener error in AuthContext:', err);
+    });
+
+    return () => unsubscribe();
+  }, [effectiveChurchId]);
+
+  const formatCurrency = (amount, options = {}) => {
+    return formatCurrencyUtil(amount, churchCurrency, options);
+  };
+
   const value = {
     currentUser,
     userProfile: profileWithActiveChurch,
@@ -190,6 +232,9 @@ export function AuthProvider({ children }) {
     originalUserProfile: userProfile,
     activeChurchId,
     setActiveChurchId,
+    churchData,
+    churchCurrency,
+    formatCurrency,
     isLoading,
     isAuthorizedAdmin,
     signup,

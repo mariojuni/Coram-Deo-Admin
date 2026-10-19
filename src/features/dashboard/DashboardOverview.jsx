@@ -28,7 +28,7 @@ import RecentActivityCard from './components/RecentActivityCard';
 import { useNavigate } from 'react-router-dom';
 
 export default function DashboardOverview() {
-  const { userProfile, activeChurchId } = useAuth();
+  const { userProfile, activeChurchId, formatCurrency } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -448,7 +448,7 @@ export default function DashboardOverview() {
           activities.push({
             id: `giv_${g.id}`,
             type: 'giving',
-            title: `Donation Recorded: ₱${g.amount || 0}`,
+            title: `Donation Recorded: ${formatCurrency(g.amount || 0)}`,
             subtitle: `${g.donorName || 'Anonymous'} • ${g.fund || 'General'}`,
             timestamp: g.createdAt || new Date(),
           });

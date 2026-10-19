@@ -2,14 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, Clock } from 'lucide-react';
 import { canViewFinanceDashboard } from '../../../utils/dashboardPermissions';
+import { useAuth } from '../../../context/AuthContext';
+import { formatCurrency as formatCurrencyUtil } from '../../../utils/currency';
 
-export default function FinanceOverviewCard({ financeData, loading, userProfile }) {
+export default function FinanceOverviewCard({ financeData, loading, userProfile, churchCurrency }) {
   if (!canViewFinanceDashboard(userProfile)) {
     return null;
   }
 
+  const auth = useAuth();
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount || 0);
+    if (churchCurrency) {
+      return formatCurrencyUtil(amount, churchCurrency);
+    }
+    if (auth?.formatCurrency) {
+      return auth.formatCurrency(amount);
+    }
+    return formatCurrencyUtil(amount);
   };
 
   const totalGiving = financeData?.approvedGivingThisMonth || 0;

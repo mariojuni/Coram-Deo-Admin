@@ -8,7 +8,7 @@ import SoftCard from '../../components/ui/SoftCard';
 import StatusPill from '../../components/ui/StatusPill';
 
 export default function PendingVerification() {
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile, currentUser, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
   
   const [pendingRecords, setPendingRecords] = useState([]);
@@ -153,10 +153,6 @@ export default function PendingVerification() {
       console.error("Error rejecting giving record:", err);
       alert("Failed to reject record.");
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount || 0);
   };
 
   const filteredRecords = pendingRecords.filter(r => {

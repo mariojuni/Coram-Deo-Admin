@@ -331,7 +331,7 @@ function AppRoutes() {
               path="roles" 
               element={
                 <RoleGuard allowedRoles={['super_admin', 'church_admin']}>
-                  <SettingsUsersAndRoles />
+                  <SettingsProfile />
                 </RoleGuard>
               } 
             />

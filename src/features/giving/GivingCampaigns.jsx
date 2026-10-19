@@ -6,7 +6,7 @@ import { Plus, Edit, Search, Play, Pause, CheckCircle, Archive, AlertCircle } fr
 import CampaignFormModal from './CampaignFormModal';
 
 export default function GivingCampaigns() {
-  const { userProfile } = useAuth();
+  const { userProfile, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,10 +78,6 @@ export default function GivingCampaigns() {
   const filteredCampaigns = campaigns.filter(c => 
     c.title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   );
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount || 0);
-  };
 
   const getStatusBadge = (status) => {
     switch (status) {

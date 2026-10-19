@@ -156,8 +156,8 @@ export default function SongsList() {
   });
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center flex-wrap gap-4">
+    <div className="space-y-6 flex flex-col h-full min-h-0">
+      <div className="flex justify-between items-center flex-wrap gap-4 shrink-0">
         <div>
           <StatusPill variant="rose" dot className="mb-2">
             Worship & Praise Directory
@@ -218,7 +218,7 @@ export default function SongsList() {
       </div>
 
       {/* Filter and Search Bar */}
-      <SoftCard className="p-4 space-y-4">
+      <SoftCard className="p-4 space-y-4 shrink-0 relative z-20">
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-1 w-full">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-church-muted" />
@@ -303,12 +303,12 @@ export default function SongsList() {
           </GradientButton>
         </SoftCard>
       ) : (
-        <SoftCard className="overflow-hidden">
-          <div className="overflow-x-auto">
+        <SoftCard className="flex-1 flex flex-col overflow-hidden min-h-[350px]">
+          <div className="overflow-auto flex-1 min-h-0">
             <table className="min-w-full divide-y divide-gray-100 text-xs">
-              <thead className="bg-gray-50/75">
+              <thead className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
                 <tr>
-                  <th className="px-4 py-3.5 text-left">
+                  <th className="px-4 py-3.5 text-left bg-gray-50/95">
                     <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded">
                       {selectedSongIds.length === filteredSongs.length && filteredSongs.length > 0 ? (
                         <CheckSquare size={16} className="text-church-rose" />
@@ -317,13 +317,13 @@ export default function SongsList() {
                       )}
                     </button>
                   </th>
-                  <th className="px-6 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Title / Artist</th>
-                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Language</th>
-                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Category</th>
-                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Directory Visibility</th>
-                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Lyrics in Directory</th>
-                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Status</th>
-                  <th className="px-6 py-3.5 text-right font-bold text-church-charcoal uppercase tracking-wider text-[11px]">Actions</th>
+                  <th className="px-6 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Title / Artist</th>
+                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Language</th>
+                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Category</th>
+                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Directory Visibility</th>
+                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Lyrics in Directory</th>
+                  <th className="px-4 py-3.5 text-left font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Status</th>
+                  <th className="px-6 py-3.5 text-right font-bold text-church-charcoal uppercase tracking-wider text-[11px] bg-gray-50/95">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">

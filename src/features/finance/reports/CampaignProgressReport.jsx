@@ -1,12 +1,11 @@
 import React from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import { formatCurrency as formatCurrencyUtil } from '../../../utils/currency';
 
 export default function CampaignProgressReport({ data }) {
+  const auth = useAuth();
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-      minimumFractionDigits: 2,
-    }).format(amount || 0);
+    return auth?.formatCurrency ? auth.formatCurrency(amount) : formatCurrencyUtil(amount);
   };
 
   if (!data || data.length === 0) {

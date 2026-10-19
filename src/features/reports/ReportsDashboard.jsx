@@ -21,6 +21,12 @@ import {
   UserCheck
 } from 'lucide-react';
 import { canManageGiving } from '../../utils/permissions';
+import { formatCurrency as formatChurchCurrency } from '../../utils/currency';
+import {
+  exportMemberRegistryPdf,
+  exportAttendanceRegisterPdf,
+  exportGivingLedgerPdf,
+} from '../../utils/reportPdfGenerator';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import DateRangeFilter from '../../components/ui/DateRangeFilter';
 import SoftCard from '../../components/ui/SoftCard';
@@ -104,10 +110,20 @@ export default function ReportsDashboard() {
 
       // 1. Fetch Church metadata for official exports
       try {
+        let meta = {};
         const cSnap = await getDoc(doc(db, 'churches', CHURCH_ID));
         if (cSnap.exists()) {
-          setChurchMeta(cSnap.data());
+          meta = { ...cSnap.data() };
         }
+        try {
+          const pSnap = await getDoc(doc(db, 'churches', CHURCH_ID, 'settings', 'profile'));
+          if (pSnap.exists()) {
+            meta = { ...meta, ...pSnap.data() };
+          }
+        } catch (pe) {
+          console.warn('Could not read church profile settings:', pe);
+        }
+        setChurchMeta(meta);
       } catch (err) {
         console.warn('Could not load church doc:', err);
       }
@@ -492,7 +508,35 @@ export default function ReportsDashboard() {
 
   // Currency Formatter
   const formatCurrency = (amt) =>
-    new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 0 }).format(amt);
+    formatChurchCurrency(amt, churchMeta?.currency);
+
+  // PDF Exporter
+  const handleExportPDF = async (reportType) => {
+    setExportLoading(true);
+    try {
+      if (!CHURCH_ID) throw new Error('No church context.');
+
+      if (reportType === 'members') {
+        await exportMemberRegistryPdf(memberDemographics, churchMeta);
+      } else if (reportType === 'attendance') {
+        await exportAttendanceRegisterPdf(filteredAttendance, dateFilter, churchMeta);
+      } else if (reportType === 'giving') {
+        if (!canSeeGiving) throw new Error('Unauthorized');
+        await exportGivingLedgerPdf(
+          filteredGiving,
+          selectedGivingFund,
+          fundsMap,
+          dateFilter,
+          churchMeta
+        );
+      }
+    } catch (e) {
+      console.error('Failed to export PDF:', e);
+      alert('Failed to generate PDF report.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   // CSV Exporter
   const handleExportCSV = async (reportType) => {
@@ -1012,7 +1056,7 @@ export default function ReportsDashboard() {
         <div className="mb-4">
           <h2 className="text-lg font-bold text-church-navy">Official Export & Compliance Center</h2>
           <p className="text-xs text-church-slate">
-            Download verified CSV registers structured for district compliance, audit reporting, and church records.
+            Generate and download verified PDF compliance registers structured for district reporting, board reviews, and church records.
           </p>
         </div>
 
@@ -1028,7 +1072,7 @@ export default function ReportsDashboard() {
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-bold text-church-navy leading-tight">Member Registry</h3>
                     <StatusPill variant="emerald" className="scale-90 origin-left">
-                      Official
+                      Official PDF
                     </StatusPill>
                   </div>
                   <p className="text-xs text-church-slate mt-0.5">District-compliant directory</p>
@@ -1051,15 +1095,25 @@ export default function ReportsDashboard() {
               </div>
             </div>
 
-            <GradientButton
-              onClick={() => handleExportCSV('members')}
-              disabled={exportLoading}
-              icon={Download}
-              size="md"
-              className="w-full"
-            >
-              Export Registry CSV
-            </GradientButton>
+            <div className="space-y-2">
+              <GradientButton
+                onClick={() => handleExportPDF('members')}
+                disabled={exportLoading}
+                icon={FileText}
+                size="md"
+                className="w-full"
+              >
+                Export Official PDF
+              </GradientButton>
+              <button
+                type="button"
+                onClick={() => handleExportCSV('members')}
+                disabled={exportLoading}
+                className="w-full text-center text-[11px] font-semibold text-church-slate hover:text-church-navy py-0.5 transition-colors"
+              >
+                Download Raw CSV
+              </button>
+            </div>
           </SoftCard>
 
           {/* Service Attendance Export */}
@@ -1073,7 +1127,7 @@ export default function ReportsDashboard() {
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-bold text-church-navy leading-tight">Attendance Register</h3>
                     <StatusPill variant="violet" className="scale-90 origin-left">
-                      Filtered
+                      Official PDF
                     </StatusPill>
                   </div>
                   <p className="text-xs text-church-slate mt-0.5">Session dates & headcounts</p>
@@ -1096,15 +1150,25 @@ export default function ReportsDashboard() {
               </div>
             </div>
 
-            <GradientButton
-              onClick={() => handleExportCSV('attendance')}
-              disabled={exportLoading || filteredAttendance.sessions.length === 0}
-              icon={Download}
-              size="md"
-              className="w-full"
-            >
-              Export Attendance CSV
-            </GradientButton>
+            <div className="space-y-2">
+              <GradientButton
+                onClick={() => handleExportPDF('attendance')}
+                disabled={exportLoading || filteredAttendance.sessions.length === 0}
+                icon={FileText}
+                size="md"
+                className="w-full"
+              >
+                Export Official PDF
+              </GradientButton>
+              <button
+                type="button"
+                onClick={() => handleExportCSV('attendance')}
+                disabled={exportLoading || filteredAttendance.sessions.length === 0}
+                className="w-full text-center text-[11px] font-semibold text-church-slate hover:text-church-navy py-0.5 transition-colors"
+              >
+                Download Raw CSV
+              </button>
+            </div>
           </SoftCard>
 
           {/* Giving & Contributions Export */}
@@ -1119,7 +1183,7 @@ export default function ReportsDashboard() {
                     <div className="flex items-center gap-1.5">
                       <h3 className="font-bold text-church-navy leading-tight">Giving Ledger</h3>
                       <StatusPill variant="rose" className="scale-90 origin-left">
-                        Audit
+                        Audit PDF
                       </StatusPill>
                     </div>
                     <p className="text-xs text-church-slate mt-0.5">Tithes & dedicated funds</p>
@@ -1152,15 +1216,25 @@ export default function ReportsDashboard() {
                 </div>
               </div>
 
-              <GradientButton
-                onClick={() => handleExportCSV('giving')}
-                disabled={exportLoading || filteredGiving.records.length === 0}
-                icon={Download}
-                size="md"
-                className="w-full"
-              >
-                Export Ledger CSV
-              </GradientButton>
+              <div className="space-y-2">
+                <GradientButton
+                  onClick={() => handleExportPDF('giving')}
+                  disabled={exportLoading || filteredGiving.records.length === 0}
+                  icon={FileText}
+                  size="md"
+                  className="w-full"
+                >
+                  Export Official PDF
+                </GradientButton>
+                <button
+                  type="button"
+                  onClick={() => handleExportCSV('giving')}
+                  disabled={exportLoading || filteredGiving.records.length === 0}
+                  className="w-full text-center text-[11px] font-semibold text-church-slate hover:text-church-navy py-0.5 transition-colors"
+                >
+                  Download Raw CSV
+                </button>
+              </div>
             </SoftCard>
           )}
         </div>

@@ -59,7 +59,7 @@ const FUND_PALETTE = [
 ];
 
 export default function FinanceDashboard() {
-  const { userProfile } = useAuth();
+  const { userProfile, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
   
   const [givingRecords, setGivingRecords] = useState([]);
@@ -146,10 +146,6 @@ export default function FinanceDashboard() {
   const givingCount = filteredGiving.length;
   const expenseCount = filteredExpenses.length;
   const averageGift = givingCount > 0 ? Math.round(totalGiving / givingCount) : 0;
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(amount || 0);
-  };
 
   // -------------------------------------------------------------
   // FUND DISTRIBUTION CALCULATIONS & STRUCTURING

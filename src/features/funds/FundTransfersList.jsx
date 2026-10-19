@@ -7,7 +7,7 @@ import FundTransferModal from './FundTransferModal';
 import { canManageFundTransfers } from '../../utils/financePermissions';
 
 export default function FundTransfersList() {
-  const { userProfile } = useAuth();
+  const { userProfile, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
   const [transfers, setTransfers] = useState([]);
   const [funds, setFunds] = useState({});
@@ -61,10 +61,6 @@ export default function FundTransfersList() {
         alert("Failed to delete transfer.");
       }
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount || 0);
   };
 
   const formatDate = (dateString) => {

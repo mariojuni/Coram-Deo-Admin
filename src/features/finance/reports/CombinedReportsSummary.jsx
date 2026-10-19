@@ -1,15 +1,13 @@
 import React from 'react';
 import { DollarSign, Receipt, CreditCard, Clock } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+import { formatCurrency as formatCurrencyUtil } from '../../../utils/currency';
 
 export default function CombinedReportsSummary({ data }) {
   const { totalGiving, totalExpenses, netBalance, pendingCount, approvedCount, expenseCount } = data;
-
+  const auth = useAuth();
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-      minimumFractionDigits: 2,
-    }).format(amount || 0);
+    return auth?.formatCurrency ? auth.formatCurrency(amount) : formatCurrencyUtil(amount);
   };
 
   return (

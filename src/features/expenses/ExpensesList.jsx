@@ -10,7 +10,7 @@ import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
 
 export default function ExpensesList() {
-  const { userProfile } = useAuth();
+  const { userProfile, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
   
   const [expenses, setExpenses] = useState([]);
@@ -145,10 +145,6 @@ export default function ExpensesList() {
   });
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(amount || 0);
-  };
 
   return (
     <div className="space-y-6 flex flex-col h-full">

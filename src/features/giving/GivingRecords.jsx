@@ -24,7 +24,7 @@ const normalizeMethod = (m) => {
 };
 
 export default function GivingRecords() {
-  const { userProfile } = useAuth();
+  const { userProfile, formatCurrency } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -215,10 +215,6 @@ export default function GivingRecords() {
     return donorMatch || fundMatch;
   });
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount || 0);
-  };
-  
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const options = { month: 'short', day: 'numeric', year: 'numeric' };

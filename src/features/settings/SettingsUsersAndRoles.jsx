@@ -11,9 +11,11 @@ import {
   canManageRoles,
   getAssignableRoles,
 } from '../../utils/permissions';
+import SettingsHeader from './SettingsHeader';
 
-export default function SettingsUsersAndRoles() {
+export default function SettingsUsersAndRoles({ embedded = false, onUserCountChange, churchId = null }) {
   const { userProfile, activeChurchId } = useAuth();
+  const effectiveChurchId = churchId || (activeChurchId !== 'system' ? activeChurchId : userProfile?.churchId);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,15 +37,24 @@ export default function SettingsUsersAndRoles() {
 
   useEffect(() => {
     fetchUsers();
-  }, [activeChurchId]);
+  }, [effectiveChurchId]);
 
   const fetchUsers = async () => {
+    if (!effectiveChurchId || effectiveChurchId === 'system') {
+      setUsers([]);
+      if (onUserCountChange) onUserCountChange(0);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const q = query(collection(db, 'users'), where('churchId', '==', activeChurchId ));
+      const q = query(collection(db, 'users'), where('churchId', '==', effectiveChurchId));
       const snap = await getDocs(q);
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setUsers(docs);
+      if (onUserCountChange) {
+        onUserCountChange(docs.length);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -87,7 +98,7 @@ export default function SettingsUsersAndRoles() {
       // 1. Update user document with systemRoles array
       const userRef = doc(db, 'users', editingUser.id);
       await updateDoc(userRef, {
-        churchId: editingUser.churchId || activeChurchId,
+        churchId: editingUser.churchId || effectiveChurchId,
         systemRoles: selectedRoles,
         primaryRole,
         // Keep legacy `role` in sync for backward compat with any other systems
@@ -99,7 +110,7 @@ export default function SettingsUsersAndRoles() {
 
       // 2. Log audit (arrays)
       await logRoleChange(
-        editingUser.churchId || activeChurchId,
+        editingUser.churchId || effectiveChurchId,
         editingUser.id,
         previousRoles,
         selectedRoles,
@@ -133,12 +144,13 @@ export default function SettingsUsersAndRoles() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-3xl shadow-church-soft border border-gray-100 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-church-navy">Users & Roles</h1>
-          <p className="text-sm text-church-slate">Manage system access levels for your team.</p>
-        </div>
-      </div>
+      {!embedded && (
+        <SettingsHeader
+          eyebrow="Users & Access Control"
+          title="Users & Access Control"
+          subtitle="Manage system access levels, permissions, and staff roles for your team."
+        />
+      )}
 
       <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 bg-gray-50">
