@@ -694,6 +694,10 @@ export default function MembersList() {
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
         member={selectedMember}
+        onEdit={(m) => {
+          setIsProfileOpen(false);
+          handleEditClick(m);
+        }}
       />
     </div>
   );

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, User, Phone, CheckCircle, HeartHandshake } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, deleteField, serverTimestamp, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import GradientButton from '../../components/ui/GradientButton';
 import {
   getMembershipCategory,
   getMembershipSubStatus,
@@ -220,40 +221,84 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col my-8 max-h-[90vh]">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-church-navy">{member ? 'Edit Member' : 'Add New Member'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 p-2 rounded-full">
-            <X size={20} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col my-4 sm:my-6 max-h-[90vh]">
+        
+        {/* Brand Accent Top Stripe */}
+        <div className="h-1 w-full bg-gradient-coram shrink-0" />
+
+        {/* Compact Header matching MemberProfileModal */}
+        <div className="bg-church-navy text-white px-6 py-4 sm:px-7 sm:py-5 flex justify-between items-center shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-church-rose/20 text-church-rose flex items-center justify-center font-bold shrink-0">
+              <User size={18} />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                {member ? 'Edit Member Profile' : 'Add New Member'}
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {member ? `Updating records for ${member.displayName || member.name || 'member'}` : 'Create a new church membership profile'}
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full text-white/80 hover:text-white transition-colors"
+            aria-label="Close modal"
+          >
+            <X size={18} />
           </button>
         </div>
         
         <div className="overflow-y-auto flex-1">
-          <form id="member-form" onSubmit={handleSubmit} className="p-6 space-y-6">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+          <form id="member-form" onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-6">
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-medium">{error}</div>}
             
             {/* Personal Details */}
             <div>
-              <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Personal Details</h3>
+              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+                <User size={14} /> Personal Details
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">First Name *</label>
-                    <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">First Name *</label>
+                    <input 
+                      type="text" 
+                      name="firstName" 
+                      required 
+                      value={formData.firstName} 
+                      onChange={handleChange} 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">Middle Name</label>
-                    <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">Middle Name</label>
+                    <input 
+                      type="text" 
+                      name="middleName" 
+                      value={formData.middleName} 
+                      onChange={handleChange} 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">Last Name *</label>
-                    <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">Last Name *</label>
+                    <input 
+                      type="text" 
+                      name="lastName" 
+                      required 
+                      value={formData.lastName} 
+                      onChange={handleChange} 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Birth Date</label>
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Birth Date</label>
                   <ModernDatePicker 
                     name="birthDate" 
                     value={formData.birthDate} 
@@ -262,7 +307,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Gender</label>
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Gender</label>
                   <ModernDropdown
                     value={formData.gender}
                     onChange={(val) => handleChange({ target: { name: 'gender', value: val } })}
@@ -273,16 +318,16 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   />
                 </div>
                 
-                <div className="flex items-center md:mt-6">
-                  <label className="flex items-center text-sm font-medium text-church-navy cursor-pointer">
+                <div className="flex items-center md:mt-2">
+                  <label className="flex items-center text-xs font-semibold text-church-navy cursor-pointer">
                     <input
                       type="checkbox"
                       name="isAbroad"
                       checked={formData.isAbroad}
                       onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
-                      className="mr-2 w-4 h-4 text-church-green rounded focus:ring-church-green border-gray-300"
+                      className="mr-2 w-4 h-4 rounded accent-church-rose text-church-rose focus:ring-church-rose border-gray-300"
                     />
-                    Currently Abroad
+                    Currently Living / Working Abroad
                   </label>
                 </div>
               </div>
@@ -290,36 +335,64 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
             {/* Contact Information */}
             <div>
-              <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Contact Information</h3>
+              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+                <Phone size={14} /> Contact Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Email</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Email Address</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                  />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Phone Number</label>
-                  <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    name="phoneNumber" 
+                    value={formData.phoneNumber} 
+                    onChange={handleChange} 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                  />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-church-navy mb-1">Address</label>
-                  <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Residential Address</label>
+                  <input 
+                    type="text" 
+                    name="address" 
+                    value={formData.address} 
+                    onChange={handleChange} 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                  />
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-church-navy mb-1">Emergency Contact (Name & Phone)</label>
-                  <input type="text" name="emergencyContact" value={formData.emergencyContact} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Emergency Contact (Name & Phone)</label>
+                  <input 
+                    type="text" 
+                    name="emergencyContact" 
+                    value={formData.emergencyContact} 
+                    onChange={handleChange} 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                  />
                 </div>
               </div>
             </div>
 
             {/* Church Information */}
             <div>
-              <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Church Information</h3>
+              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+                <CheckCircle size={14} /> Church Status & Milestones
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Membership Category</label>
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Membership Category</label>
                   <ModernDropdown
                     value={formData.membershipCategory}
                     onChange={(val) => {
@@ -337,7 +410,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
                 {formData.membershipCategory === 'Full Member' ? (
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">Full Member Status</label>
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">Full Member Status</label>
                     <ModernDropdown
                       value={formData.membershipStatus}
                       onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
@@ -346,7 +419,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">System Role</label>
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">System Role</label>
                     <ModernDropdown
                       value={formData.role}
                       onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
@@ -364,7 +437,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 
                 {formData.membershipCategory === 'Full Member' && (
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">System Role</label>
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">System Role</label>
                     <ModernDropdown
                       value={formData.role}
                       onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
@@ -381,7 +454,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Baptism Status</label>
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Baptism Status</label>
                   <ModernDropdown
                     value={formData.baptismStatus}
                     onChange={(val) => {
@@ -397,7 +470,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
                 {formData.baptismStatus === 'Baptized' && (
                   <div>
-                    <label className="block text-sm font-medium text-church-navy mb-1">Baptism Date</label>
+                    <label className="block text-xs font-bold text-church-navy mb-1.5">Baptism Date</label>
                     <ModernDatePicker 
                       name="baptismDate" 
                       value={formData.baptismDate} 
@@ -408,27 +481,55 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-church-navy mb-1">Family / Small Group</label>
-                  <input type="text" name="familyGroup" value={formData.familyGroup} onChange={handleChange} placeholder="e.g. Grace Group" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" />
+                  <label className="block text-xs font-bold text-church-navy mb-1.5">Family Group</label>
+                  <input 
+                    type="text" 
+                    name="familyGroup" 
+                    value={formData.familyGroup} 
+                    onChange={handleChange} 
+                    placeholder="e.g. Grace Group" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                  />
                 </div>
               </div>
             </div>
 
             {/* Notes */}
             <div>
-              <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Notes</h3>
-              <textarea name="notes" rows="3" value={formData.notes} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow resize-none" placeholder="Any additional notes..."></textarea>
+              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+                <HeartHandshake size={14} /> Pastoral & Admin Notes
+              </h3>
+              <textarea 
+                name="notes" 
+                rows="3" 
+                value={formData.notes} 
+                onChange={handleChange} 
+                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow resize-none" 
+                placeholder="Any additional pastoral or administrative notes..."
+              />
             </div>
           </form>
         </div>
 
-        <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50">
-          <button type="button" onClick={onClose} disabled={loading} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors">
+        {/* Modal Action Footer */}
+        <div className="px-6 py-3.5 sm:px-7 sm:py-4 border-t border-gray-100 flex justify-end items-center gap-3 bg-gray-50/70 shrink-0">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            disabled={loading} 
+            className="px-5 py-2 bg-white border border-gray-200 rounded-full text-xs sm:text-sm font-bold text-church-slate hover:bg-gray-50 active:scale-95 transition-all"
+          >
             Cancel
           </button>
-          <button type="submit" form="member-form" disabled={loading} className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-md">
-            {loading ? 'Saving...' : 'Save Member Profile'}
-          </button>
+          <GradientButton 
+            type="submit" 
+            form="member-form" 
+            disabled={loading}
+            loading={loading}
+            size="sm"
+          >
+            {member ? 'Save Changes' : 'Create Member'}
+          </GradientButton>
         </div>
       </div>
     </div>
