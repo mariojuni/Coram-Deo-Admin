@@ -79,30 +79,25 @@ body {
   }
 }
 
-@keyframes travelingBeam {
+@keyframes stepSweep {
   0% {
-    transform: translateX(-100%);
+    left: -30%;
     opacity: 0;
   }
-  20% {
+  25% {
     opacity: 1;
   }
-  80% {
+  75% {
     opacity: 1;
   }
   100% {
-    transform: translateX(300%);
+    left: 100%;
     opacity: 0;
   }
 }
 
-.animate-moving-line {
-  background: linear-gradient(90deg, #FF547E 0%, #B062FF 50%, #FF547E 100%);
-  background-size: 200% 100%;
-  animation: movingLineFlow 2.5s linear infinite;
+.animate-step-sweep {
+  animation: stepSweep 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.animate-traveling-beam {
-  animation: travelingBeam 2.2s ease-in-out infinite;
-}
 
