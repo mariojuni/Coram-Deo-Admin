@@ -6,11 +6,11 @@ import { useAuth } from '../../../context/AuthContext';
 import { formatCurrency as formatCurrencyUtil } from '../../../utils/currency';
 
 export default function FinanceOverviewCard({ financeData, loading, userProfile, churchCurrency }) {
+  const auth = useAuth();
+
   if (!canViewFinanceDashboard(userProfile)) {
     return null;
   }
-
-  const auth = useAuth();
   const formatCurrency = (amount) => {
     if (churchCurrency) {
       return formatCurrencyUtil(amount, churchCurrency);
