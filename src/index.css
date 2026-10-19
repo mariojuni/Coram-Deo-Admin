@@ -45,6 +45,15 @@ body {
   background: linear-gradient(135deg, #FFF0F5 0%, #F5F3FF 100%);
 }
 
+.text-gradient-coram {
+  background: linear-gradient(135deg, #FF547E 0%, #B062FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
 /* Glass & Blur Accents */
 .glass-pill {
   background: rgba(255, 255, 255, 0.22);

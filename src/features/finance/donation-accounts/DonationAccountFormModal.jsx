@@ -213,7 +213,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   required
                   value={formData.accountName}
                   onChange={handleChange}
-                  placeholder="e.g. Casubiduan Church of the Nazarene"
+                  placeholder="e.g. Church of the Nazarene"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
                 />
               </div>

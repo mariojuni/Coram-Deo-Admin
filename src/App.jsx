@@ -42,6 +42,7 @@ import ImportSettingsPage from './features/worship/ImportSettingsPage';
 import ImportSongPage from './features/worship/ImportSongPage';
 import BibleLibraryDashboard from './screens/BibleLibrary/Dashboard';
 import BibleImportFlow from './screens/BibleLibrary/ImportFlow';
+import LandingPage from './screens/Landing/LandingPage';
 
 function AppRoutes() {
   const { currentUser } = useAuth() || {};
@@ -356,8 +357,8 @@ function AppRoutes() {
           <Route path="settings/roles" element={<SettingsUsersAndRoles />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/admin" replace />} />
-        <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
