@@ -239,11 +239,30 @@ export default function Register() {
         {/* Wizard Progress Stepper */}
         <div className="mb-10 max-w-xl mx-auto">
           <div className="flex items-center justify-between relative">
-            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-gray-200 z-0" />
-            <div 
-              className="absolute top-1/2 left-0 -translate-y-1/2 h-0.5 bg-gradient-coram transition-all duration-300 z-0"
-              style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
-            />
+            {/* Background Track: aligned exactly through the vertical center (18px) of the 36px circles */}
+            <div className="absolute top-[18px] left-[18px] right-[18px] -translate-y-1/2 h-1 bg-gray-200/80 rounded-full z-0 overflow-hidden">
+              {/* Active Completed Progress Line with animated moving gradient */}
+              <div 
+                className="h-full animate-moving-line rounded-full transition-all duration-500 ease-out relative shadow-[0_0_12px_rgba(255,84,126,0.6)]"
+                style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
+              >
+                {/* Moving light beam on the active filled line */}
+                <div className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/80 to-transparent animate-traveling-beam" />
+              </div>
+
+              {/* In-Progress moving pulse stream towards the next step */}
+              {step < 3 && (
+                <div 
+                  className="absolute inset-y-0 h-full pointer-events-none transition-all duration-500"
+                  style={{
+                    left: step === 1 ? '0%' : '50%',
+                    width: '50%'
+                  }}
+                >
+                  <div className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-church-rose/70 to-transparent animate-traveling-beam" />
+                </div>
+              )}
+            </div>
 
             {[
               { num: 1, label: 'Church Profile' },
@@ -256,17 +275,17 @@ export default function Register() {
                 <div key={s.num} className="flex flex-col items-center relative z-10">
                   <div 
                     className={`
-                      w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200
+                      w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300
                       ${isPassed 
-                        ? 'bg-church-emerald text-white shadow-church-soft' 
+                        ? 'bg-church-emerald text-white shadow-church-soft ring-4 ring-white' 
                         : isCurrent 
-                          ? 'bg-gradient-coram text-white shadow-church-glow scale-110' 
-                          : 'bg-white text-church-slate border border-gray-200'}
+                          ? 'bg-gradient-coram text-white shadow-church-glow scale-110 ring-4 ring-pink-50' 
+                          : 'bg-white text-church-slate border-2 border-gray-200'}
                     `}
                   >
                     {isPassed ? <Check size={14} strokeWidth={3} /> : s.num}
                   </div>
-                  <span className={`text-[11px] font-bold mt-2 whitespace-nowrap ${isCurrent ? 'text-church-charcoal' : 'text-church-slate'}`}>
+                  <span className={`text-[11px] font-bold mt-2 whitespace-nowrap transition-colors duration-200 ${isCurrent ? 'text-church-charcoal' : 'text-church-slate'}`}>
                     {s.label}
                   </span>
                 </div>
