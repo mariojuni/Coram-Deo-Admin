@@ -260,98 +260,100 @@ export default function Login() {
 
       {/* ── Left Showcase Panel (Desktop lg:flex) ── */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 lg:p-16 relative z-10 border-r border-gray-100/60">
-        {/* Brand Header */}
-        <div className="flex items-center space-x-3">
-          <div className="w-11 h-11 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
-            <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
-          </div>
-          <div>
-            <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
-            <span className="ml-2 text-xs font-bold text-church-rose bg-church-rose-light px-2.5 py-0.5 rounded-full border border-pink-100">
-              Admin Portal
-            </span>
-          </div>
-        </div>
-
-        {/* Central Showcase Content */}
-        <div className="my-auto max-w-lg space-y-8">
-          <div className="space-y-4">
-            <StatusPill variant="rose" dot>
-              CoramDeo Life Management Suite
-            </StatusPill>
-            <h1 className="text-4xl md:text-5xl font-black text-church-charcoal tracking-tight leading-[1.15]">
-              Where ministry and community <span className="bg-gradient-to-r from-church-rose to-church-violet bg-clip-text text-transparent">thrive together.</span>
-            </h1>
-            <p className="text-church-slate text-base leading-relaxed">
-              Designed for pastors, worship directors, secretaries, and leadership teams to steward God's house with joy, clarity, and excellence.
-            </p>
-          </div>
-
-          {/* Authentic Replica: Mobile Verse of the Day Card */}
-          <div className="bg-gradient-coram-hero rounded-3xl p-6 text-white shadow-church-glow relative overflow-hidden group">
-            {/* Background watermark quote */}
-            <div className="absolute -right-4 -bottom-6 text-white/10 text-9xl font-serif font-black select-none pointer-events-none">
-              &rdquo;
+        <div className="w-full max-w-lg mx-auto flex flex-col justify-between h-full">
+          {/* Brand Header */}
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
+              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
             </div>
-
-            <div className="relative z-10 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase glass-pill">
-                Verse of the Day
-              </div>
-
-              <blockquote className="text-base md:text-lg font-medium leading-relaxed text-white/95">
-                &ldquo;The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.&rdquo;
-              </blockquote>
-
-              <div className="flex items-center gap-2 pt-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold glass-pill">
-                  <BookOpen size={12} />
-                  John 10:10
-                </span>
-                <span className="text-xs font-semibold text-white/80 pl-2">
-                  Daily Scripture &bull; CoramDeo Life
-                </span>
-              </div>
+            <div>
+              <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
+              <span className="ml-2 text-xs font-bold text-church-rose bg-church-rose-light px-2.5 py-0.5 rounded-full border border-pink-100">
+                Admin Portal
+              </span>
             </div>
           </div>
 
-          {/* Real-time Ministry Pulse Micro-cards */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-              <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center mb-2">
-                <Calendar size={16} />
-              </div>
-              <div className="text-lg font-bold text-church-charcoal">Worship</div>
-              <div className="text-xs text-church-slate">Setlists & Rosters</div>
+          {/* Central Showcase Content */}
+          <div className="my-auto py-8 space-y-8">
+            <div className="space-y-4">
+              <StatusPill variant="rose" dot>
+                CoramDeo Life Management Suite
+              </StatusPill>
+              <h1 className="text-4xl md:text-5xl font-black text-church-charcoal tracking-tight leading-[1.15]">
+                Where ministry and community <span className="bg-gradient-to-r from-church-rose to-church-violet bg-clip-text text-transparent">thrive together.</span>
+              </h1>
+              <p className="text-church-slate text-base leading-relaxed">
+                Designed for pastors, worship directors, secretaries, and leadership teams to steward God's house with joy, clarity, and excellence.
+              </p>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-church-violet flex items-center justify-center mb-2">
-                <Users size={16} />
+            {/* Authentic Replica: Mobile Verse of the Day Card */}
+            <div className="bg-gradient-coram-hero rounded-3xl p-6 text-white shadow-church-glow relative overflow-hidden group">
+              {/* Background watermark quote */}
+              <div className="absolute -right-4 -bottom-6 text-white/10 text-9xl font-serif font-black select-none pointer-events-none">
+                &rdquo;
               </div>
-              <div className="text-lg font-bold text-church-charcoal">Members</div>
-              <div className="text-xs text-church-slate">Directory & Care</div>
+
+              <div className="relative z-10 space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase glass-pill">
+                  Verse of the Day
+                </div>
+
+                <blockquote className="text-base md:text-lg font-medium leading-relaxed text-white/95">
+                  &ldquo;The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.&rdquo;
+                </blockquote>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold glass-pill">
+                    <BookOpen size={12} />
+                    John 10:10
+                  </span>
+                  <span className="text-xs font-semibold text-white/80 pl-2">
+                    Daily Scripture &bull; CoramDeo Life
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-church-emerald flex items-center justify-center mb-2">
-                <Heart size={16} />
+            {/* Real-time Ministry Pulse Micro-cards */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+                <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center mb-2">
+                  <Calendar size={16} />
+                </div>
+                <div className="text-lg font-bold text-church-charcoal">Worship</div>
+                <div className="text-xs text-church-slate">Setlists & Rosters</div>
               </div>
-              <div className="text-lg font-bold text-church-charcoal">Giving</div>
-              <div className="text-xs text-church-slate">Causes & Records</div>
+
+              <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+                <div className="w-8 h-8 rounded-xl bg-purple-50 text-church-violet flex items-center justify-center mb-2">
+                  <Users size={16} />
+                </div>
+                <div className="text-lg font-bold text-church-charcoal">Members</div>
+                <div className="text-xs text-church-slate">Directory & Care</div>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-church-emerald flex items-center justify-center mb-2">
+                  <Heart size={16} />
+                </div>
+                <div className="text-lg font-bold text-church-charcoal">Giving</div>
+                <div className="text-xs text-church-slate">Causes & Records</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Scriptural Footer Quote */}
-        <div className="flex items-center gap-2 text-church-slate text-xs font-medium">
-          <span className="w-2 h-2 rounded-full bg-church-rose" />
-          <span>&ldquo;Serve one another humbly in love.&rdquo; — Galatians 5:13</span>
+          {/* Scriptural Footer Quote */}
+          <div className="flex items-center gap-2 text-church-slate text-xs font-medium">
+            <span className="w-2 h-2 rounded-full bg-church-rose" />
+            <span>&ldquo;Serve one another humbly in love.&rdquo; — Galatians 5:13</span>
+          </div>
         </div>
       </div>
 
       {/* ── Right Authentication Panel ── */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative z-10">
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-6 sm:p-10 lg:p-16 relative z-10">
         <div className="w-full max-w-md">
           {/* Mobile brand header (shown on small screens) */}
           <div className="flex items-center space-x-3 mb-8 lg:hidden">
