@@ -30,6 +30,10 @@ export default function FAQSection() {
       a: 'The CoramDeo Mobile app securely caches each member’s personal QR badge locally on their phone, allowing 2-second check-in even when completely offline. Ushers and secretaries can also quickly look up members by name or phone number on the kiosk scanner if needed.'
     },
     {
+      q: 'Is Coram Deo a multi-tenant application? How is our church data kept isolated from others?',
+      a: 'Yes, Coram Deo is architected as a secure multi-tenant cloud application. Every church operates within its own dedicated, strictly isolated tenant workspace identified by a unique Church ID. Multi-tenant database security barriers and access control policies ensure complete data partitioning: no other congregation, outside leader, or organization can ever view, search, or query your church’s member records, pastoral care notes, or financial ledgers. Your church enjoys continuous cloud updates and enterprise-grade infrastructure while maintaining absolute data sovereignty.'
+    },
+    {
       q: 'Can volunteers or worship leaders see confidential church financial records?',
       a: 'Never. Coram Deo implements strict Role-Based Access Control (RBAC). Worship leaders and volunteer coordinators only have access to their setlists, roster schedules, and ministry tools. Sensitive tithes, offerings, donor profiles, and financial statements are restricted exclusively to authorized church and finance administrators.'
     },

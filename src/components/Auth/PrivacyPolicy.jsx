@@ -311,11 +311,11 @@ const SECTIONS = [
             </p>
           </div>
           <a
-            href="mailto:mjuni777@gmail.com?subject=URGENT%20Child%20Safety%20Concern"
+            href="mailto:support@coramdeo.online?subject=URGENT%20Child%20Safety%20Concern"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg text-xs transition-colors shrink-0"
           >
             <Mail size={14} />
-            mjuni777@gmail.com
+            support@coramdeo.online
           </a>
         </div>
       </div>
@@ -409,7 +409,7 @@ const SECTIONS = [
           </div>
         </div>
         <p className="text-xs text-church-slate">
-          <strong>How to Exercise Your Rights:</strong> As Coram Deo is a processor, congregation members should first direct privacy requests to their local church administrator. If you require assistance contacting your church controller or have an escalated inquiry, contact our Data Protection Officer at <a href="mailto:mjuni777@gmail.com" className="text-church-rose font-medium hover:underline">mjuni777@gmail.com</a>.
+          <strong>How to Exercise Your Rights:</strong> As Coram Deo is a processor, congregation members should first direct privacy requests to their local church administrator. If you require assistance contacting your church controller or have an escalated inquiry, contact our Data Protection Officer at <a href="mailto:support@coramdeo.online" className="text-church-rose font-medium hover:underline">support@coramdeo.online</a>.
         </p>
       </div>
     ),
@@ -506,15 +506,15 @@ const SECTIONS = [
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/80 space-y-1.5">
             <span className="font-bold text-church-navy text-sm block">Data Protection & Privacy</span>
             <p className="text-church-slate">General privacy inquiries, DPA requests, and user rights:</p>
-            <a href="mailto:mjuni777@gmail.com?subject=Coram%20Deo%20Privacy%20Inquiry" className="text-church-rose font-semibold hover:underline inline-flex items-center gap-1 mt-1">
-              mjuni777@gmail.com <ExternalLink size={12} />
+            <a href="mailto:support@coramdeo.online?subject=Coram%20Deo%20Privacy%20Inquiry" className="text-church-rose font-semibold hover:underline inline-flex items-center gap-1 mt-1">
+              support@coramdeo.online <ExternalLink size={12} />
             </a>
           </div>
           <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/50 space-y-1.5">
             <span className="font-bold text-rose-900 text-sm block">Child Safety Point of Contact</span>
             <p className="text-rose-950/80">Urgent child safety reports or CSAE concerns:</p>
-            <a href="mailto:mjuni777@gmail.com?subject=URGENT%20Child%20Safety" className="text-rose-600 font-semibold hover:underline inline-flex items-center gap-1 mt-1">
-              mjuni777@gmail.com <ExternalLink size={12} />
+            <a href="mailto:support@coramdeo.online?subject=URGENT%20Child%20Safety" className="text-rose-600 font-semibold hover:underline inline-flex items-center gap-1 mt-1">
+              support@coramdeo.online <ExternalLink size={12} />
             </a>
           </div>
         </div>
@@ -778,7 +778,7 @@ export default function PrivacyPolicy() {
                   Have specific compliance inquiries or need a Data Processing Agreement (DPA)?
                 </p>
                 <a
-                  href="mailto:mjuni777@gmail.com?subject=Coram%20Deo%20Privacy%20Question"
+                  href="mailto:support@coramdeo.online?subject=Coram%20Deo%20Privacy%20Question"
                   className="block text-center py-2 px-3 bg-gray-50 hover:bg-gray-100 font-semibold text-church-navy rounded-lg border border-gray-200/80 text-[11px] transition-colors"
                 >
                   Contact Data Officer
@@ -897,7 +897,7 @@ export default function PrivacyPolicy() {
               </p>
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 <a
-                  href="mailto:mjuni777@gmail.com?subject=Coram%20Deo%20Data%20Processing%20Agreement%20Request"
+                  href="mailto:support@coramdeo.online?subject=Coram%20Deo%20Data%20Processing%20Agreement%20Request"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-coram shadow-church-glow hover:opacity-95 transition-opacity"
                 >
                   <Mail size={14} /> Request DPA Documents
@@ -941,7 +941,7 @@ export default function PrivacyPolicy() {
           </button>
           <span>•</span>
           <a
-            href="mailto:mjuni777@gmail.com"
+            href="mailto:support@coramdeo.online"
             className="hover:text-church-rose transition-colors"
           >
             Contact Support
