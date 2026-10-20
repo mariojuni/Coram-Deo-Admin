@@ -43,6 +43,8 @@ import ImportSongPage from './features/worship/ImportSongPage';
 import BibleLibraryDashboard from './screens/BibleLibrary/Dashboard';
 import BibleImportFlow from './screens/BibleLibrary/ImportFlow';
 import LandingPage from './screens/Landing/LandingPage';
+import VerifyEmail from './components/Auth/VerifyEmail';
+import ApprovalPending from './components/Auth/ApprovalPending';
 
 function AppRoutes() {
   const { currentUser } = useAuth() || {};
@@ -51,6 +53,8 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/approval-pending" element={<ApprovalPending />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
         

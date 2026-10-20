@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Building2, 
@@ -14,7 +14,8 @@ import {
   CheckCircle, 
   ArrowRight,
   Globe,
-  Coins
+  Coins,
+  ShieldCheck
 } from 'lucide-react';
 import logo from '../../assets/logo.svg';
 import GradientButton from '../ui/GradientButton';
@@ -75,6 +76,11 @@ export default function Register() {
   // UX Feedback
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Anti-Bot & Abuse Security State
+  const [honeypot, setHoneypot] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const formLoadedAtRef = useRef(Date.now());
 
   // Parse contextual search parameters from Landing Page CTAs
   useEffect(() => {
@@ -161,6 +167,27 @@ export default function Register() {
     e.preventDefault();
     if (!validateStep1() || !validateStep2()) return;
 
+    // Security Gate 1: Honeypot check (catches automated bot form fillers)
+    if (honeypot) {
+      console.warn('[Security] Bot registration attempt detected via honeypot.');
+      setError('Automated submission rejected. Please refresh and try again.');
+      return;
+    }
+
+    // Security Gate 2: Velocity / Submission timing check
+    const elapsedMs = Date.now() - formLoadedAtRef.current;
+    if (elapsedMs < 2000) {
+      console.warn('[Security] Suspiciously rapid submission rejected:', elapsedMs);
+      setError('Please review your details carefully before launching.');
+      return;
+    }
+
+    // Security Gate 3: Authorization certification
+    if (!agreedToTerms) {
+      setError('Please verify and check the authorization agreement before launching your workspace.');
+      return;
+    }
+
     try {
       setError('');
       setLoading(true);
@@ -168,7 +195,7 @@ export default function Register() {
       const activeCurrencyObj = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
       const selectedTierObj = TIERS[tier] || TIERS.growth;
 
-      await registerChurchAndAdmin({
+      const registrationResult = await registerChurchAndAdmin({
         churchInfo: {
           name: churchName,
           denomination: denomination,
@@ -185,8 +212,8 @@ export default function Register() {
           email: email,
           password: password,
           title: title,
-          systemRole: selectedTitleObj.systemRole,
-          role: selectedTitleObj.systemRole
+          systemRole: 'church_admin',
+          role: 'church_admin'
         },
         tierInfo: {
           tier: tier,
@@ -194,8 +221,15 @@ export default function Register() {
         }
       });
 
-      // Immediate session promotion: direct route to Admin Portal
-      navigate('/admin', { replace: true });
+      // Redirect to the Identity & Email Verification Gate
+      navigate('/verify-email', {
+        replace: true,
+        state: {
+          email: email.trim(),
+          churchName: churchName.trim(),
+          churchId: registrationResult?.churchId
+        }
+      });
     } catch (err) {
       console.error('Registration failed:', err);
       setError(err.message || 'Failed to register church workspace. Please try again.');
@@ -320,6 +354,24 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit}>
+
+            {/* ── Anti-Bot Honeypot Traps (Off-screen & invisible to humans) ── */}
+            <div 
+              style={{ opacity: 0, position: 'absolute', top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: 'none' }}
+              aria-hidden="true" 
+              tabIndex={-1}
+            >
+              <label htmlFor="church_fax_number_hp">Leave this field empty</label>
+              <input
+                id="church_fax_number_hp"
+                type="text"
+                name="church_fax_number_hp"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
 
             {/* ── STEP 1: CHURCH PROFILE ── */}
             {step === 1 && (
@@ -465,7 +517,7 @@ export default function Register() {
                     ))}
                   </select>
                   <span className="text-xs text-church-slate mt-1.5 block">
-                    Your administrative account permissions will automatically be configured based on your leadership role.
+                    As the workspace creator, your account is automatically granted full Church Administrator access.
                   </span>
                 </div>
 
@@ -555,8 +607,9 @@ export default function Register() {
                       <div className="text-base font-bold text-church-charcoal">{adminFullName}</div>
                       <div className="text-xs text-church-slate">{title} • {email}</div>
                     </div>
-                    <div className="self-start sm:self-auto">
+                    <div className="self-start sm:self-auto flex items-center gap-2">
                       <StatusPill variant="default" size="sm">{title}</StatusPill>
+                      <StatusPill variant="rose" size="sm">Church Admin</StatusPill>
                     </div>
                   </div>
 
@@ -597,6 +650,37 @@ export default function Register() {
                     </div>
                   </div>
                 </div>
+
+                {/* Security Verification & Terms Authorization */}
+                <div className="rounded-xl border border-church-navy/15 bg-gradient-to-br from-church-sand/50 to-church-cream/30 p-4 space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-church-navy focus:ring-church-navy/20 cursor-pointer"
+                    />
+                    <div className="text-xs text-church-charcoal leading-relaxed">
+                      <span className="font-semibold">I certify and confirm:</span> I am an authorized leader/administrator representing this church organization, and I agree to the{' '}
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-church-rose hover:underline font-bold"
+                      >
+                        Privacy Policy
+                      </Link>{' '}
+                      and terms of ministry stewardship.
+                    </div>
+                  </label>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-200/60 text-[11px] text-church-slate">
+                    <ShieldCheck size={14} className="text-church-emerald shrink-0" />
+                    <span>
+                      Protected by CoramDeo Security Layer — Multi-tenant isolation & privilege validation active.
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -635,6 +719,7 @@ export default function Register() {
                   type="submit"
                   size="md"
                   loading={loading}
+                  disabled={!agreedToTerms || loading}
                   className="shadow-church-glow ml-auto cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
