@@ -9,7 +9,8 @@ import {
   query, 
   where, 
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  increment
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../firebase';
@@ -214,6 +215,7 @@ export const uploadGroupMaterial = async ({
     audience,
     fileUrl,
     storagePath,
+    fileSize: file ? file.size : 0,
     status,
     uploadedBy: userId,
     createdAt: serverTimestamp(),
@@ -234,6 +236,7 @@ export const uploadGroupMaterial = async ({
       audience,
       fileUrl,
       storagePath,
+      fileSize: file ? file.size : 0,
       status,
       uploadedBy: userId,
       createdAt: serverTimestamp(),
@@ -241,6 +244,20 @@ export const uploadGroupMaterial = async ({
     });
     await batch.commit();
   });
+
+  // Incrementally track discipleship material bytes in church storage metrics
+  if (file && churchId) {
+    try {
+      const churchRef = doc(db, 'churches', churchId);
+      await updateDoc(churchRef, {
+        'stats.storage.totalBytesUsed': increment(file.size),
+        'stats.storage.byCategory.discipleshipBytes': increment(file.size),
+        'stats.storage.lastCalculatedAt': serverTimestamp()
+      });
+    } catch (sErr) {
+      console.warn('Discipleship storage metric increment deferred:', sErr);
+    }
+  }
 
   return materialId;
 };

@@ -505,7 +505,7 @@ export default function DashboardOverview() {
   }
 
   return (
-    <div className="space-y-6 flex flex-col h-full overflow-y-auto pb-8">
+    <div className="space-y-4 md:space-y-5 flex flex-col h-full overflow-y-auto pb-8">
       {/* 1. Header */}
       <DashboardHeader userProfile={userProfile} activeChurchName={activeChurchName} />
 
@@ -516,7 +516,7 @@ export default function DashboardOverview() {
       <DashboardMetricCards metrics={metrics} loading={loading} userProfile={userProfile} />
 
       {/* 4. Core Operations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-4.5">
         <div className="lg:col-span-2">
           <ThisWeekEventsCard events={thisWeekEvents} loading={loading} />
         </div>
@@ -526,7 +526,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* 5. Functional Domains Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4.5">
         {canViewAttendanceDashboard(userProfile) && (
           <AttendanceOverviewCard attendanceData={attendanceData} loading={loading} />
         )}
@@ -548,7 +548,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* 6. Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-4.5">
         <div className="lg:col-span-3">
           <RecentActivityCard activityItems={recentActivities} loading={loading} />
         </div>

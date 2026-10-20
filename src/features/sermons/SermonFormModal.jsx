@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, Film, Headphones, Image as ImageIcon, CheckCircle2, Scissors, Settings, Play, Globe } from 'lucide-react';
-import { collection, doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { trimMedia, compressAudio, compressVideo, generateThumbnail } from '../../utils/mediaProcessor';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
+import StorageQuotaModal from '../subscription/components/StorageQuotaModal';
 
 const STEPS = ['Details', 'Upload', 'Trim', 'Thumbnail', 'Optimize', 'Review'];
 const EDIT_STEPS = ['Details', 'Thumbnail', 'Review'];
@@ -23,6 +25,11 @@ const formatDuration = (totalSeconds) => {
 export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
+  const storageQuota = useStorageQuota();
+  
+  // Storage Quota Modal State
+  const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
+  const [storageModalInfo, setStorageModalInfo] = useState({ fileSizeFormatted: null, targetTier: 'kingdom' });
   
   // In edit mode we use a simplified 2-step flow; new uploads use the full 6-step flow
   const isEditMode = Boolean(sermon);
@@ -127,10 +134,35 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const MAX_SERMON_FILE_SIZE_MB = 300;
+  const MAX_SERMON_FILE_SIZE_BYTES = MAX_SERMON_FILE_SIZE_MB * 1024 * 1024;
+
   const handleMediaUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
+    // Check individual file size limit (300 MB)
+    if (file.size > MAX_SERMON_FILE_SIZE_BYTES) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      setError(`File size (${sizeMB} MB) exceeds the maximum limit of ${MAX_SERMON_FILE_SIZE_MB} MB. Please upload a media file under ${MAX_SERMON_FILE_SIZE_MB} MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    setError('');
+
+    // Pre-flight quota verification against church tier storage capacity (20 GB Growth, 50 GB Kingdom, 2 GB Seed)
+    const capacity = storageQuota.checkUploadCapacity(file.size);
+    if (!capacity.allowed) {
+      setStorageModalInfo({
+        fileSizeFormatted: capacity.fileSizeFormatted,
+        targetTier: capacity.targetTier
+      });
+      setIsStorageModalOpen(true);
+      e.target.value = '';
+      return;
+    }
+
     setMediaFile(file);
     const url = URL.createObjectURL(file);
     setMediaPreviewUrl(url);
@@ -207,6 +239,21 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   };
 
   const handlePublish = async (statusOverride = 'published') => {
+    const fileToUpload = optimizedFile || mediaFile;
+    if (fileToUpload && fileToUpload.size > MAX_SERMON_FILE_SIZE_BYTES) {
+      setError(`The selected file exceeds the ${MAX_SERMON_FILE_SIZE_MB} MB upload limit.`);
+      return;
+    }
+    if (fileToUpload && !storageQuota.canUploadBytes(fileToUpload.size)) {
+      const capacity = storageQuota.checkUploadCapacity(fileToUpload.size);
+      setStorageModalInfo({
+        fileSizeFormatted: capacity.fileSizeFormatted,
+        targetTier: capacity.targetTier
+      });
+      setIsStorageModalOpen(true);
+      return;
+    }
+
     setIsPublishing(true);
     setError('');
     setPublishStep('uploading');
@@ -218,7 +265,6 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
       const sermonId = docRef.id;
 
       // Upload files — either can be null (skipped steps)
-      const fileToUpload = optimizedFile || mediaFile;
       const [mediaRes, thumbRes] = await Promise.all([
         fileToUpload
           ? uploadFileToStorage(sermonId, fileToUpload, formData.mediaType, 'media')
@@ -276,6 +322,20 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
       }
 
       await setDoc(docRef, sermonDoc, { merge: true });
+
+      // Incrementally track uploaded bytes against church tenant storage metrics
+      if (fileToUpload && CHURCH_ID) {
+        try {
+          const churchRef = doc(db, 'churches', CHURCH_ID);
+          await updateDoc(churchRef, {
+            'stats.storage.totalBytesUsed': increment(fileToUpload.size),
+            'stats.storage.byCategory.sermonsBytes': increment(fileToUpload.size),
+            'stats.storage.lastCalculatedAt': serverTimestamp()
+          });
+        } catch (storageErr) {
+          console.warn('Storage quota metric increment deferred:', storageErr);
+        }
+      }
       
       setPublishStep('done');
       setUploadStatus(statusOverride);
@@ -465,8 +525,11 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
             <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center justify-center py-8">
               <div className="w-full max-w-lg border-2 border-dashed border-gray-300 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors relative">
                 <UploadCloud size={48} className="text-church-green mb-4" />
-                <h3 className="text-lg font-bold text-church-navy mb-2">Upload Audio or Video</h3>
-                <p className="text-sm text-church-slate mb-6">Select the raw recording file. We will optimize it for you.</p>
+                <h3 className="text-lg font-bold text-church-navy mb-1">Upload Audio or Video</h3>
+                <p className="text-sm text-church-slate mb-2">Select the raw recording file. We will optimize it for you.</p>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-church-slate mb-6">
+                  Max file size: 300 MB
+                </span>
                 
                 <input 
                   type="file" 
@@ -822,6 +885,13 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         )}
 
       </div>
+
+      <StorageQuotaModal
+        isOpen={isStorageModalOpen}
+        onClose={() => setIsStorageModalOpen(false)}
+        fileSizeFormatted={storageModalInfo.fileSizeFormatted}
+        targetTier={storageModalInfo.targetTier}
+      />
     </div>
   );
 }

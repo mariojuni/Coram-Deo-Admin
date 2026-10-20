@@ -1,6 +1,7 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { collection, doc, writeBatch, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
 import { getActiveAuth, getActiveDb } from '../firebase';
+import { getTierConfig, calculateTrialEndDate } from '../config/subscriptions';
 
 /**
  * Utility to generate a URL-safe slug from a church name.
@@ -111,6 +112,31 @@ export async function registerChurchAndAdmin({ churchInfo, adminInfo, tierInfo =
   const currencySymbol = churchInfo.currencySymbol || (currencyCode === 'PHP' ? '₱' : '$');
   const nowIso = new Date().toISOString();
 
+  const selectedTierKey = (tierInfo.tier || 'growth').toLowerCase();
+  const tierConfig = getTierConfig(selectedTierKey);
+  const isSeed = tierConfig.id === 'seed';
+  const trialEndIso = isSeed ? null : calculateTrialEndDate(nowIso, tierConfig.trialDays || 14);
+
+  const subscriptionPayload = {
+    tier: tierConfig.id,
+    status: isSeed ? 'active' : 'trialing',
+    billingCycle: tierConfig.billingCycle || 'monthly',
+    currency: currencyCode,
+    amount: tierInfo.tierPrice !== undefined ? tierInfo.tierPrice : tierConfig.priceNum,
+    trialStartDate: isSeed ? null : nowIso,
+    trialEndDate: trialEndIso,
+    currentPeriodStart: nowIso,
+    currentPeriodEnd: trialEndIso || nowIso,
+    gracePeriodEndsAt: null,
+    canceledAt: null,
+    cancelAtPeriodEnd: false,
+    paymentGateway: 'stripe',
+    gatewayCustomerId: null,
+    gatewaySubscriptionId: null,
+    lastPaymentStatus: isSeed ? 'succeeded' : 'pending',
+    quotas: tierConfig.quotas
+  };
+
   const churchPayload = {
     id: churchId,
     name: churchName,
@@ -127,8 +153,9 @@ export async function registerChurchAndAdmin({ churchInfo, adminInfo, tierInfo =
       website: churchInfo.website?.trim() || ''
     },
     seniorPastor: adminInfo.name?.trim() || [adminInfo.firstName, adminInfo.middleName, adminInfo.lastName].filter(Boolean).join(' '),
-    tier: tierInfo.tier || 'seed',
-    tierPrice: tierInfo.tierPrice !== undefined ? tierInfo.tierPrice : 0,
+    tier: tierConfig.id,
+    tierPrice: subscriptionPayload.amount,
+    subscription: subscriptionPayload,
     // Two-stage security status: starts in pending_verification until email confirmed, then pending_approval
     status: 'pending_verification',
     approvalStatus: 'pending_verification',

@@ -23,10 +23,13 @@ import {
   Music,
   ListMusic,
   Search,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
+import { useSubscriptionLimits } from '../../features/subscription/hooks/useSubscriptionLimits';
+import UpgradeModal from '../../features/subscription/components/UpgradeModal';
 import logo from '../../assets/logo.svg';
 
 const churchNavCategories = [
@@ -35,7 +38,7 @@ const churchNavCategories = [
     items: [
       { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader', 'finance_admin', 'secretary'] },
       { name: 'Events', path: '/admin/events', icon: Calendar, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-      { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Scheduling', path: '/admin/schedules', icon: CalendarDays, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'], featureKey: 'scheduling', requiredTier: 'growth' },
       { name: 'Attendance', path: '/admin/attendance', icon: ClipboardCheck, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
     ]
   },
@@ -43,7 +46,7 @@ const churchNavCategories = [
     category: 'MINISTRY & WORD',
     items: [
       { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
-      { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'], featureKey: 'worshipSetlists', requiredTier: 'growth' },
       { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
       { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
       { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin'] },
@@ -82,6 +85,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const [churches, setChurches] = useState([]);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [churchSearch, setChurchSearch] = useState('');
+  const limits = useSubscriptionLimits();
+  const [upgradeModal, setUpgradeModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    targetTier: 'growth'
+  });
 
   const isSuperAdmin = hasRole(originalUserProfile, 'super_admin');
   const primaryRole = getPrimaryRole(originalUserProfile);
@@ -284,13 +294,26 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     {accessibleItems.map((item) => {
                       const Icon = item.icon;
                       const isDiscipleshipActive = item.name === 'Discipleship' && location.pathname.startsWith('/admin/discipleship');
+                      const isLocked = !isSuperAdmin && item.featureKey && !limits.hasFeature(item.featureKey);
 
                       return (
                         <NavLink
                           key={item.name}
                           to={item.path}
                           end={item.path === '/admin'}
-                          onClick={() => setIsOpen(false)}
+                          onClick={(e) => {
+                            if (isLocked) {
+                              e.preventDefault();
+                              setUpgradeModal({
+                                isOpen: true,
+                                title: `Unlock ${item.name}`,
+                                message: `${item.name} is available on the Growth Ministry and Kingdom Network tiers. Upgrade your plan to unlock team scheduling and worship tools.`,
+                                targetTier: item.requiredTier || 'growth'
+                              });
+                            } else {
+                              setIsOpen(false);
+                            }
+                          }}
                           className={({ isActive }) => {
                             const isCurrent = isActive || isDiscipleshipActive;
                             return `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-150 ${
@@ -316,13 +339,20 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                   </div>
                                   <span className="truncate">{item.name}</span>
                                 </div>
-                                <ChevronRight
-                                  size={13}
-                                  strokeWidth={isCurrent ? 2.6 : 2.2}
-                                  className={`shrink-0 transition-all ${
-                                    isCurrent ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
-                                  }`}
-                                />
+                                {isLocked ? (
+                                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/80 text-[9px] font-black uppercase tracking-tight shrink-0 shadow-2xs">
+                                    <Lock size={9} strokeWidth={2.5} />
+                                    <span>Growth</span>
+                                  </span>
+                                ) : (
+                                  <ChevronRight
+                                    size={13}
+                                    strokeWidth={isCurrent ? 2.6 : 2.2}
+                                    className={`shrink-0 transition-all ${
+                                      isCurrent ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
+                                    }`}
+                                  />
+                                )}
                               </>
                             );
                           }}
@@ -355,6 +385,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </div>
         </div>
       </aside>
+
+      {/* Upgrade Gate Modal for Locked Nav Items */}
+      <UpgradeModal
+        isOpen={upgradeModal.isOpen}
+        onClose={() => setUpgradeModal(prev => ({ ...prev, isOpen: false }))}
+        title={upgradeModal.title}
+        message={upgradeModal.message}
+        targetTier={upgradeModal.targetTier}
+      />
     </>
   );
 }

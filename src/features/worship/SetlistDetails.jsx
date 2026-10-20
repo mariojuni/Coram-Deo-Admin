@@ -9,6 +9,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
+import FeatureGate from '../subscription/components/FeatureGate';
 
 export default function SetlistDetails() {
   const { id } = useParams();
@@ -119,7 +120,13 @@ export default function SetlistDetails() {
   };
 
   return (
-    <div className="space-y-6 flex flex-col h-full max-w-5xl mx-auto">
+    <FeatureGate
+      feature="worshipSetlists"
+      featureName="Worship Setlist Details"
+      requiredTier="growth"
+      description="Manage setlist order and song arrangements. Available on Growth Ministry and Kingdom Network tiers."
+    >
+      <div className="space-y-6 flex flex-col h-full max-w-5xl mx-auto">
       {/* Top Header */}
       <div className="flex items-center space-x-4">
         <button 
@@ -267,6 +274,7 @@ export default function SetlistDetails() {
           </SoftCard>
         </div>
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

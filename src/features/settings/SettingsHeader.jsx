@@ -1,7 +1,7 @@
 import React from 'react';
-import { Settings, Users } from 'lucide-react';
+import { Settings, Users, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { canManageRoles } from '../../utils/permissions';
+import { canManageRoles, hasAnyRole } from '../../utils/permissions';
 import SoftCard from '../../components/ui/SoftCard';
 
 export default function SettingsHeader({
@@ -15,6 +15,7 @@ export default function SettingsHeader({
 }) {
   const { userProfile } = useAuth();
   const canManageRolesAccess = canManageRoles(userProfile);
+  const canManageBillingAccess = hasAnyRole(userProfile, ['church_admin', 'super_admin']);
 
   return (
     <SoftCard className="p-6">
@@ -75,6 +76,21 @@ export default function SettingsHeader({
                 {usersCount}
               </span>
             )}
+          </button>
+        )}
+
+        {canManageBillingAccess && (
+          <button
+            type="button"
+            onClick={() => onTabChange && onTabChange('billing')}
+            className={`flex items-center px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-150 ${
+              activeTab === 'billing'
+                ? 'bg-gradient-coram text-white shadow-church-glow'
+                : 'text-church-slate hover:bg-gray-50/80 hover:text-church-navy'
+            }`}
+          >
+            <CreditCard size={16} className="mr-2 shrink-0" />
+            <span>Subscription & Billing</span>
           </button>
         )}
       </div>

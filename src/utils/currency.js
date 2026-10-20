@@ -101,3 +101,22 @@ export function getCurrencyCode(churchCurrency = null) {
   const cfg = normalizeCurrencyConfig(churchCurrency);
   return cfg.code || DEFAULT_CURRENCY_CONFIG.code;
 }
+
+/**
+ * Strips or converts characters that break standard jsPDF 1-byte fonts.
+ * In particular, jsPDF Type-1 Helvetica maps Unicode ₱ (U+20B1) to ± (0xB1 in WinAnsi).
+ */
+export function sanitizeTextForPdf(str) {
+  if (!str) return '';
+  return String(str).replace(/[₱\u20B1]\s*/g, 'PHP ');
+}
+
+/**
+ * Formats a numeric currency amount safely for jsPDF document output,
+ * preventing '₱' from rendering as '±' in PDF viewers.
+ */
+export function formatCurrencyForPdf(amount, churchCurrency = null, options = {}) {
+  const formatted = formatCurrency(amount, churchCurrency, options);
+  return sanitizeTextForPdf(formatted);
+}
+

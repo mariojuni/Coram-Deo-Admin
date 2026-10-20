@@ -7,6 +7,7 @@ import AssignmentFormModal from './AssignmentFormModal';
 import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
+import FeatureGate from '../subscription/components/FeatureGate';
 
 export default function SchedulesDashboard() {
   const { userProfile, activeChurchId } = useAuth();
@@ -77,7 +78,13 @@ export default function SchedulesDashboard() {
   if (loading) return <div className="p-12 text-center text-church-slate text-sm font-semibold animate-pulse">Loading ministry schedules...</div>;
 
   return (
-    <div className="space-y-6">
+    <FeatureGate
+      feature="scheduling"
+      featureName="Ministry Scheduling & Rostering"
+      requiredTier="growth"
+      description="Coordinate team assignments, call times, volunteer notifications, and ministry rotations. Available on Growth Ministry and Kingdom Network tiers."
+    >
+      <div className="space-y-6">
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -321,6 +328,7 @@ export default function SchedulesDashboard() {
         onClose={() => setIsModalOpen(false)} 
         existingAssignment={editingAssignment} 
       />
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

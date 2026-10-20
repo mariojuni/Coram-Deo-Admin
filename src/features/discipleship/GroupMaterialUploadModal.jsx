@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, UploadCloud, FileText, Lock, Globe, Users, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { uploadGroupMaterial } from './discipleshipGroupService';
+import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
+import StorageQuotaModal from '../subscription/components/StorageQuotaModal';
 
 const MATERIAL_TYPES = [
   { value: 'leader_guide', label: 'Leader Guide' },
@@ -21,6 +23,7 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
   const { userProfile, activeChurchId } = useAuth();
   const CHURCH_ID = activeChurchId || userProfile?.churchId;
   const userId = userProfile?.uid || userProfile?.id;
+  const storageQuota = useStorageQuota();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -33,6 +36,8 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
+  const [storageModalInfo, setStorageModalInfo] = useState({ fileSizeFormatted: null, targetTier: 'kingdom' });
 
   if (!isOpen) return null;
 
@@ -43,7 +48,18 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selected = e.target.files[0];
+      const capacity = storageQuota.checkUploadCapacity(selected.size);
+      if (!capacity.allowed) {
+        setStorageModalInfo({
+          fileSizeFormatted: capacity.fileSizeFormatted,
+          targetTier: capacity.targetTier
+        });
+        setIsStorageModalOpen(true);
+        e.target.value = '';
+        return;
+      }
+      setFile(selected);
     }
   };
 
@@ -59,6 +75,16 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
     }
     if (!file) {
       setError('Please select a file to upload.');
+      return;
+    }
+
+    if (!storageQuota.canUploadBytes(file.size)) {
+      const capacity = storageQuota.checkUploadCapacity(file.size);
+      setStorageModalInfo({
+        fileSizeFormatted: capacity.fileSizeFormatted,
+        targetTier: capacity.targetTier
+      });
+      setIsStorageModalOpen(true);
       return;
     }
 
@@ -218,6 +244,13 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
           </div>
         </form>
       </div>
+
+      <StorageQuotaModal
+        isOpen={isStorageModalOpen}
+        onClose={() => setIsStorageModalOpen(false)}
+        fileSizeFormatted={storageModalInfo.fileSizeFormatted}
+        targetTier={storageModalInfo.targetTier}
+      />
     </div>
   );
 }

@@ -341,6 +341,14 @@ function AppRoutes() {
                 </RoleGuard>
               } 
             />
+            <Route 
+              path="billing" 
+              element={
+                <RoleGuard allowedRoles={['super_admin', 'church_admin']}>
+                  <SettingsProfile />
+                </RoleGuard>
+              } 
+            />
           </Route>
         </Route>
 

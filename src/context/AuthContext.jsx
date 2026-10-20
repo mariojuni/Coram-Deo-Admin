@@ -207,7 +207,7 @@ export function AuthProvider({ children }) {
     const unsubscribe = onSnapshot(churchRef, (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        setChurchData(data);
+        setChurchData({ id: snap.id, ...data });
         const normCurrency = normalizeCurrencyConfig(data.currency || {
           code: data.currencyCode,
           symbol: data.currencySymbol,

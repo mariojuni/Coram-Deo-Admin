@@ -18,7 +18,9 @@ import {
   ArrowUpRight,
   Filter,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Lock,
+  Receipt
 } from 'lucide-react';
 import { canManageGiving } from '../../utils/permissions';
 import { formatCurrency as formatChurchCurrency } from '../../utils/currency';
@@ -26,12 +28,16 @@ import {
   exportMemberRegistryPdf,
   exportAttendanceRegisterPdf,
   exportGivingLedgerPdf,
+  exportExpenseLedgerPdf,
+  exportBoardStatementPdf,
 } from '../../utils/reportPdfGenerator';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import DateRangeFilter from '../../components/ui/DateRangeFilter';
 import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
+import { useSubscriptionLimits } from '../subscription/hooks/useSubscriptionLimits';
+import UpgradeModal from '../subscription/components/UpgradeModal';
 
 import {
   Chart as ChartJS,
@@ -93,7 +99,17 @@ export default function ReportsDashboard() {
     endDate: '',
   });
   const [selectedGivingFund, setSelectedGivingFund] = useState('all');
+  const [expensesRecords, setExpensesRecords] = useState([]);
+  const [selectedExpenseFund, setSelectedExpenseFund] = useState('all');
   const [attendanceChartView, setAttendanceChartView] = useState('breakdown'); // 'breakdown' | 'total'
+
+  const limits = useSubscriptionLimits();
+  const [upgradeModal, setUpgradeModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    targetTier: 'growth'
+  });
 
   // Load church metadata & realtime subscriptions
   useEffect(() => {
@@ -103,6 +119,7 @@ export default function ReportsDashboard() {
     let unsubSessions = () => {};
     let unsubAttendance = () => {};
     let unsubGiving = () => {};
+    let unsubExpenses = () => {};
     let unsubFunds = () => {};
 
     const loadData = async () => {
@@ -174,6 +191,16 @@ export default function ReportsDashboard() {
         } catch (e) {
           console.error('Error fetching giving:', e);
         }
+
+        try {
+          const expQuery = query(collection(db, 'givingExpenses'), where('churchId', '==', CHURCH_ID));
+          unsubExpenses = onSnapshot(expQuery, (snap) => {
+            const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            setExpensesRecords(list);
+          });
+        } catch (e) {
+          console.error('Error fetching expenses:', e);
+        }
       }
 
       // 6. Fetch Giving Funds
@@ -207,6 +234,7 @@ export default function ReportsDashboard() {
       unsubSessions();
       unsubAttendance();
       unsubGiving();
+      unsubExpenses();
       unsubFunds();
     };
   }, [CHURCH_ID, canSeeGiving]);
@@ -438,6 +466,61 @@ export default function ReportsDashboard() {
     };
   }, [givingRecords, fundsMap, dateFilter, canSeeGiving]);
 
+  // Giving Card Stats based on selected fund
+  const givingCardStats = useMemo(() => {
+    let data = filteredGiving.records;
+    if (selectedGivingFund !== 'all') {
+      data = data.filter((r) => {
+        if (r.fundId === selectedGivingFund) return true;
+        const fundName = fundsMap[selectedGivingFund];
+        if (r.fundType === fundName && !r.fundId) return true;
+        return false;
+      });
+    }
+    const totalAmount = data.reduce((sum, g) => sum + (Number(g.amount) || 0), 0);
+    return {
+      count: data.length,
+      totalAmount,
+      records: data,
+    };
+  }, [filteredGiving.records, selectedGivingFund, fundsMap]);
+
+  // Process Expenses filtered by date
+  const filteredExpenses = useMemo(() => {
+    if (!canSeeGiving) return { records: [], totalAmount: 0, count: 0 };
+
+    const inRange = expensesRecords.filter((ex) => {
+      return isInDateRange(ex.date || ex.createdAt);
+    });
+
+    const totalAmount = inRange.reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
+
+    return {
+      records: inRange,
+      totalAmount,
+      count: inRange.length,
+    };
+  }, [expensesRecords, dateFilter, canSeeGiving]);
+
+  // Expense Card Stats based on selected fund
+  const expenseCardStats = useMemo(() => {
+    let data = filteredExpenses.records;
+    if (selectedExpenseFund !== 'all') {
+      data = data.filter((r) => {
+        if (r.fundId === selectedExpenseFund) return true;
+        const fundName = fundsMap[selectedExpenseFund];
+        if (r.fundType === fundName && !r.fundId) return true;
+        return false;
+      });
+    }
+    const totalAmount = data.reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
+    return {
+      count: data.length,
+      totalAmount,
+      records: data,
+    };
+  }, [filteredExpenses.records, selectedExpenseFund, fundsMap]);
+
   // Attendance Chart Data
   const attendanceChartData = useMemo(() => {
     const labels = filteredAttendance.sessions.map((s) => {
@@ -529,6 +612,39 @@ export default function ReportsDashboard() {
           dateFilter,
           churchMeta
         );
+      } else if (reportType === 'expenses') {
+        if (!canSeeGiving) throw new Error('Unauthorized');
+        await exportExpenseLedgerPdf(
+          filteredExpenses,
+          selectedExpenseFund,
+          fundsMap,
+          dateFilter,
+          churchMeta
+        );
+      } else if (reportType === 'board') {
+        if (!canSeeGiving) throw new Error('Unauthorized');
+        if (!limits.hasFeature('boardReports')) {
+          setUpgradeTarget({
+            title: 'Board-Ready Financial Statements',
+            message: 'Generating audited balance sheets and 1-click board financial statements is available on the Growth Ministry and Kingdom Network tiers.',
+            tier: 'growth'
+          });
+          setUpgradeModal({
+            isOpen: true,
+            title: 'Board-Ready Financial Statements',
+            message: 'Generating audited balance sheets and 1-click board financial statements is available on the Growth Ministry and Kingdom Network tiers.',
+            targetTier: 'growth'
+          });
+          return;
+        }
+        await exportBoardStatementPdf(
+          filteredGiving,
+          filteredExpenses,
+          fundsMap,
+          fundsList,
+          dateFilter,
+          churchMeta
+        );
       }
     } catch (e) {
       console.error('Failed to export PDF:', e);
@@ -608,6 +724,31 @@ export default function ReportsDashboard() {
         data.forEach((g) => {
           const fundName = g.fundId && fundsMap[g.fundId] ? fundsMap[g.fundId] : (g.fundType || 'General Offering');
           csvContent += `"${g.date}","${g.donorName || 'Anonymous'}","${fundName}","${g.method || g.paymentMethod || 'Cash'}","${g.amount}","${g.referenceNumber || g.id}","${g.status || 'Verified'}"\n`;
+        });
+      } else if (reportType === 'expenses') {
+        if (!canSeeGiving) throw new Error('Unauthorized');
+
+        let data = filteredExpenses.records;
+        if (selectedExpenseFund !== 'all') {
+          data = data.filter((r) => {
+            if (r.fundId === selectedExpenseFund) return true;
+            const fundName = fundsMap[selectedExpenseFund];
+            if (r.fundType === fundName && !r.fundId) return true;
+            return false;
+          });
+        }
+
+        data.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+        const currencyCode = churchMeta?.currency?.code || 'PHP';
+        csvContent = `"${churchName.toUpperCase()} - DISBURSEMENTS & EXPENSES LEDGER"\n`;
+        csvContent += `"Date Range: ${dateFilter.filterType} | Fund Filter: ${selectedExpenseFund === 'all' ? 'All Funds' : fundsMap[selectedExpenseFund] || selectedExpenseFund}"\n\n`;
+        csvContent += `Date,Payee / Vendor,Category,Fund Charged,Description,Amount (${currencyCode})\n`;
+
+        data.forEach((ex) => {
+          const fundName = ex.fundId && fundsMap[ex.fundId] ? fundsMap[ex.fundId] : (ex.fundType || 'General Fund');
+          const desc = (ex.description || '').replace(/"/g, '""');
+          csvContent += `"${ex.date || ''}","${ex.payee || 'N/A'}","${ex.category || 'General'}","${fundName}","${desc}","${ex.amount || 0}"\n`;
         });
       }
 
@@ -1060,7 +1201,7 @@ export default function ReportsDashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {/* Member Demographics Export */}
           <SoftCard className="p-6 flex flex-col justify-between">
             <div>
@@ -1186,7 +1327,7 @@ export default function ReportsDashboard() {
                         Audit PDF
                       </StatusPill>
                     </div>
-                    <p className="text-xs text-church-slate mt-0.5">Tithes & dedicated funds</p>
+                    <p className="text-xs text-church-slate mt-0.5">Giving & dedicated funds</p>
                   </div>
                 </div>
 
@@ -1207,11 +1348,11 @@ export default function ReportsDashboard() {
                 <div className="bg-gray-50/80 rounded-2xl p-3 mb-5 border border-gray-100 text-xs text-church-slate space-y-1.5">
                   <div className="flex justify-between">
                     <span>Verified Transactions:</span>
-                    <strong className="text-church-navy">{filteredGiving.count}</strong>
+                    <strong className="text-church-navy">{givingCardStats.count}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span>Ledger Inflow:</span>
-                    <strong className="text-emerald-600">{formatCurrency(filteredGiving.totalAmount)}</strong>
+                    <strong className="text-emerald-600">{formatCurrency(givingCardStats.totalAmount)}</strong>
                   </div>
                 </div>
               </div>
@@ -1219,7 +1360,7 @@ export default function ReportsDashboard() {
               <div className="space-y-2">
                 <GradientButton
                   onClick={() => handleExportPDF('giving')}
-                  disabled={exportLoading || filteredGiving.records.length === 0}
+                  disabled={exportLoading || givingCardStats.count === 0}
                   icon={FileText}
                   size="md"
                   className="w-full"
@@ -1229,7 +1370,7 @@ export default function ReportsDashboard() {
                 <button
                   type="button"
                   onClick={() => handleExportCSV('giving')}
-                  disabled={exportLoading || filteredGiving.records.length === 0}
+                  disabled={exportLoading || givingCardStats.count === 0}
                   className="w-full text-center text-[11px] font-semibold text-church-slate hover:text-church-navy py-0.5 transition-colors"
                 >
                   Download Raw CSV
@@ -1237,8 +1378,106 @@ export default function ReportsDashboard() {
               </div>
             </SoftCard>
           )}
+
+          {/* Executive Board Financial Statement (Gated by boardReports) */}
+          {canSeeGiving && (
+            <SoftCard className="p-6 flex flex-col justify-between relative overflow-hidden">
+              {!limits.hasFeature('boardReports') && (
+                <div className="absolute top-3 right-3">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-tight">
+                    <Lock size={10} strokeWidth={2.5} />
+                    <span>Growth+</span>
+                  </span>
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-50 text-church-violet flex items-center justify-center shrink-0">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-bold text-church-navy leading-tight">Board Statement</h3>
+                      {limits.hasFeature('boardReports') && (
+                        <StatusPill variant="violet" className="scale-90 origin-left">
+                          Executive PDF
+                        </StatusPill>
+                      )}
+                    </div>
+                    <p className="text-xs text-church-slate mt-0.5">Audited balance sheet & outflow</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50/80 rounded-2xl p-3 mb-5 border border-gray-100 text-xs text-church-slate space-y-1.5">
+                  <div className="flex justify-between">
+                    <span>Audit Scope:</span>
+                    <strong className="text-church-navy">Board & Council (All Funds)</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Inflow Audited:</span>
+                    <strong className="text-emerald-600">{formatCurrency(filteredGiving.totalAmount)}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Outflow Audited:</span>
+                    <strong className="text-rose-600">{formatCurrency(filteredExpenses.totalAmount)}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Net Stewardship:</span>
+                    <strong className={filteredGiving.totalAmount >= filteredExpenses.totalAmount ? 'text-emerald-700' : 'text-rose-700'}>
+                      {formatCurrency(filteredGiving.totalAmount - filteredExpenses.totalAmount)}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between pt-1 border-t border-gray-200/60">
+                    <span>Governance Format:</span>
+                    <span className="text-church-slate font-medium">1-Click Balance Sheet</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {limits.hasFeature('boardReports') ? (
+                  <GradientButton
+                    onClick={() => handleExportPDF('board')}
+                    disabled={exportLoading || (filteredGiving.records.length === 0 && filteredExpenses.records.length === 0)}
+                    icon={FileText}
+                    size="md"
+                    className="w-full"
+                  >
+                    Export Board Report
+                  </GradientButton>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUpgradeModal({
+                        isOpen: true,
+                        title: 'Unlock Board-Ready Financial Statements',
+                        message: 'Generate single-click executive balance sheets, fund allocation breakdowns, and district governance reports by upgrading to Growth Ministry or Kingdom Network.',
+                        targetTier: 'growth'
+                      });
+                    }}
+                    className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-2xs"
+                  >
+                    <Lock size={13} strokeWidth={2.5} />
+                    <span>Unlock with Growth Plan</span>
+                  </button>
+                )}
+                <p className="text-center text-[10px] text-church-slate pt-0.5">
+                  Elder council & district verified format
+                </p>
+              </div>
+            </SoftCard>
+          )}
         </div>
       </div>
+
+      <UpgradeModal
+        isOpen={upgradeModal.isOpen}
+        onClose={() => setUpgradeModal(prev => ({ ...prev, isOpen: false }))}
+        title={upgradeModal.title}
+        message={upgradeModal.message}
+        targetTier={upgradeModal.targetTier}
+      />
     </div>
   );
 }

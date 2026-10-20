@@ -41,9 +41,9 @@ const CURRENCIES = [
 ];
 
 const TIERS = {
-  seed: { name: 'Seed Fellowship', price: 'Free', priceNum: 0, period: 'forever', maxMembers: 'Up to 50 members' },
-  growth: { name: 'Growth Ministry', price: '₱3,490', priceNum: 3490, period: 'month', maxMembers: 'Up to 250 members' },
-  kingdom: { name: 'Kingdom Network', price: '₱5,490', priceNum: 5490, period: 'month', maxMembers: 'Unlimited members' }
+  seed: { name: 'Seed Fellowship', price: 'Free', priceNum: 0, period: 'forever', maxMembers: 'Up to 50 members', sermonStorage: '2 GB Audio Archive' },
+  growth: { name: 'Growth Ministry', price: '₱3,490', priceNum: 3490, period: 'month', maxMembers: 'Up to 250 members', sermonStorage: '20 GB / mo Video & Audio' },
+  kingdom: { name: 'Kingdom Network', price: '₱5,490', priceNum: 5490, period: 'month', maxMembers: 'Unlimited members', sermonStorage: '50 GB Video & Audio Storage' }
 };
 
 export default function Register() {
@@ -617,7 +617,7 @@ export default function Register() {
                     <div>
                       <div className="text-xs font-bold text-church-slate uppercase tracking-wider">Selected Plan Tier</div>
                       <div className="text-sm font-extrabold text-church-charcoal">{selectedTier.name}</div>
-                      <div className="text-xs text-church-slate">{selectedTier.maxMembers}</div>
+                      <div className="text-xs text-church-slate">{selectedTier.maxMembers} • {selectedTier.sermonStorage}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-xl font-black text-church-charcoal">{selectedTier.price}</div>

@@ -11,6 +11,7 @@ import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImpor
 import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
+import FeatureGate from '../subscription/components/FeatureGate';
 
 export default function SetlistsList() {
   const { userProfile } = useAuth();
@@ -137,7 +138,13 @@ export default function SetlistsList() {
   );
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
+    <FeatureGate
+      feature="worshipSetlists"
+      featureName="Worship Setlists & Planning"
+      requiredTier="growth"
+      description="Plan song sequences, attach lyric sheets, and coordinate band arrangements for worship gatherings. Available on Growth Ministry and Kingdom Network tiers."
+    >
+      <div className="space-y-6 flex flex-col h-full">
       {/* Header aligned to CoramDeo Design System */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
@@ -312,6 +319,7 @@ export default function SetlistsList() {
         churchId={userProfile?.churchId}
         onImportSuccess={fetchSetlists}
       />
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

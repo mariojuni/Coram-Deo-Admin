@@ -144,15 +144,19 @@ export default function DashboardQuickActions({ userProfile }) {
   };
 
   return (
-    <SoftCard className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base md:text-lg font-bold text-church-navy tracking-tight">Quick Actions</h2>
-          <p className="text-xs text-church-slate font-medium mt-0.5">Frequently used workflows and shortcuts</p>
+    <SoftCard className="p-3.5 md:p-4">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-church-navy" />
+          <h2 className="text-xs font-bold text-church-navy uppercase tracking-wider">Quick Actions</h2>
+          <span className="hidden sm:inline text-[11px] text-church-slate font-medium">• Shortcuts & Workflows</span>
         </div>
+        <span className="text-[11px] font-semibold text-church-slate">
+          {actions.length} action{actions.length > 1 ? 's' : ''}
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-2.5">
         {actions.map((act) => {
           const Icon = getIcon(act.id);
           const theme = getActionTheme(act.id);
@@ -162,14 +166,14 @@ export default function DashboardQuickActions({ userProfile }) {
               key={act.id}
               to={act.path}
               className={`
-                group flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-200 text-center
-                shadow-xs hover:shadow-church-elevated hover:-translate-y-0.5 active:translate-y-0 ${theme.card}
+                group flex items-center gap-2.5 px-3 py-2 rounded-xl border transition-all duration-150
+                shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 ${theme.card}
               `}
             >
-              <div className={`w-10 h-10 rounded-xl bg-white shadow-xs border flex items-center justify-center mb-2.5 transition-transform group-hover:scale-105 ${theme.icon}`}>
-                <Icon size={18} />
+              <div className={`w-7 h-7 rounded-lg bg-white shadow-2xs border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${theme.icon}`}>
+                <Icon size={14} />
               </div>
-              <span className={`text-xs font-bold leading-snug tracking-tight ${theme.text}`}>
+              <span className={`text-xs font-bold tracking-tight truncate ${theme.text}`}>
                 {act.label}
               </span>
             </Link>

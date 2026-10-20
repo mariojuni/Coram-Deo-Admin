@@ -30,13 +30,13 @@ export default function PricingSection() {
       tagline: 'For established growing churches',
       price: '₱3,490',
       period: 'per month',
-      description: 'The complete management engine for growing churches seeking to automate administration and empower leaders.',
+      description: 'The complete management engine for growing churches — up to 250 members with 20 GB media storage and automated leadership workflows.',
       features: [
         'Up to 250 active members & unlimited families',
         'Unlimited giving funds & campaign progress bars',
+        '20 GB / month sermon video & media storage',
         'Volunteer rostering & ministry scheduling',
         'Worship setlists & chord transposition',
-        'Sermon audio/video streaming & downloads',
         'Discipleship group chat & prayer walls',
         'Board-ready financial statements in 1 click',
         'Priority chat and onboarding support'
@@ -47,20 +47,20 @@ export default function PricingSection() {
     },
     {
       name: 'Kingdom Network',
-      tagline: 'For large or multi-campus ministries',
+      tagline: 'For large and expanding church ministries',
       price: '₱5,490',
       period: 'per month',
-      description: 'Advanced oversight, multi-campus administration, and custom integrations for expanding ministries.',
+      description: 'Everything in Growth Ministry with unlimited congregation members, unlimited giving funds, and 50 GB sermon media storage.',
       features: [
-        'Unlimited members and campuses',
-        'Multi-campus central reporting & super-admin oversight',
-        'Custom digital giving gateway integrations',
-        'Dedicated onboarding specialist with Zoom training',
-        'Unlimited sermon storage and high-bandwidth streaming',
-        '99.9% uptime SLA and direct phone support'
+        'Unlimited members & family profiles (No congregation caps)',
+        'Unlimited giving funds, campaigns & financial tracking',
+        '50 GB sermon video & media storage quota',
+        'All Growth Ministry tools (worship setlists, rostering, discipleship)',
+        'Dedicated staff onboarding & Zoom training for church leaders',
+        'Priority direct phone and email technical support'
       ],
       popular: false,
-      ctaText: 'Contact Our Ministry Team',
+      ctaText: 'Start 14-Day Free Trial',
       ctaAction: () => navigate('/register?tier=kingdom')
     }
   ];

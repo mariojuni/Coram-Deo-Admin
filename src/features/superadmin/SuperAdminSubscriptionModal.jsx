@@ -1,0 +1,433 @@
+import React, { useState } from 'react';
+import { 
+  X, 
+  Sparkles, 
+  Clock, 
+  Gift, 
+  ShieldCheck, 
+  ArrowRight, 
+  Check, 
+  Calendar,
+  AlertCircle,
+  HardDrive,
+  RotateCcw,
+  Users,
+  Film,
+  BookOpen,
+  Receipt
+} from 'lucide-react';
+import { 
+  changeChurchTier, 
+  extendChurchTrial, 
+  grantComplimentaryAccess,
+  grantStorageQuotaExtension,
+  resetStorageQuotaOverride 
+} from '../../services/subscriptionService';
+import { SUBSCRIPTION_TIERS, getTierConfig, getRemainingDays } from '../../config/subscriptions';
+import { formatBytes } from '../subscription/hooks/useStorageQuota';
+import GradientButton from '../../components/ui/GradientButton';
+
+export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, onUpdated }) {
+  if (!isOpen || !church) return null;
+
+  const sub = church.subscription || {};
+  const currentTier = (sub.tier || church.tier || 'seed').toLowerCase();
+  const currentStatus = sub.status || (currentTier === 'seed' ? 'active' : 'trialing');
+
+  const [selectedTier, setSelectedTier] = useState(currentTier);
+  const [customGb, setCustomGb] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  const trialDaysRemaining = sub.trialEndDate ? getRemainingDays(sub.trialEndDate) : 0;
+
+  // Action 1: Change Tier
+  const handleUpdateTier = async () => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await changeChurchTier(church.id, selectedTier);
+      setMessage({ text: `Plan successfully updated to ${SUBSCRIPTION_TIERS[selectedTier]?.name}!`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to change tier.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Action 2: Extend Trial (+14 or +30 days)
+  const handleExtendTrial = async (days) => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      const newEnd = await extendChurchTrial(church.id, days);
+      const dateStr = new Date(newEnd).toLocaleDateString();
+      setMessage({ text: `Trial extended by +${days} days (valid through ${dateStr}).`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to extend trial.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Action 3: Grant Complimentary Access
+  const handleGrantSponsorship = async (months) => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await grantComplimentaryAccess(church.id, selectedTier === 'seed' ? 'growth' : selectedTier, months);
+      setMessage({ 
+        text: `Complimentary ${months >= 999 ? 'Lifetime' : `${months}-Month`} sponsorship granted!`, 
+        type: 'success' 
+      });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to grant sponsorship.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const quotas = sub.quotas || {};
+  const currentQuotaGb = quotas.sermonStorageGb || (currentTier === 'kingdom' ? 50 : currentTier === 'growth' ? 20 : 2);
+  const storageOverride = sub.storageOverride;
+
+  // Action 4: Temporary Storage Quota Boost
+  const handleGrantStorageExtension = async (gb) => {
+    const numGb = Number(gb);
+    if (!numGb || numGb <= 0) return;
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await grantStorageQuotaExtension(church.id, numGb, 'Special Conference / Revival Event');
+      setMessage({ text: `Granted +${numGb} GB storage boost (total quota is now ${currentQuotaGb + numGb} GB)!`, type: 'success' });
+      setCustomGb('');
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to grant storage extension.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetStorage = async () => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await resetStorageQuotaOverride(church.id, currentTier);
+      setMessage({ text: `Storage quota successfully reset to default.`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to reset storage.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden relative">
+        {/* Modal Top Header */}
+        <div className="bg-gradient-to-r from-church-rose/10 via-purple-50 to-church-canvas p-6 border-b border-gray-100 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/80 text-church-slate hover:text-church-charcoal transition-all"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-charcoal text-white text-[10px] font-black uppercase tracking-wider mb-2">
+            <Sparkles size={12} />
+            <span>SuperAdmin Mission Control</span>
+          </div>
+          <h2 className="text-xl font-black text-church-navy">
+            Manage Subscription & Quotas
+          </h2>
+          <p className="text-xs text-church-slate mt-0.5">
+            {church.name} • Workspace ID: <code className="font-mono text-[11px]">{church.id}</code>
+          </p>
+        </div>
+
+        {/* Feedback Message */}
+        {message.text && (
+          <div className={`mx-6 mt-4 p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-between ${
+            message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}>
+            <span>{message.text}</span>
+            <button onClick={() => setMessage({ text: '', type: '' })} className="font-bold underline ml-2">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Modal Content */}
+        <div className="p-6 space-y-6">
+          {/* Current Status Overview & Live Resource Footprint */}
+          <div className="p-4 rounded-2xl bg-church-canvas border border-gray-100 space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-church-slate font-medium block text-[11px]">Active Plan Tier</span>
+                <span className="font-extrabold text-church-navy capitalize text-sm">
+                  {SUBSCRIPTION_TIERS[currentTier]?.name || currentTier}
+                </span>
+              </div>
+              <div>
+                <span className="text-church-slate font-medium block text-[11px]">Lifecycle Status</span>
+                <span className="font-extrabold capitalize text-sm text-church-charcoal">
+                  {sub.isSponsored 
+                    ? '⭐ Sponsored / Complimentary'
+                    : currentStatus === 'trialing' 
+                    ? `⏳ Trial (${trialDaysRemaining}d left)`
+                    : currentStatus}
+                </span>
+              </div>
+            </div>
+
+            {/* Storage & Member Resource Health */}
+            <div className="pt-3 border-t border-gray-200/60 space-y-2">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-bold text-church-navy flex items-center gap-1.5">
+                  <HardDrive size={13} className="text-blue-600" />
+                  <span>Cloud Storage Footprint:</span>
+                </span>
+                <span className="font-extrabold text-church-charcoal">
+                  {formatBytes(church.stats?.storage?.totalBytesUsed || 0)} / {currentQuotaGb} GB
+                  <span className="ml-1 text-church-slate font-medium">
+                    ({Math.min(100, Math.round(((church.stats?.storage?.totalBytesUsed || 0) / (currentQuotaGb * 1024 * 1024 * 1024)) * 100))}%)
+                  </span>
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all"
+                  style={{ 
+                    width: `${Math.min(100, Math.max(2, Math.round(((church.stats?.storage?.totalBytesUsed || 0) / (currentQuotaGb * 1024 * 1024 * 1024)) * 100)))}%` 
+                  }}
+                />
+              </div>
+
+              {/* Category Pills & Members */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1 text-[10px]">
+                <div className="p-2 rounded-xl bg-white border border-gray-100 flex items-center gap-1.5">
+                  <Film size={12} className="text-rose-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-church-slate block text-[9px] leading-tight">Sermons</span>
+                    <strong className="text-church-navy">{formatBytes(church.stats?.storage?.byCategory?.sermonsBytes || 0)}</strong>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-white border border-gray-100 flex items-center gap-1.5">
+                  <Users size={12} className="text-blue-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-church-slate block text-[9px] leading-tight">Members ({church.stats?.membersCount || 0})</span>
+                    <strong className="text-church-navy">{formatBytes(church.stats?.storage?.byCategory?.membersBytes || 0)}</strong>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-white border border-gray-100 flex items-center gap-1.5">
+                  <BookOpen size={12} className="text-purple-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-church-slate block text-[9px] leading-tight">Discipleship</span>
+                    <strong className="text-church-navy">{formatBytes(church.stats?.storage?.byCategory?.discipleshipBytes || 0)}</strong>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-white border border-gray-100 flex items-center gap-1.5">
+                  <Receipt size={12} className="text-emerald-500 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-church-slate block text-[9px] leading-tight">Receipts</span>
+                    <strong className="text-church-navy">{formatBytes(church.stats?.storage?.byCategory?.givingReceiptsBytes || 0)}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1: Change Tier */}
+          <div>
+            <label className="block text-xs font-extrabold uppercase tracking-wider text-church-slate mb-2">
+              Override Plan Tier
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              {Object.values(SUBSCRIPTION_TIERS).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setSelectedTier(p.id)}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    selectedTier === p.id
+                      ? 'border-church-rose bg-church-rose/5 text-church-rose shadow-sm'
+                      : 'border-gray-200 hover:border-gray-300 text-church-charcoal'
+                  }`}
+                >
+                  <div className="font-bold text-xs">{p.name}</div>
+                  <div className="text-[11px] text-church-slate font-medium mt-0.5">{p.price}</div>
+                </button>
+              ))}
+            </div>
+
+            {selectedTier !== currentTier && (
+              <button
+                type="button"
+                onClick={handleUpdateTier}
+                disabled={loading}
+                className="mt-3 px-4 py-2 rounded-xl bg-church-rose hover:bg-church-ruby text-white text-xs font-bold transition-all disabled:opacity-50"
+              >
+                {loading ? 'Updating...' : `Apply ${SUBSCRIPTION_TIERS[selectedTier]?.name} Tier`}
+              </button>
+            )}
+          </div>
+
+          {/* Section 2: Quick Trial Extension */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2 text-xs font-extrabold uppercase tracking-wider text-church-slate">
+              <Clock size={14} className="text-church-rose" />
+              <span>Extend Free Trial Duration</span>
+            </div>
+            <p className="text-xs text-church-slate mb-3">
+              Grant additional evaluation time for pastor boards and church leadership.
+            </p>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleExtendTrial(14)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +14 Days Extension
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExtendTrial(30)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +30 Days Extension
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Complimentary Sponsorship */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2 text-xs font-extrabold uppercase tracking-wider text-church-slate">
+              <Gift size={14} className="text-purple-600" />
+              <span>Grant Complimentary / Mission Sponsorship</span>
+            </div>
+            <p className="text-xs text-church-slate mb-3">
+              Waive all subscription fees for sponsored church plants or missions partners.
+            </p>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleGrantSponsorship(6)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                6-Month Sponsorship
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGrantSponsorship(12)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                1-Year Sponsorship
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGrantSponsorship(999)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-900 border border-purple-300 text-xs font-extrabold transition-all disabled:opacity-50"
+              >
+                Lifetime Sponsored
+              </button>
+            </div>
+          </div>
+
+          {/* Section 4: Cloud Storage Quota Override */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-church-slate">
+                <HardDrive size={14} className="text-blue-600" />
+                <span>Cloud Storage Quota Override</span>
+              </div>
+              <span className="text-[11px] font-bold text-church-navy">
+                Quota: {currentQuotaGb} GB {storageOverride ? `(+${storageOverride.additionalGb} GB Boost Active)` : ''}
+              </span>
+            </div>
+            <p className="text-xs text-church-slate mb-3">
+              Grant a temporary storage boost for church conferences, anniversary celebrations, or revivals.
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleGrantStorageExtension(10)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +10 GB Boost
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGrantStorageExtension(20)}
+                disabled={loading}
+                className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +20 GB Boost
+              </button>
+
+              {/* Custom GB Boost Input */}
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={customGb}
+                  onChange={(e) => setCustomGb(e.target.value)}
+                  placeholder="Custom GB"
+                  className="w-24 px-2.5 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-blue-500 font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleGrantStorageExtension(customGb)}
+                  disabled={loading || !customGb}
+                  className="px-3 py-1.5 rounded-xl bg-church-navy text-white text-xs font-bold hover:bg-church-charcoal transition-all disabled:opacity-40"
+                >
+                  Apply
+                </button>
+              </div>
+
+              {storageOverride && (
+                <button
+                  type="button"
+                  onClick={handleResetStorage}
+                  disabled={loading}
+                  className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-church-slate text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <RotateCcw size={12} />
+                  <span>Reset to Plan Default</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2 rounded-xl text-xs font-bold text-church-slate hover:bg-gray-100 hover:text-church-navy transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

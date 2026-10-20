@@ -13,9 +13,14 @@ import {
   FULL_MEMBER_SUBSTATUSES,
   BAPTISM_STATUSES
 } from './utils/memberStatusUtils';
+import { useSubscriptionLimits } from '../subscription/hooks/useSubscriptionLimits';
+import UpgradeModal from '../subscription/components/UpgradeModal';
 
 export default function MemberFormModal({ isOpen, onClose, member = null, existingMembers = [] }) {
   const { userProfile, currentUser } = useAuth();
+  const { canAddMember, checkAddMemberLimit } = useSubscriptionLimits();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState(null);
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -105,6 +110,14 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       const computedName = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(' ');
       
       if (!member) {
+        if (!canAddMember) {
+          const check = checkAddMemberLimit();
+          setUpgradeReason(check);
+          setShowUpgradeModal(true);
+          setLoading(false);
+          return;
+        }
+
         const isDuplicate = existingMembers.find(m => 
           (m.email && formData.email && m.email.toLowerCase() === formData.email.toLowerCase()) ||
           (m.name && computedName && m.name.toLowerCase() === computedName.toLowerCase())
@@ -532,6 +545,15 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
           </GradientButton>
         </div>
       </div>
+
+      {/* Subscription Quota Upgrade Gate Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        title="Member Limit Reached"
+        message={upgradeReason?.reason}
+        targetTier={upgradeReason?.targetPlan || 'growth'}
+      />
     </div>
   );
 }

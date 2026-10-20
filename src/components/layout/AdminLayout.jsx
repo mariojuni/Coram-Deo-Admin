@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Menu, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import SubscriptionBanner from '../../features/subscription/components/SubscriptionBanner';
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -44,6 +45,9 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
+
+        {/* Subscription / Trial / Grace Alert Banner */}
+        <SubscriptionBanner />
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto px-2 md:px-6 pb-6">

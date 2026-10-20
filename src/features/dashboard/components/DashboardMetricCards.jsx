@@ -126,51 +126,52 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
   });
 
   return (
-    <div className="space-y-3">
-      {/* Section Eyebrow (Matching CoramDeo Mobile App screenshot 1: • SUPPORT A CAUSE) */}
-      <div className="flex items-center gap-2 px-1">
-        <span className="w-2 h-2 rounded-full bg-church-rose" />
-        <h2 className="text-xs font-bold text-church-rose uppercase tracking-wider">
-          Operations Overview
-        </h2>
+    <div className="space-y-2.5">
+      {/* Section Eyebrow */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-church-rose" />
+          <h2 className="text-xs font-bold text-church-rose uppercase tracking-wider">
+            Operations Overview
+          </h2>
+        </div>
+        <span className="hidden sm:inline text-[11px] text-church-slate font-medium">Real-time ministry metrics</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2.5 md:gap-3">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
             <SoftCard
               key={card.id}
               hover
-              className="p-5 flex flex-col justify-between relative overflow-hidden"
+              className="p-3 md:p-3.5 rounded-2xl flex flex-col justify-between border border-gray-100/90 hover:border-gray-200 transition-all duration-150"
             >
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <p className="text-[11px] font-bold text-church-slate uppercase tracking-wider">
-                    {card.title}
-                  </p>
-                  <div className={`w-9 h-9 rounded-2xl ${card.iconStyle} flex items-center justify-center shrink-0`}>
-                    <Icon size={18} />
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-3xl font-black text-church-charcoal tracking-tight">
-                    {loading ? (
-                      <span className="animate-pulse text-gray-200">...</span>
-                    ) : (
-                      card.value
-                    )}
-                  </h3>
-                  <p className="text-xs text-church-slate font-medium mt-1 truncate">
-                    {card.subtitle}
-                  </p>
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <span className="text-[11px] font-bold text-church-slate uppercase tracking-wider truncate">
+                  {card.title}
+                </span>
+                <div className={`w-7 h-7 rounded-lg ${card.iconStyle} flex items-center justify-center shrink-0`}>
+                  <Icon size={14} />
                 </div>
               </div>
 
-              {/* Subtle accent bottom progress bar (mirroring mobile goal cards) */}
-              <div className="w-full bg-gray-100/80 h-1 rounded-full mt-4 overflow-hidden">
-                <div className={`h-full ${card.barColor} rounded-full w-2/3 transition-all duration-500`} />
+              <div>
+                <h3 className="text-xl md:text-2xl font-black text-church-charcoal tracking-tight leading-none">
+                  {loading ? (
+                    <span className="animate-pulse text-gray-200">...</span>
+                  ) : (
+                    card.value
+                  )}
+                </h3>
+                <p className="text-[11px] text-church-slate font-medium mt-1 truncate">
+                  {card.subtitle}
+                </p>
+
+                {/* Accent bottom progress bar */}
+                <div className="w-full bg-gray-100/90 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                  <div className={`h-full ${card.barColor} rounded-full w-2/3 transition-all duration-500`} />
+                </div>
               </div>
             </SoftCard>
           );

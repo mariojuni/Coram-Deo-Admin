@@ -42,6 +42,7 @@ import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
 import SettingsHeader from './SettingsHeader';
 import SettingsUsersAndRoles from './SettingsUsersAndRoles';
+import SettingsSubscription from './SettingsSubscription';
 import { 
   POPULAR_CURRENCIES, 
   DEFAULT_CURRENCY_CONFIG, 
@@ -90,7 +91,9 @@ export default function SettingsProfile() {
   const [searchParams] = useSearchParams();
 
   const isRolesUrl = location.pathname.includes('/roles') || searchParams.get('tab') === 'roles';
-  const [activeTab, setActiveTab] = useState(isRolesUrl ? 'roles' : 'profile');
+  const isBillingUrl = location.pathname.includes('/billing') || location.pathname.includes('/subscription') || searchParams.get('tab') === 'billing';
+  const initialTab = isRolesUrl ? 'roles' : isBillingUrl ? 'billing' : 'profile';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [usersCount, setUsersCount] = useState(null);
 
   // Fetch church list for superadmin tenants
@@ -126,6 +129,8 @@ export default function SettingsProfile() {
   useEffect(() => {
     if (location.pathname.includes('/roles') || searchParams.get('tab') === 'roles') {
       setActiveTab('roles');
+    } else if (location.pathname.includes('/billing') || location.pathname.includes('/subscription') || searchParams.get('tab') === 'billing') {
+      setActiveTab('billing');
     } else {
       setActiveTab('profile');
     }
@@ -135,6 +140,8 @@ export default function SettingsProfile() {
     setActiveTab(tab);
     if (tab === 'roles') {
       navigate('/admin/settings/roles', { replace: true });
+    } else if (tab === 'billing') {
+      navigate('/admin/settings/billing', { replace: true });
     } else {
       navigate('/admin/settings', { replace: true });
     }
@@ -474,11 +481,13 @@ export default function SettingsProfile() {
       <SettingsHeader
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        eyebrow={activeTab === 'roles' ? 'Users & Access Control' : 'Church Profile'}
-        title={activeTab === 'roles' ? 'Users & Access Control' : 'Church Profile'}
+        eyebrow={activeTab === 'roles' ? 'Users & Access Control' : activeTab === 'billing' ? 'Subscription & Billing' : 'Church Profile'}
+        title={activeTab === 'roles' ? 'Users & Access Control' : activeTab === 'billing' ? 'Subscription & Billing' : 'Church Profile'}
         subtitle={
           activeTab === 'roles'
             ? 'Manage system access levels, permissions, and staff roles for your team.'
+            : activeTab === 'billing'
+            ? 'Manage church plan tier, automated monthly renewals, card methods, and official board receipts.'
             : 'Manage congregation details, campus location, worship service schedules, and financial localization.'
         }
         usersCount={usersCount}
@@ -1213,6 +1222,11 @@ export default function SettingsProfile() {
           onUserCountChange={setUsersCount} 
           churchId={targetChurchId} 
         />
+      )}
+
+      {/* Tab 3: Subscription & Billing */}
+      {activeTab === 'billing' && (
+        <SettingsSubscription churchId={targetChurchId} />
       )}
     </div>
   );

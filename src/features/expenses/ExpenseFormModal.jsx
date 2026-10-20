@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
+import StorageQuotaModal from '../subscription/components/StorageQuotaModal';
 
 export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ; 
+  const storageQuota = useStorageQuota();
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     amount: '',
@@ -26,6 +30,8 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const [error, setError] = useState('');
   const [funds, setFunds] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
+  const [storageModalInfo, setStorageModalInfo] = useState({ fileSizeFormatted: null, targetTier: 'kingdom' });
 
   useEffect(() => {
     if (expense) {
@@ -113,12 +119,34 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
-      setReceiptFile(e.target.files[0]);
+      const selected = e.target.files[0];
+      const capacity = storageQuota.checkUploadCapacity(selected.size);
+      if (!capacity.allowed) {
+        setStorageModalInfo({
+          fileSizeFormatted: capacity.fileSizeFormatted,
+          targetTier: capacity.targetTier
+        });
+        setIsStorageModalOpen(true);
+        e.target.value = '';
+        return;
+      }
+      setReceiptFile(selected);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (receiptFile && !storageQuota.canUploadBytes(receiptFile.size)) {
+      const capacity = storageQuota.checkUploadCapacity(receiptFile.size);
+      setStorageModalInfo({
+        fileSizeFormatted: capacity.fileSizeFormatted,
+        targetTier: capacity.targetTier
+      });
+      setIsStorageModalOpen(true);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -162,6 +190,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         fundType: finalFundType,
         amount: parseFloat(formData.amount) || 0,
         receiptUrl,
+        receiptSizeBytes: receiptFile ? receiptFile.size : (expense?.receiptSizeBytes || 0),
         updatedAt: serverTimestamp(),
         churchId: CHURCH_ID
       };
@@ -171,6 +200,21 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
       }
 
       await setDoc(docRef, expenseDoc, { merge: true });
+
+      // Increment giving receipt storage metrics
+      if (receiptFile && CHURCH_ID) {
+        try {
+          const churchRef = doc(db, 'churches', CHURCH_ID);
+          await updateDoc(churchRef, {
+            'stats.storage.totalBytesUsed': increment(receiptFile.size),
+            'stats.storage.byCategory.givingReceiptsBytes': increment(receiptFile.size),
+            'stats.storage.lastCalculatedAt': serverTimestamp()
+          });
+        } catch (sErr) {
+          console.warn('Expense receipt storage metric increment deferred:', sErr);
+        }
+      }
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -306,6 +350,13 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
           </form>
         </div>
       </div>
+
+      <StorageQuotaModal
+        isOpen={isStorageModalOpen}
+        onClose={() => setIsStorageModalOpen(false)}
+        fileSizeFormatted={storageModalInfo.fileSizeFormatted}
+        targetTier={storageModalInfo.targetTier}
+      />
     </div>
   );
 }
