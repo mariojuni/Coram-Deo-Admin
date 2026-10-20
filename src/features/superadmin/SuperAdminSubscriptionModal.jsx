@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Sparkles, 
   Clock, 
   Gift, 
-  ShieldCheck, 
-  ArrowRight, 
-  Check, 
-  Calendar,
-  AlertCircle,
   HardDrive,
   RotateCcw,
   Users,
@@ -23,21 +18,29 @@ import {
   grantStorageQuotaExtension,
   resetStorageQuotaOverride 
 } from '../../services/subscriptionService';
-import { SUBSCRIPTION_TIERS, getTierConfig, getRemainingDays } from '../../config/subscriptions';
+import { SUBSCRIPTION_TIERS, getRemainingDays } from '../../config/subscriptions';
 import { formatBytes } from '../subscription/hooks/useStorageQuota';
-import GradientButton from '../../components/ui/GradientButton';
 
 export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, onUpdated }) {
-  if (!isOpen || !church) return null;
-
-  const sub = church.subscription || {};
-  const currentTier = (sub.tier || church.tier || 'seed').toLowerCase();
+  const sub = church?.subscription || {};
+  const currentTier = (sub.tier || church?.tier || 'seed').toLowerCase();
   const currentStatus = sub.status || (currentTier === 'seed' ? 'active' : 'trialing');
 
   const [selectedTier, setSelectedTier] = useState(currentTier);
   const [customGb, setCustomGb] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    if (church) {
+      const tier = (church.subscription?.tier || church.tier || 'seed').toLowerCase();
+      setSelectedTier(tier);
+      setMessage({ text: '', type: '' });
+      setCustomGb('');
+    }
+  }, [church, isOpen]);
+
+  if (!isOpen || !church) return null;
 
   const trialDaysRemaining = sub.trialEndDate ? getRemainingDays(sub.trialEndDate) : 0;
 

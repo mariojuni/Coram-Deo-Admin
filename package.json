@@ -11,7 +11,10 @@
     "lint": "oxlint",
     "test": "vitest run",
     "preview": "vite preview",
-    "bootstrap:superadmin": "tsx scripts/bootstrapSuperAdmin.ts"
+    "bootstrap:superadmin": "tsx scripts/bootstrapSuperAdmin.ts",
+    "docs:pdf": "node scripts/generate_architecture_pdf.js",
+    "docs:user-guide": "node scripts/generate_user_guide_pdf.js",
+    "docs:all": "npm run docs:pdf && npm run docs:user-guide"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
