@@ -105,7 +105,7 @@ export default function DashboardPendingTasks({ counts, loading, userProfile }) 
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[460px]">
         {loading ? (
           <div className="space-y-3">
             {[1, 2].map((i) => (

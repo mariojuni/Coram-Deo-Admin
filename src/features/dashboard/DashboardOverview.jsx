@@ -512,13 +512,13 @@ export default function DashboardOverview() {
       {/* 2. Quick Actions */}
       <DashboardQuickActions userProfile={userProfile} />
 
-      {/* 3. Metrics Cards */}
-      <DashboardMetricCards metrics={metrics} loading={loading} userProfile={userProfile} />
-
-      {/* 4. Core Operations Grid */}
+      {/* 3. Core Operations: 3-Column Grid (Events | Operations Overview | Action Radar) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-4.5">
-        <div className="lg:col-span-2">
+        <div>
           <ThisWeekEventsCard events={thisWeekEvents} loading={loading} />
+        </div>
+        <div>
+          <DashboardMetricCards metrics={metrics} loading={loading} userProfile={userProfile} />
         </div>
         <div>
           <DashboardPendingTasks counts={pendingCounts} loading={loading} userProfile={userProfile} />

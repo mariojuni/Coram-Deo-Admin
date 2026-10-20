@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Bell } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -13,6 +13,15 @@ const EVENT_CATEGORIES = [
   'Visitation', 'Leadership Meeting'
 ];
 
+export const REMINDER_OPTIONS = [
+  { value: 15, label: '15 mins before' },
+  { value: 30, label: '30 mins before (Default)' },
+  { value: 60, label: '1 hour before' },
+  { value: 120, label: '2 hours before' },
+  { value: 1440, label: '1 day before' },
+  { value: 0, label: 'No reminder' },
+];
+
 export default function EventFormModal({ isOpen, onClose, event = null }) {
   const { userProfile } = useAuth();
   const [formData, setFormData] = useState({
@@ -24,6 +33,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
     location: '',
     category: EVENT_CATEGORIES[0],
     status: 'draft',
+    reminderMinutesBefore: 30,
     enableRSVP: false,
     enableVolunteer: false,
     enableAttendance: false,
@@ -43,6 +53,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
         location: event.location || '',
         category: event.category || EVENT_CATEGORIES[0],
         status: (event.status || 'draft').toLowerCase(),
+        reminderMinutesBefore: event.reminderMinutesBefore !== undefined ? Number(event.reminderMinutesBefore) : 30,
         enableRSVP: event.enableRSVP || false,
         enableVolunteer: event.enableVolunteer || false,
         enableAttendance: event.enableAttendance || false,
@@ -58,6 +69,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
         location: '',
         category: EVENT_CATEGORIES[0],
         status: 'draft',
+        reminderMinutesBefore: 30,
         enableRSVP: false,
         enableVolunteer: false,
         enableAttendance: false,
@@ -108,16 +120,21 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
 
       if (event) {
         // Update existing
+        const scheduleChanged = event.date !== formData.date || event.startTime !== formData.startTime;
         const docRef = doc(db, 'events', event.id);
         await updateDoc(docRef, {
           ...formData,
+          reminderMinutesBefore: Number(formData.reminderMinutesBefore),
           ...(startTimestamp && { startTimestamp }),
+          ...(scheduleChanged && { notificationSent: false }),
           updatedAt: serverTimestamp()
         });
       } else {
         // Add new
         await addDoc(collection(db, 'events'), {
           ...formData,
+          reminderMinutesBefore: Number(formData.reminderMinutesBefore),
+          notificationSent: false,
           ...(startTimestamp && { startTimestamp }),
           createdAt: serverTimestamp(),
           churchId: userProfile?.churchId 
@@ -167,7 +184,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Event details..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white resize-none"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white resize-none" 
               />
             </div>
           </div>
@@ -224,7 +241,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Event Category</label>
               <ModernDropdown
@@ -243,6 +260,17 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                   { value: 'published', label: 'Published' },
                   { value: 'cancelled', label: 'Cancelled' }
                 ]}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5 flex items-center gap-1.5">
+                <Bell size={13} className="text-church-rose" />
+                Push Reminder
+              </label>
+              <ModernDropdown
+                value={formData.reminderMinutesBefore}
+                onChange={(val) => handleChange({ target: { name: 'reminderMinutesBefore', value: Number(val) } })}
+                options={REMINDER_OPTIONS}
               />
             </div>
           </div>

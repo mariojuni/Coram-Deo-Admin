@@ -199,6 +199,8 @@ export async function saveGeneratedEvents(eventsToSave, status, churchId, genera
       source: 'template_generated',
       templateId: event.templateId,
       generatedMonth: generatedMonth,
+      reminderMinutesBefore: 30,
+      notificationSent: false,
       ...(startTimestamp && { startTimestamp }),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   Users, 
@@ -7,7 +8,8 @@ import {
   BookOpenCheck, 
   BookOpen, 
   CreditCard, 
-  Shield 
+  Shield,
+  ChevronRight
 } from 'lucide-react';
 import { 
   canViewFinanceDashboard, 
@@ -32,10 +34,10 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
     id: 'events',
     title: 'Events This Week',
     value: metrics.upcomingEventsCount,
-    subtitle: 'Scheduled ministry services',
+    subtitle: 'Scheduled services',
     icon: Calendar,
     iconStyle: 'bg-pink-50 text-church-rose',
-    barColor: 'bg-church-rose',
+    path: '/admin/events',
   });
 
   // 2. Attendance (Emerald)
@@ -47,7 +49,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       subtitle: 'Recorded member check-ins',
       icon: ClipboardCheck,
       iconStyle: 'bg-emerald-50 text-church-emerald',
-      barColor: 'bg-church-emerald',
+      path: '/admin/attendance',
     });
   }
 
@@ -59,7 +61,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
     subtitle: 'Linked church directory',
     icon: Users,
     iconStyle: 'bg-purple-50 text-church-violet',
-    barColor: 'bg-church-violet',
+    path: '/admin/members',
   });
 
   // 4. Pending Applications (Amber)
@@ -71,7 +73,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       subtitle: 'Volunteer signups to review',
       icon: Shield,
       iconStyle: 'bg-amber-50 text-church-amber',
-      barColor: 'bg-church-amber',
+      path: '/admin/ministries/applications',
     });
   }
 
@@ -84,7 +86,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       subtitle: 'Giving slips to verify',
       icon: CreditCard,
       iconStyle: 'bg-amber-50 text-church-amber',
-      barColor: 'bg-church-amber',
+      path: '/admin/finance/giving',
     });
   }
 
@@ -97,7 +99,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       subtitle: 'Discipleship communities',
       icon: BookOpenCheck,
       iconStyle: 'bg-purple-50 text-church-violet',
-      barColor: 'bg-church-violet',
+      path: '/admin/discipleship/groups',
     });
   }
 
@@ -110,7 +112,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       subtitle: 'Awaiting leadership review',
       icon: HeartHandshake,
       iconStyle: 'bg-pink-50 text-church-rose',
-      barColor: 'bg-church-rose',
+      path: '/admin/prayer',
     });
   }
 
@@ -122,61 +124,65 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
     subtitle: 'Media & audio archive',
     icon: BookOpen,
     iconStyle: 'bg-emerald-50 text-church-emerald',
-    barColor: 'bg-church-emerald',
+    path: '/admin/sermons',
   });
 
   return (
-    <div className="space-y-2.5">
-      {/* Section Eyebrow */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-church-rose" />
-          <h2 className="text-xs font-bold text-church-rose uppercase tracking-wider">
-            Operations Overview
+    <SoftCard className="p-6 flex flex-col h-full">
+      {/* ── Header ── */}
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-church-rose" />
+            <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider">
+              Operations
+            </span>
+          </div>
+          <h2 className="text-base md:text-lg font-black text-church-charcoal tracking-tight">
+            Overview
           </h2>
+          <p className="text-xs text-church-slate">Real-time ministry vitals & health</p>
         </div>
-        <span className="hidden sm:inline text-[11px] text-church-slate font-medium">Real-time ministry metrics</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2.5 md:gap-3">
+      {/* ── List Content (No progress bars) ── */}
+      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[460px]">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <SoftCard
+            <Link
               key={card.id}
-              hover
-              className="p-3 md:p-3.5 rounded-2xl flex flex-col justify-between border border-gray-100/90 hover:border-gray-200 transition-all duration-150"
+              to={card.path}
+              className="flex items-center justify-between p-3.5 border border-gray-100/90 rounded-2xl hover:border-gray-200 hover:bg-gray-50/70 transition-all duration-150 group bg-white"
             >
-              <div className="flex items-center justify-between gap-1.5 mb-2">
-                <span className="text-[11px] font-bold text-church-slate uppercase tracking-wider truncate">
-                  {card.title}
-                </span>
-                <div className={`w-7 h-7 rounded-lg ${card.iconStyle} flex items-center justify-center shrink-0`}>
-                  <Icon size={14} />
+              <div className="flex items-center space-x-3 min-w-0 pr-2">
+                <div className={`w-9 h-9 rounded-xl ${card.iconStyle} flex items-center justify-center shrink-0 border border-gray-100/50`}>
+                  <Icon size={16} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs md:text-sm font-bold text-church-charcoal truncate group-hover:text-church-rose transition-colors">
+                    {card.title}
+                  </h4>
+                  <p className="text-[11px] text-church-slate truncate mt-0.5">
+                    {card.subtitle}
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl md:text-2xl font-black text-church-charcoal tracking-tight leading-none">
+              <div className="flex items-center space-x-2 shrink-0 pl-2">
+                <span className="text-base md:text-lg font-black text-church-charcoal tracking-tight group-hover:text-church-rose transition-colors">
                   {loading ? (
                     <span className="animate-pulse text-gray-200">...</span>
                   ) : (
                     card.value
                   )}
-                </h3>
-                <p className="text-[11px] text-church-slate font-medium mt-1 truncate">
-                  {card.subtitle}
-                </p>
-
-                {/* Accent bottom progress bar */}
-                <div className="w-full bg-gray-100/90 h-1.5 rounded-full mt-2.5 overflow-hidden">
-                  <div className={`h-full ${card.barColor} rounded-full w-2/3 transition-all duration-500`} />
-                </div>
+                </span>
+                <ChevronRight size={15} className="text-church-muted group-hover:text-church-rose group-hover:translate-x-0.5 transition-all" />
               </div>
-            </SoftCard>
+            </Link>
           );
         })}
       </div>
-    </div>
+    </SoftCard>
   );
 }

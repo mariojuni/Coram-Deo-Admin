@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, Calendar as CalendarIcon, CalendarPlus, Edit, Trash2, MapPin, Clock, MoreVertical, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CalendarPlus, Edit, Trash2, MapPin, Clock, MoreVertical, CheckCircle2, ChevronRight, Bell } from 'lucide-react';
 import EventFormModal from './EventFormModal';
 import { useNavigate } from 'react-router-dom';
 import { canManageEvents } from '../../utils/permissions';
@@ -407,6 +407,16 @@ export default function EventsList() {
                     {event.category && (
                       <span className="text-[10px] font-bold text-church-muted hidden sm:inline">
                         &bull; {event.category}
+                      </span>
+                    )}
+                    {event.reminderMinutesBefore !== 0 && event.reminderMinutesBefore !== null && (
+                      <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                        event.notificationSent
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'bg-rose-50 text-church-rose'
+                      }`}>
+                        <Bell size={9} className="mr-0.5" />
+                        {event.notificationSent ? 'Sent' : `${event.reminderMinutesBefore !== undefined ? event.reminderMinutesBefore : 30}m`}
                       </span>
                     )}
                   </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Calendar, MapPin, Clock, ArrowLeft, Users, Shield, CheckCircle2, Music, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Clock, ArrowLeft, Users, Shield, CheckCircle2, Music, ChevronRight, Bell } from 'lucide-react';
 import { getSetlistByEvent } from '../worship/worshipService';
 import SoftCard from '../../components/ui/SoftCard';
 import StatusPill from '../../components/ui/StatusPill';
@@ -106,10 +106,22 @@ export default function EventDetails() {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             {isPublished && <StatusPill variant="emerald">Published Gathering</StatusPill>}
             {isCompleted && <StatusPill variant="violet">Completed</StatusPill>}
             {!isPublished && !isCompleted && <StatusPill variant="slate">Draft</StatusPill>}
+            {event.reminderMinutesBefore !== 0 && event.reminderMinutesBefore !== null && (
+              <span className={`inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                event.notificationSent 
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                  : 'bg-rose-50 text-church-rose border-rose-100'
+              }`}>
+                <Bell size={11} className="mr-1" />
+                {event.notificationSent 
+                  ? 'Push Sent' 
+                  : `Reminder: ${event.reminderMinutesBefore !== undefined ? event.reminderMinutesBefore : 30}m before`}
+              </span>
+            )}
           </div>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">{event.title}</h1>
           <div className="flex flex-wrap items-center text-xs text-church-slate mt-1.5 gap-x-4 gap-y-1 font-medium">
@@ -150,7 +162,7 @@ export default function EventDetails() {
                 <p className="text-church-slate text-sm leading-relaxed">{event.description || 'No description provided.'}</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5">Status</h4>
                   {isPublished ? (
@@ -168,6 +180,18 @@ export default function EventDetails() {
                 <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5">Assigned Volunteers</h4>
                   <p className="text-church-charcoal text-sm font-bold">{assignments.length} Volunteers</p>
+                </div>
+
+                <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                  <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <Bell size={12} className="text-church-rose" /> Push Reminder
+                  </h4>
+                  <p className="text-church-charcoal text-sm font-bold">
+                    {event.reminderMinutesBefore === 0 || event.reminderMinutesBefore === null
+                      ? 'No Reminder'
+                      : `${event.reminderMinutesBefore !== undefined ? event.reminderMinutesBefore : 30}m before`}
+                    {event.notificationSent && <span className="ml-1.5 text-xs text-emerald-600 font-semibold">(Sent)</span>}
+                  </p>
                 </div>
               </div>
             </div>
