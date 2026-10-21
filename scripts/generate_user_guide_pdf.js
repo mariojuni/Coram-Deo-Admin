@@ -82,9 +82,8 @@ async function generateUserGuidePdf() {
       font-size: 20pt;
       font-weight: 800;
       letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #4F3894 0%, #8B4FB3 40%, #E84F7A 75%, #FF5252 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #4F3894;
+      white-space: nowrap;
     }
 
     .brand-tag {
@@ -470,7 +469,7 @@ async function generateUserGuidePdf() {
         <circle cx="200" cy="200" r="7" fill="#FFFFFF"/>
       </svg>
       <div>
-        <div class="brand-title">CoramDeo Platform</div>
+        <div class="brand-title">CoramDeo <span style="color: #E84F7A;">Platform</span></div>
         <div class="brand-tag">StewardTrack Administrative Suite</div>
       </div>
     </div>
@@ -521,7 +520,7 @@ async function generateUserGuidePdf() {
       </div>
       <div class="meta-item">
         <strong>SUPPORT CONTACT</strong>
-        <span>support@coramdeo.app</span>
+        <span>support@coramdeo.online</span>
       </div>
       <div class="meta-item">
         <strong>DATE</strong>
@@ -543,39 +542,53 @@ async function generateUserGuidePdf() {
   </p>
 
   <h2>1.2 User Personas &amp; Role Directory</h2>
+  <h2>1.2 Official System Roles &amp; Responsibilities</h2>
+  <p>
+    CoramDeo provides granular, multi-role access control configured under <strong>System Roles (select one or more)</strong>:
+  </p>
   <table>
     <thead>
       <tr>
-        <th style="width: 20%;">Staff Persona</th>
-        <th style="width: 25%;">Primary Focus</th>
-        <th style="width: 55%;">Daily &amp; Weekly Software Workflows</th>
+        <th style="width: 22%;">System Role</th>
+        <th style="width: 38%;">Official Platform Scope</th>
+        <th style="width: 40%;">Core Daily Software Capabilities</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>Senior Pastor</strong></td>
-        <td>Spiritual oversight, preaching, flock care</td>
-        <td>Upload Sunday sermons, monitor attendance trajectories, review confidential pastoral prayer requests, and distribute discipleship curriculums.</td>
+        <td><strong>Church Admin</strong></td>
+        <td>Full management of this church: members, finance, and settings.</td>
+        <td>Full church workspace control, user role assignment, billing management, and church profile settings.</td>
       </tr>
       <tr>
-        <td><strong>Church Administrator</strong></td>
-        <td>Operational governance &amp; platform settings</td>
-        <td>Manage church profile, assign staff roles, review audit logs, monitor subscription quotas, and manage facilities/events.</td>
+        <td><strong>Pastor</strong></td>
+        <td>Pastoral ministry leadership, preaching, and discipleship.</td>
+        <td>Sermons library, worship setlists, Bible reading plans, discipleship materials, and confidential prayer queues.</td>
       </tr>
       <tr>
-        <td><strong>Treasurer / Finance Admin</strong></td>
-        <td>Financial stewardship &amp; transparency</td>
-        <td>Record Sunday tithes/offerings, scan deposit slips with camera OCR, manage expenses, and generate 1-click board balance sheets and donor tax statements.</td>
+        <td><strong>Secretary</strong></td>
+        <td>Administrative directory maintenance and attendance logs.</td>
+        <td>Full member directory maintenance, events coordination, Sunday kiosk QR check-in, and announcements.</td>
       </tr>
       <tr>
-        <td><strong>Church Secretary</strong></td>
-        <td>Flock records &amp; communications</td>
-        <td>Maintain member directory, create events, monitor Sunday kiosk check-ins, and publish weekly church bulletins.</td>
+        <td><strong>Finance Admin</strong></td>
+        <td>Financial management: giving records, funds, and reports.</td>
+        <td>Tithes &amp; offerings entry, OCR check/receipt scanning, designated funds, expenses, and PDF board reports.</td>
       </tr>
       <tr>
-        <td><strong>Worship Director</strong></td>
-        <td>Sunday service liturgy &amp; music</td>
-        <td>Maintain song chord charts, transpose vocal keys on the fly, curate weekly setlists, and schedule band/vocalist rosters.</td>
+        <td><strong>Ministry Leader</strong></td>
+        <td>Oversees specific ministry departments and teams.</td>
+        <td>Ministry team rosters, volunteer shift scheduling, song library chord charts, and service setlists.</td>
+      </tr>
+      <tr>
+        <td><strong>Member</strong></td>
+        <td>Standard church member account.</td>
+        <td>Default baseline account. Mobile app access for digital giving, self check-in QR code, and personal profile.</td>
+      </tr>
+      <tr>
+        <td><strong>Super Admin</strong></td>
+        <td>Full system-wide administrative control across all churches.</td>
+        <td>Global multi-tenant switching, new church onboarding, global user approval, and shared Bible library imports.</td>
       </tr>
     </tbody>
   </table>
@@ -671,16 +684,50 @@ async function generateUserGuidePdf() {
     </div>
   </div>
 
-  <h2>4.2 Managing Roles &amp; Promoting Staff</h2>
+  <h2>4.2 Managing Roles &amp; Assigning Staff Access</h2>
   <p>
-    Only administrators (<code>super_admin</code> and <code>church_admin</code>) can elevate member roles. To grant administrative privileges:
+    Only authorized administrators (<code>super_admin</code> and <code>church_admin</code>) can assign or elevate roles. To update a member's portal access:
   </p>
-  <ul>
-    <li>Open the member's profile card in the directory.</li>
-    <li>Click the <strong>Access &amp; Role</strong> tab.</li>
-    <li>Select their primary role (e.g. <code>pastor</code>, <code>secretary</code>, or <code>finance_admin</code>).</li>
-    <li>Click <strong>Update Role</strong>. The action is permanently recorded in your church’s <strong>Role Audit Log</strong>.</li>
-  </ul>
+  <div class="step-workflow avoid-break">
+    <div class="step-item">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        Open the member's profile card in the directory and click the <strong>Access &amp; Role</strong> tab.
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        Under <strong>SYSTEM ROLES (select one or more)</strong>, select the desired roles:
+        <ul style="margin: 4px 0 6px 0; padding-left: 18px; font-size: 8pt;">
+          <li><strong>Church Admin:</strong> Full management of this church: members, finance, and settings.</li>
+          <li><strong>Pastor:</strong> Pastoral ministry leadership, preaching, and discipleship.</li>
+          <li><strong>Secretary:</strong> Administrative directory maintenance and attendance logs.</li>
+          <li><strong>Finance Admin:</strong> Financial management: giving records, funds, and reports.</li>
+          <li><strong>Ministry Leader:</strong> Oversees specific ministry departments and teams.</li>
+          <li><strong>Member:</strong> Standard church member account.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <strong>Primary Role Indicator:</strong> The first selected role automatically becomes their primary display badge, highlighted with a pink/rose <strong>PRIMARY</strong> badge.
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <strong>Reason for Change (Optional):</strong> Enter an administrative note explaining the role assignment for governance accountability. <em>(Note: Users cannot modify their own role).</em>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        Click <strong>Update Role</strong>. The transaction is instantly recorded in the immutable <strong>Role Audit Log</strong> with actor and timestamp.
+      </div>
+    </div>
+  </div>
 
   <!-- SECTION 5 -->
   <div class="page-break"></div>
@@ -949,7 +996,7 @@ async function generateUserGuidePdf() {
 
   <div class="callout callout-rose avoid-break" style="margin-top: 24px;">
     <div class="callout-title">Need Technical Assistance?</div>
-    Our team is dedicated to supporting your ministry. Reach our customer care team at <strong>support@coramdeo.app</strong> or access priority chat within your admin workspace.
+    Our team is dedicated to supporting your ministry. Reach our customer care team at <strong>support@coramdeo.online</strong> or access priority chat within your admin workspace.
   </div>
 
 </body>

@@ -84,9 +84,8 @@ async function generatePdf() {
       font-size: 20pt;
       font-weight: 800;
       letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #4F3894 0%, #8B4FB3 40%, #E84F7A 75%, #FF5252 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #4F3894;
+      white-space: nowrap;
     }
 
     .brand-tag {
@@ -455,7 +454,7 @@ async function generatePdf() {
         <circle cx="200" cy="200" r="7" fill="#FFFFFF"/>
       </svg>
       <div>
-        <div class="brand-title">CoramDeo Platform</div>
+        <div class="brand-title">CoramDeo <span style="color: #E84F7A;">Platform</span></div>
         <div class="brand-tag">StewardTrack Administrative Suite</div>
       </div>
     </div>
@@ -509,8 +508,8 @@ async function generatePdf() {
         <span>Engineering, Leadership & IT</span>
       </div>
       <div class="meta-item">
-        <strong>CLASSIFICATION</strong>
-        <span>Proprietary & Confidential</span>
+        <strong>SUPPORT</strong>
+        <span>support@coramdeo.online</span>
       </div>
       <div class="meta-item">
         <strong>DATE</strong>
@@ -730,8 +729,18 @@ async function generatePdf() {
         <div class="feature-card-title">Layer 1: System Roles (Platform RBAC)</div>
       </div>
       <div class="feature-card-body">
-        Stored in <code>users/{uid}.systemRoles</code>. Governs navigation, routes, and collection-level operations in the web portal.<br><br>
-        <strong>Roles:</strong> <code>super_admin</code>, <code>church_admin</code>, <code>pastor</code>, <code>secretary</code>, <code>finance_admin</code>, <code>ministry_leader</code>, <code>member</code>.
+        Stored in <code>users/{uid}.systemRoles</code>. Users can hold multiple roles simultaneously (<strong>multi-select</strong>). The first selected role serves as the <code>primaryRole</code>, rendered with a <strong>PRIMARY</strong> badge.
+        <br><br>
+        <strong>Canonical System Roles &amp; Responsibilities:</strong>
+        <ul style="margin: 6px 0; padding-left: 16px; font-size: 7.8pt;">
+          <li><strong>Church Admin:</strong> Full management of this church: members, finance, and settings.</li>
+          <li><strong>Pastor:</strong> Pastoral ministry leadership, preaching, and discipleship.</li>
+          <li><strong>Secretary:</strong> Administrative directory maintenance and attendance logs.</li>
+          <li><strong>Finance Admin:</strong> Financial management: giving records, funds, and reports.</li>
+          <li><strong>Ministry Leader:</strong> Oversees specific ministry departments and teams.</li>
+          <li><strong>Member:</strong> Standard church member account.</li>
+          <li><strong>Super Admin:</strong> Full system-wide administrative control across all churches.</li>
+        </ul>
       </div>
     </div>
 
@@ -742,7 +751,7 @@ async function generatePdf() {
       </div>
       <div class="feature-card-body">
         Stored inside specific ministry documents: <code>ministries/{id}.leaderIds</code> and <code>members[].servingRole</code>.<br><br>
-        <strong>Examples:</strong> Ministry Leader, Vocalist, Drummer, Usher, Sunday School Lead. Does <em>not</em> grant system-wide administrative access.
+        <strong>Serving Designations:</strong> Vocalist, Drummer, Sound Tech, Usher, Greeter, Sunday School Lead. These manage serving rosters and team scheduling without granting access to confidential system or financial data.
       </div>
     </div>
   </div>

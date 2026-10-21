@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Heart } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Heart, ExternalLink } from 'lucide-react';
 import logo from '../../assets/logo.svg';
 import GradientButton from '../../components/ui/GradientButton';
 
@@ -86,16 +86,34 @@ export default function Footer() {
             </div>
             <ul className="space-y-2 text-xs font-semibold text-church-slate">
               <li><a href="#web-admin" className="hover:text-church-rose transition-colors">Web Admin Portal</a></li>
-              <li>
-                <a 
-                  href="https://play.google.com/store/apps/details?id=com.coramdeo.app.prod&pcampaignid=web_share"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-church-rose transition-colors flex items-center gap-1.5"
-                >
-                  <span>Congregation App</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-church-rose font-bold">Google Play</span>
-                </a>
+              <li className="pt-0.5 pb-1">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-church-charcoal font-bold">Congregation App</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <a 
+                      href="https://apps.apple.com/ph/app/coramdeo-life/id6802314896"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-85 transition-opacity inline-flex items-center gap-1"
+                    >
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 text-white font-bold inline-flex items-center gap-1">
+                        <span>App Store</span>
+                        <ExternalLink size={9} />
+                      </span>
+                    </a>
+                    <a 
+                      href="https://play.google.com/store/apps/details?id=com.coramdeo.app.prod&pcampaignid=web_share"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-85 transition-opacity inline-flex items-center gap-1"
+                    >
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-church-rose font-bold inline-flex items-center gap-1">
+                        <span>Google Play</span>
+                        <ExternalLink size={9} />
+                      </span>
+                    </a>
+                  </div>
+                </div>
               </li>
               <li><a href="#roles" className="hover:text-church-rose transition-colors">By Leadership Role</a></li>
               <li><a href="#sandbox" className="hover:text-church-rose transition-colors">Interactive Live Demo</a></li>

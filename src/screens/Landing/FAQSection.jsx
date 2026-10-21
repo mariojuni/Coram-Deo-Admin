@@ -43,7 +43,7 @@ export default function FAQSection() {
     },
     {
       q: 'Is the companion mobile app free for our congregation members?',
-      a: 'The CoramDeo companion app is 100% free for all church members and attendees on both Android and iOS. Android users can install it directly from the Google Play Store, and it seamlessly connects to your church’s workspace with zero per-member mobile fees.'
+      a: 'The CoramDeo companion app is 100% free for all church members and attendees on both iOS and Android. Members can install it directly from the Apple App Store (iPhone/iPad) and Google Play Store, and it seamlessly connects to your church’s workspace with zero per-member mobile fees.'
     }
   ];
 

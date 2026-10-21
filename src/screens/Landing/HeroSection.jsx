@@ -83,10 +83,14 @@ export default function HeroSection() {
                 <CheckCircle2 size={16} className="text-church-emerald shrink-0" />
                 <span>No Credit Card</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-church-emerald shrink-0" />
-                <span>iOS & Android Ready</span>
-              </div>
+              <a 
+                href="#mobile-app" 
+                className="flex items-center gap-1.5 hover:text-church-rose transition-colors group cursor-pointer"
+                title="Download on App Store & Google Play"
+              >
+                <CheckCircle2 size={16} className="text-church-emerald shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="underline decoration-dotted decoration-gray-300 underline-offset-4">iOS & Android Ready</span>
+              </a>
             </div>
           </div>
 

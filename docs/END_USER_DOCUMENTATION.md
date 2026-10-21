@@ -55,14 +55,15 @@ To ensure church data remains private and secure:
 ### 2.3 Understanding Your Role & Navigation Sidebar
 Your left-hand navigation sidebar automatically displays only the modules you are authorized to access based on your assigned role:
 
-| System Role | Primary Responsibilities | Sidebar Sections Accessible |
+| System Role | Official Description & Scope | Sidebar Sections Accessible |
 | :--- | :--- | :--- |
-| **church_admin** | Full operational control of the church | All Church Modules (Dashboard, Events, Members, Worship, Sermons, Finance, Settings) |
-| **pastor** | Spiritual oversight, teaching, care | Dashboard, Sermons, Worship, Bible Plans, Discipleship, Prayer, Members, Reports |
-| **finance_admin** | Treasury, giving, expense accounting | Finance & Giving, Accounts & Funds, Expenses, Verification Queue, Financial Reports |
-| **secretary** | Church office administration | Member Directory, Events, Kiosk Attendance, Announcements, Prayer Moderation |
-| **ministry_leader**| Ministry team coordination | Assigned Ministry, Volunteer Scheduling, Songs & Lyrics, Worship Setlists |
-| **super_admin** | Platform & multi-church governance | Global Churches Registry, User Approvals, Bible Library, Global Roles |
+| **Church Admin** | Full management of this church: members, finance, and settings. | All Church Modules (Dashboard, Events, Members, Ministries, Schedules, Attendance, Worship, Sermons, Finance, Reports, Settings) |
+| **Pastor** | Pastoral ministry leadership, preaching, and discipleship. | Dashboard, Sermons, Worship, Bible Plans, Discipleship, Prayer, Members, Reports |
+| **Secretary** | Administrative directory maintenance and attendance logs. | Member Directory, Events, Attendance Kiosk, Announcements, Prayer Moderation |
+| **Finance Admin** | Financial management: giving records, funds, and reports. | Finance & Giving, Accounts & Funds, Expenses, Verification Queue, Reports |
+| **Ministry Leader**| Oversees specific ministry departments and teams. | Ministries, Scheduling & Volunteer Rostering, Songs & Lyrics, Worship Setlists |
+| **Member** | Standard church member account. | Baseline church access, mobile app profile, giving history, event registrations |
+| **Super Admin** | Full system-wide administrative control across all churches. | Global Churches Registry, User Approvals, Bible Library, Global Roles |
 
 ---
 
@@ -114,16 +115,23 @@ The **Members** module (`/admin/members`) is your central congregation registry.
    * **Special Attributes:** Mark *Is Abroad / OFW* if the member attends online from overseas, or add confidential emergency contacts.
 4. Click **Save Member**. The profile is instantly searchable in the directory.
 
-### 4.2 Managing Roles & Portal Access
+### 4.2 Managing Roles & Assigning Portal Access
 > [!IMPORTANT]
 > Only `church_admin` and `super_admin` users are authorized to assign or change system roles. Users can never change their own role.
 
-To grant administrative access to a church member:
+To grant or modify administrative access for a church member:
 1. Open the member's profile card in the directory.
 2. Click the **Access & Role** tab.
-3. Under **System Role**, select the appropriate role (e.g. *Secretary*, *Finance Admin*, or *Pastor*).
-4. Click **Update Role**.
-5. The action is permanently recorded in your church's **Role Audit Log** for safety and governance.
+3. Under **SYSTEM ROLES (select one or more)**, check one or multiple roles:
+   * **Church Admin:** Full management of this church: members, finance, and settings.
+   * **Pastor:** Pastoral ministry leadership, preaching, and discipleship.
+   * **Secretary:** Administrative directory maintenance and attendance logs.
+   * **Finance Admin:** Financial management: giving records, funds, and reports.
+   * **Ministry Leader:** Oversees specific ministry departments and teams.
+   * **Member:** Standard church member account.
+4. **Primary Display Role:** Users can hold multiple roles simultaneously. The first selected role automatically becomes their primary display badge, highlighted with a pink/rose **PRIMARY** tag.
+5. **Reason for Change (Optional):** Enter a brief administrative note explaining the role change (e.g., *"Appointed Assistant Treasurer"* or *"Ordained as Associate Pastor"*).
+6. Click **Update Role**. The change is applied immediately and permanently recorded in your church's **Role Audit Log** (`roleAuditLogs`) with actor ID, target user, role diff, and server timestamp.
 
 ---
 
@@ -292,7 +300,7 @@ If your church is on the **Seed Fellowship** tier and you attempt to add your 51
 * **Answer:** **Yes.** CoramDeo utilizes Google Cloud Firestore with active local caching. Check-ins scanned during a temporary connection drop are queued in your browser's local memory and automatically sync to the cloud database the moment connection resumes.
 
 ### Q5: Who can I contact if I need technical assistance?
-* **Community & Seed Tier Support:** Email `support@coramdeo.app`.
+* **Community & Seed Tier Support:** Email `support@coramdeo.online`.
 * **Growth & Kingdom Tiers:** Access direct priority chat inside the admin portal or request scheduled Zoom onboarding assistance.
 
 ---

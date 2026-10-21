@@ -142,37 +142,38 @@ The platform implements a SaaS monetization model governed by tier-based quotas 
 Security in CoramDeo is structured into two completely orthogonal, non-interfering layers:
 
 ```
-+---------------------------------------------------------------------------------------+
-|                               LAYER 1: SYSTEM ROLES                                   |
-|                  (Stored in user profile: users/{uid}.systemRoles)                    |
-|                                                                                       |
-|   super_admin      Global platform control, multi-tenant switching, church creation   |
-|   church_admin     Full administrative authority within a specific church tenant     |
-|   pastor           Sermons, worship, schedules, pastoral care, discipleship, reports  |
-|   finance_admin    Giving entry, funds management, expenses, bank verification, audits|
-|   secretary        Flock directory, event coordination, attendance scanning, bulletins|
-|   ministry_leader  Team schedules, song library, setlist planning, ministry rosters   |
-|   member           Congregation baseline: read-only access to relevant church spaces  |
-+---------------------------------------------------------------------------------------+
-                                            +
-+---------------------------------------------------------------------------------------+
-|                               LAYER 2: MINISTRY ROLES                                 |
-|           (Stored in ministry document: ministries/{id}.members[].servingRole)        |
-|                                                                                       |
-|   Ministry Leader  Assigned via ministries/{id}.leaderIds; edits roster and shifts     |
-|   Serving Roles    Vocalist, Drummer, Sound Tech, Usher, Greeter, Sunday School Lead  |
-+---------------------------------------------------------------------------------------+
++----------------------------------------------------------------------------------------------------+
+|                               LAYER 1: SYSTEM ROLES (PLATFORM RBAC)                                 |
+|                         (Stored in user profile: users/{uid}.systemRoles)                          |
+|                                                                                                    |
+|  * Church Admin     Full management of this church: members, finance, and settings.                 |
+|  * Pastor           Pastoral ministry leadership, preaching, and discipleship.                     |
+|  * Secretary        Administrative directory maintenance and attendance logs.                      |
+|  * Finance Admin    Financial management: giving records, funds, and reports.                      |
+|  * Ministry Leader  Oversees specific ministry departments and teams.                              |
+|  * Member           Standard church member account.                                                |
+|  * Super Admin      Full system-wide administrative control across all churches.                   |
++----------------------------------------------------------------------------------------------------+
+                                                  +
++----------------------------------------------------------------------------------------------------+
+|                               LAYER 2: MINISTRY ROLES (SERVING ROSTER)                             |
+|                (Stored in ministry document: ministries/{id}.members[].servingRole)                |
+|                                                                                                    |
+|  * Ministry Leader  Assigned via ministries/{id}.leaderIds; edits roster and schedules             |
+|  * Serving Roles    Vocalist, Drummer, Sound Tech, Usher, Greeter, Sunday School Lead              |
++----------------------------------------------------------------------------------------------------+
 ```
 
+#### Multi-Role Capability & Primary Role Resolution
+* **Multi-Select Assignment:** Church administrators can assign one or more system roles per user (e.g., a staff member can hold both `Pastor` and `Church Admin`).
+* **Primary Role Indicator:** The first assigned role in `systemRoles` becomes the user's `primaryRole`, rendered in the administrative interface with a pink/rose **PRIMARY** badge.
+* **Separation of Ministry Roles:** Ministry roles govern serving rosters and team scheduling without granting access to sensitive system settings or financial records.
+
 ### 4.2 Security Governance Rules & Auditability
-- **Self-Elevation Prevention**: Users cannot modify their own system role under any circumstances.
-- **Super Admin Protection**: Only a `super_admin` can create or promote another `super_admin`. `church_admin` users are restricted to roles below their level.
-- **Immutable Audit Trail**: All role promotions, demotions, and assignments write an immutable record into the `roleAuditLogs` collection containing:
-  - `actorId` & `actorEmail`: The administrator who initiated the change.
-  - `targetUserId` & `targetEmail`: The member affected.
-  - `previousRoles` vs `newRoles`: Exact role diff.
-  - `timestamp`: Server-generated timestamp.
-- **Custom Claims Validation**: High-privilege actions verify Firebase Authentication custom token claims (`tokenResult.claims.superAdmin`) alongside Firestore user profiles.
+- **Self-Elevation Prevention:** Users are strictly blocked from elevating or altering their own system role (`member.id !== userProfile?.uid`).
+- **Super Admin Protection:** Only a `super_admin` can create or promote another `super_admin`. `church_admin` users can only assign roles within their church scope.
+- **Reason for Change Audit:** When role modifications occur, the administrator can optionally submit a reason for change. This explanation, along with the actor ID, target user ID, timestamp, and previous vs new role arrays, is written to an immutable `roleAuditLogs` collection.
+- **Custom Claims Validation:** High-privilege actions verify Firebase Authentication custom token claims (`tokenResult.claims.superAdmin`) alongside Firestore user profiles.
 
 ---
 
