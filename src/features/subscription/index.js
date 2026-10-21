@@ -5,3 +5,4 @@ export { default as SubscriptionBanner } from './components/SubscriptionBanner';
 export { default as UpgradeModal } from './components/UpgradeModal';
 export { default as StorageQuotaModal } from './components/StorageQuotaModal';
 export { default as FeatureGate } from './components/FeatureGate';
+export { default as ManualPaymentModal } from './components/ManualPaymentModal';

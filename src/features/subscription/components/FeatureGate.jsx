@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { useSubscriptionLimits } from '../hooks/useSubscriptionLimits';
 import { SUBSCRIPTION_TIERS } from '../../../config/subscriptions';
@@ -42,7 +42,7 @@ export default function FeatureGate({
       </div>
 
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-black uppercase tracking-wider mb-2">
-        <Sparkles size={13} />
+        <Zap size={13} />
         <span>Available in {targetPlan.name}</span>
       </div>
 

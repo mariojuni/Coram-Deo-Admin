@@ -130,7 +130,7 @@ export async function registerChurchAndAdmin({ churchInfo, adminInfo, tierInfo =
     gracePeriodEndsAt: null,
     canceledAt: null,
     cancelAtPeriodEnd: false,
-    paymentGateway: 'stripe',
+    paymentGateway: 'manual_bank_transfer',
     gatewayCustomerId: null,
     gatewaySubscriptionId: null,
     lastPaymentStatus: isSeed ? 'succeeded' : 'pending',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
-  Sparkles, 
+  ShieldCheck, 
   Clock, 
   Gift, 
   HardDrive,
@@ -9,14 +9,23 @@ import {
   Users,
   Film,
   BookOpen,
-  Receipt
+  Receipt,
+  Calendar,
+  AlertTriangle,
+  Play,
+  CheckCircle2,
+  CalendarClock,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   changeChurchTier, 
   extendChurchTrial, 
   grantComplimentaryAccess,
   grantStorageQuotaExtension,
-  resetStorageQuotaOverride 
+  resetStorageQuotaOverride,
+  cancelScheduledDowngrade,
+  executeScheduledChangeNow,
+  updateChurchPeriodEnd
 } from '../../services/subscriptionService';
 import { SUBSCRIPTION_TIERS, getRemainingDays } from '../../config/subscriptions';
 import { formatBytes } from '../subscription/hooks/useStorageQuota';
@@ -28,6 +37,8 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
 
   const [selectedTier, setSelectedTier] = useState(currentTier);
   const [customGb, setCustomGb] = useState('');
+  const [customExpiryDate, setCustomExpiryDate] = useState('');
+  const [extensionReason, setExtensionReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -37,12 +48,59 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
       setSelectedTier(tier);
       setMessage({ text: '', type: '' });
       setCustomGb('');
+      setExtensionReason('');
+      if (church.subscription?.currentPeriodEnd) {
+        try {
+          const dateStr = new Date(church.subscription.currentPeriodEnd).toISOString().split('T')[0];
+          setCustomExpiryDate(dateStr);
+        } catch {
+          setCustomExpiryDate('');
+        }
+      } else {
+        setCustomExpiryDate('');
+      }
     }
   }, [church, isOpen]);
 
   if (!isOpen || !church) return null;
 
   const trialDaysRemaining = sub.trialEndDate ? getRemainingDays(sub.trialEndDate) : 0;
+  const paidDaysRemaining = sub.currentPeriodEnd ? getRemainingDays(sub.currentPeriodEnd) : 0;
+  const scheduledChange = sub.scheduledChange;
+
+  // Action 0A: Cancel Scheduled Downgrade
+  const handleCancelDowngrade = async () => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await cancelScheduledDowngrade(church.id);
+      setMessage({ text: 'Scheduled downgrade successfully cancelled. Church remains on active plan.', type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to cancel scheduled downgrade.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Action 0B: Execute Scheduled Downgrade Immediately
+  const handleExecuteDowngradeNow = async () => {
+    if (!scheduledChange) return;
+    const confirmExec = window.confirm(`Are you sure you want to immediately execute the downgrade to ${scheduledChange.targetTier?.toUpperCase()}?\n\nPlan quotas will be updated now.`);
+    if (!confirmExec) return;
+
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      await executeScheduledChangeNow(church.id, scheduledChange);
+      setMessage({ text: `Downgrade to ${scheduledChange.targetTier?.toUpperCase()} executed immediately!`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to execute scheduled downgrade.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Action 1: Change Tier
   const handleUpdateTier = async () => {
@@ -75,7 +133,43 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
     }
   };
 
-  // Action 3: Grant Complimentary Access
+  // Action 3: Quick Extend Paid Period End (+15, +30, +60, +90 days)
+  const handleExtendPaidPeriod = async (days) => {
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      const baseDate = sub.currentPeriodEnd && new Date(sub.currentPeriodEnd) > new Date()
+        ? new Date(sub.currentPeriodEnd)
+        : new Date();
+      const newEnd = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+      await updateChurchPeriodEnd(church.id, newEnd, `SuperAdmin +${days} days paid extension`);
+      setMessage({ text: `Subscription validity extended by +${days} days (valid through ${new Date(newEnd).toLocaleDateString()}).`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to extend subscription validity.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Action 4: Set Exact Expiry Date
+  const handleSaveExactExpiryDate = async () => {
+    if (!customExpiryDate) return;
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      const newEndIso = new Date(`${customExpiryDate}T23:59:59Z`).toISOString();
+      await updateChurchPeriodEnd(church.id, newEndIso, extensionReason || 'SuperAdmin date adjustment');
+      setMessage({ text: `Subscription expiry set to ${new Date(newEndIso).toLocaleDateString()}.`, type: 'success' });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setMessage({ text: err.message || 'Failed to update expiry date.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Action 5: Grant Complimentary Access
   const handleGrantSponsorship = async (months) => {
     setLoading(true);
     setMessage({ text: '', type: '' });
@@ -97,7 +191,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
   const currentQuotaGb = quotas.sermonStorageGb || (currentTier === 'kingdom' ? 50 : currentTier === 'growth' ? 20 : 2);
   const storageOverride = sub.storageOverride;
 
-  // Action 4: Temporary Storage Quota Boost
+  // Action 6: Temporary Storage Quota Boost
   const handleGrantStorageExtension = async (gb) => {
     const numGb = Number(gb);
     if (!numGb || numGb <= 0) return;
@@ -143,7 +237,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
           </button>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-charcoal text-white text-[10px] font-black uppercase tracking-wider mb-2">
-            <Sparkles size={12} />
+            <ShieldCheck size={12} />
             <span>SuperAdmin Mission Control</span>
           </div>
           <h2 className="text-xl font-black text-church-navy">
@@ -167,7 +261,62 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
         )}
 
         {/* Modal Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+          {/* Scheduled Downgrade Active Alert */}
+          {scheduledChange && (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300 text-xs space-y-3 shadow-sm animate-in fade-in">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="p-2 rounded-xl bg-amber-200/80 text-amber-900 shrink-0 mt-0.5">
+                    <AlertTriangle size={16} />
+                  </div>
+                  <div>
+                    <span className="font-black text-amber-950 uppercase tracking-wider text-[11px] block">
+                      Scheduled Plan Downgrade in Progress
+                    </span>
+                    <p className="text-amber-800 text-xs mt-0.5 leading-relaxed">
+                      Scheduled to downgrade to <strong className="uppercase font-black text-amber-950">{SUBSCRIPTION_TIERS[scheduledChange.targetTier]?.name || scheduledChange.targetTier} Plan</strong> on{' '}
+                      <strong>{scheduledChange.scheduledEffectiveDate ? new Date(scheduledChange.scheduledEffectiveDate).toLocaleDateString() : 'Current Period End'}</strong>.
+                    </p>
+                    {scheduledChange.reason && (
+                      <span className="text-[11px] text-amber-700/90 italic block mt-1">
+                        Reason: "{scheduledChange.reason}"
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-amber-200/90 text-amber-950 font-black text-[10px] tracking-wide shrink-0">
+                  PENDING
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-200/80">
+                <span className="text-[11px] text-amber-900 font-medium">
+                  Workspace maintains current paid tier limits until effective date.
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCancelDowngrade}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 hover:bg-amber-100/60 text-amber-900 font-bold text-xs transition-all disabled:opacity-50 shadow-xs"
+                  >
+                    Cancel Downgrade
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecuteDowngradeNow}
+                    disabled={loading}
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Play size={11} fill="currentColor" />
+                    <span>Execute Immediately</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Current Status Overview & Live Resource Footprint */}
           <div className="p-4 rounded-2xl bg-church-canvas border border-gray-100 space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
@@ -182,6 +331,8 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
                 <span className="font-extrabold capitalize text-sm text-church-charcoal">
                   {sub.isSponsored 
                     ? '⭐ Sponsored / Complimentary'
+                    : scheduledChange
+                    ? '⏳ Downgrade Scheduled'
                     : currentStatus === 'trialing' 
                     ? `⏳ Trial (${trialDaysRemaining}d left)`
                     : currentStatus}
@@ -251,7 +402,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
             </div>
           </div>
 
-          {/* Section 1: Change Tier */}
+          {/* Section 1: Override Plan Tier */}
           <div>
             <label className="block text-xs font-extrabold uppercase tracking-wider text-church-slate mb-2">
               Override Plan Tier
@@ -279,11 +430,93 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
                 type="button"
                 onClick={handleUpdateTier}
                 disabled={loading}
-                className="mt-3 px-4 py-2 rounded-xl bg-church-rose hover:bg-church-ruby text-white text-xs font-bold transition-all disabled:opacity-50"
+                className="mt-3 px-4 py-2 rounded-xl bg-church-rose hover:bg-church-ruby text-white text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
               >
                 {loading ? 'Updating...' : `Apply ${SUBSCRIPTION_TIERS[selectedTier]?.name} Tier`}
               </button>
             )}
+          </div>
+
+          {/* Section 2: Paid Subscription Expiry & Extensions */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-church-slate">
+                <CalendarClock size={14} className="text-indigo-600" />
+                <span>Paid Plan Expiry & Extensions</span>
+              </div>
+              <span className="text-[11px] font-bold text-church-navy">
+                {sub.currentPeriodEnd 
+                  ? `Expires: ${new Date(sub.currentPeriodEnd).toLocaleDateString()} (${paidDaysRemaining > 0 ? `${paidDaysRemaining}d remaining` : 'Expired'})`
+                  : 'No expiry set (Seed / Lifetime)'}
+              </span>
+            </div>
+            <p className="text-xs text-church-slate mb-3">
+              Extend access validity for offline checks or customize renewal cutoff dates.
+            </p>
+
+            {/* Quick Extension Pills */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => handleExtendPaidPeriod(15)}
+                disabled={loading}
+                className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +15 Days
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExtendPaidPeriod(30)}
+                disabled={loading}
+                className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +30 Days (1 Mo)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExtendPaidPeriod(60)}
+                disabled={loading}
+                className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +60 Days (2 Mo)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExtendPaidPeriod(90)}
+                disabled={loading}
+                className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                +90 Days (Quarter)
+              </button>
+            </div>
+
+            {/* Exact Date Adjustment */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-[11px] font-bold text-church-slate whitespace-nowrap">Set Date:</span>
+                <input
+                  type="date"
+                  value={customExpiryDate}
+                  onChange={(e) => setCustomExpiryDate(e.target.value)}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500 font-medium"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Reason / Reference (e.g. Check cleared)"
+                value={extensionReason}
+                onChange={(e) => setExtensionReason(e.target.value)}
+                className="flex-1 px-2.5 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={handleSaveExactExpiryDate}
+                disabled={loading || !customExpiryDate}
+                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all disabled:opacity-40 whitespace-nowrap shadow-xs"
+              >
+                Save Date
+              </button>
+            </div>
           </div>
 
           {/* Section 2: Quick Trial Extension */}

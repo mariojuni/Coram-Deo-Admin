@@ -16,8 +16,7 @@ import {
   ArrowRight,
   ShieldCheck,
   CreditCard,
-  Receipt,
-  Sparkles
+  Receipt
 } from 'lucide-react';
 import DateRangeFilter from '../../components/ui/DateRangeFilter';
 import SoftCard from '../../components/ui/SoftCard';

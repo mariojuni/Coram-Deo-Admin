@@ -1,17 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Check, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Check, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { SUBSCRIPTION_TIERS } from '../../../config/subscriptions';
 import GradientButton from '../../../components/ui/GradientButton';
 
-export default function UpgradeModal({ isOpen, onClose, title, message, targetTier = 'growth' }) {
+export default function UpgradeModal({ isOpen, onClose, title, message, targetTier = 'growth', reason = null }) {
   const navigate = useNavigate();
   const sub = useSubscription();
 
   if (!isOpen) return null;
 
-  const targetPlan = SUBSCRIPTION_TIERS[targetTier] || SUBSCRIPTION_TIERS.growth;
+  const resolvedTier = reason?.targetPlan || targetTier || (sub.isSeed ? 'growth' : 'kingdom');
+  const targetPlan = SUBSCRIPTION_TIERS[resolvedTier] || SUBSCRIPTION_TIERS.growth;
+  const resolvedMessage = reason?.reason || message || `Expand your congregation capacity and unlock advanced tools with the ${targetPlan.name} plan.`;
+  const resolvedTitle = title || (reason ? 'Member Limit Reached' : 'Unlock Ministry Capabilities');
 
   const handleGoToBilling = () => {
     onClose();
@@ -32,14 +35,14 @@ export default function UpgradeModal({ isOpen, onClose, title, message, targetTi
           </button>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-rose/15 text-church-rose text-xs font-black uppercase tracking-wider mb-2">
-            <Sparkles size={13} />
+            <Zap size={13} />
             <span>Plan Limit Reached</span>
           </div>
           <h2 className="text-2xl font-black text-church-navy tracking-tight">
-            {title || 'Unlock Ministry Capabilities'}
+            {resolvedTitle}
           </h2>
           <p className="text-xs sm:text-sm text-church-slate mt-1">
-            {message || `Expand your congregation capacity and unlock advanced tools with the ${targetPlan.name} plan.`}
+            {resolvedMessage}
           </p>
         </div>
 

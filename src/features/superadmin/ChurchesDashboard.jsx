@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -17,8 +18,8 @@ import {
   Mail, 
   Check, 
   AlertTriangle,
-  Sparkles,
-  HardDrive 
+  HardDrive,
+  CreditCard
 } from 'lucide-react';
 import ChurchFormModal from './ChurchFormModal';
 import SuperAdminSubscriptionModal from './SuperAdminSubscriptionModal';
@@ -211,13 +212,22 @@ export default function ChurchesDashboard() {
             Super Admin dashboard for governing and approving church tenant instances.
           </p>
         </div>
-        <button 
-          onClick={() => { setSelectedChurch(null); setIsFormOpen(true); }}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-church-soft text-sm font-bold hover:scale-[1.02] transition-transform w-fit"
-        >
-          <Plus size={18} className="mr-2" />
-          Add Church
-        </button>
+        <div className="flex items-center gap-2">
+          <Link 
+            to="/super-admin/ledger"
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-xs font-bold hover:bg-gray-50 transition-colors"
+          >
+            <CreditCard size={15} className="mr-1.5 text-church-rose" />
+            <span>Billing & Financial Ledger</span>
+          </Link>
+          <button 
+            onClick={() => { setSelectedChurch(null); setIsFormOpen(true); }}
+            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-church-soft text-sm font-bold hover:scale-[1.02] transition-transform w-fit"
+          >
+            <Plus size={18} className="mr-2" />
+            Add Church
+          </button>
+        </div>
       </div>
 
       {/* Platform-Wide KPI & Storage Health Strip */}
@@ -439,7 +449,7 @@ export default function ChurchesDashboard() {
                           onClick={() => { setSubscriptionModalChurch(church); setActiveMenuId(null); }} 
                           className="w-full flex items-center px-4 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-50"
                         >
-                          <Sparkles size={15} className="mr-2 text-purple-600" /> Subscription & Quotas
+                          <CreditCard size={15} className="mr-2 text-purple-600" /> Subscription & Quotas
                         </button>
                         <button 
                           onClick={() => handleToggleStatus(church)} 
@@ -543,7 +553,7 @@ export default function ChurchesDashboard() {
                   onClick={() => setSubscriptionModalChurch(church)} 
                   className="w-full mt-3 py-2 px-3 rounded-xl bg-purple-50/80 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-purple-200/60"
                 >
-                  <Sparkles size={13} className="text-purple-600" />
+                  <CreditCard size={13} className="text-purple-600" />
                   <span>Subscription & Storage Quotas</span>
                 </button>
 

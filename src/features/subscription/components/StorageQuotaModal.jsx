@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, HardDrive, Sparkles, ArrowRight, Trash2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { X, HardDrive, ArrowRight, Trash2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useStorageQuota } from '../hooks/useStorageQuota';
 import GradientButton from '../../../components/ui/GradientButton';
 import { SUBSCRIPTION_TIERS } from '../../../config/subscriptions';

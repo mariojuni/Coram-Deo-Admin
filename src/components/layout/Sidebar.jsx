@@ -30,6 +30,7 @@ import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
 import { useSubscriptionLimits } from '../../features/subscription/hooks/useSubscriptionLimits';
 import UpgradeModal from '../../features/subscription/components/UpgradeModal';
+import { subscribeToPendingPayments } from '../../services/billingLedgerService';
 import logo from '../../assets/logo.svg';
 
 const churchNavCategories = [
@@ -73,6 +74,7 @@ const churchNavCategories = [
 
 const systemNavItems = [
   { name: 'Churches', path: '/super-admin/churches', icon: Building, roles: ['super_admin'] },
+  { name: 'Billing & Ledger', path: '/super-admin/ledger', icon: CreditCard, roles: ['super_admin'] },
   { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
   { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
   { name: 'Global Roles', path: '/super-admin/settings/roles', icon: Shield, roles: ['super_admin'] },
@@ -108,6 +110,16 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       };
       fetchChurches();
     }
+  }, [isSuperAdmin]);
+
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const unsub = subscribeToPendingPayments((list) => {
+      setPendingPaymentsCount(list.length);
+    });
+    return () => unsub();
   }, [isSuperAdmin]);
 
   const activeChurchName = activeChurchId === 'system' 
@@ -262,6 +274,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                               <Icon size={15} strokeWidth={2.2} />
                             </div>
                             <span className="truncate">{item.name}</span>
+                            {item.name === 'Billing & Ledger' && pendingPaymentsCount > 0 && (
+                              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
+                                isActive ? 'bg-white text-church-rose shadow-sm' : 'bg-amber-500 text-white animate-pulse'
+                              }`}>
+                                {pendingPaymentsCount}
+                              </span>
+                            )}
                           </div>
                           <ChevronRight
                             size={13}

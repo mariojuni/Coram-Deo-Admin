@@ -13,14 +13,15 @@ export default function GradientButton({
   loading = false,
   icon: Icon,
   size = 'md',
+  variant,
   className = '',
   ...rest
 }) {
   const sizeClasses = {
     sm: 'h-9 px-4 text-xs font-semibold rounded-full',
-    md: 'h-11 px-6 text-sm font-bold rounded-full',
+    md: 'h-11 px-5 text-sm font-bold rounded-full',
     lg: 'h-13 px-8 text-base font-bold rounded-full',
-  }[size] || 'h-11 px-6 text-sm font-bold rounded-full';
+  }[size] || 'h-11 px-5 text-sm font-bold rounded-full';
 
   return (
     <button
@@ -45,8 +46,8 @@ export default function GradientButton({
         </>
       ) : (
         <>
-          {Icon && <Icon size={18} className="shrink-0" />}
-          <span>{children}</span>
+          {Icon && <Icon size={size === 'sm' ? 14 : 16} className="shrink-0" />}
+          <span className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">{children}</span>
         </>
       )}
     </button>

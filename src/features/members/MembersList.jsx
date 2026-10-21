@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch, where, deleteField } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { Search, Plus, MoreVertical, Filter, Edit, Archive, Eye, UploadCloud, Users } from 'lucide-react';
+import { Search, Plus, MoreVertical, Filter, Edit, Archive, Eye, UploadCloud, Users, Lock, ShieldAlert, ArrowUpRight } from 'lucide-react';
 import MemberFormModal from './MemberFormModal';
 import MemberProfileModal from './MemberProfileModal';
 import ModernDropdown from '../../components/ui/ModernDropdown';
@@ -16,10 +16,13 @@ import {
 import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
+import { useSubscriptionLimits } from '../subscription/hooks/useSubscriptionLimits';
+import UpgradeModal from '../subscription/components/UpgradeModal';
 
 export default function MembersList() {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
+  const limits = useSubscriptionLimits();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('members');
@@ -33,6 +36,8 @@ export default function MembersList() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState(null);
   
   // Action menu state
   const [activeMenuId, setActiveMenuId] = useState(null);
@@ -176,6 +181,11 @@ export default function MembersList() {
   });
 
   const handleAddClick = () => {
+    if (!limits.canAddMember) {
+      setUpgradeReason(limits.checkAddMemberLimit());
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setSelectedMember(null);
     setIsFormOpen(true);
   };
@@ -215,6 +225,15 @@ export default function MembersList() {
   // CSV Import Logic
   // -------------------------------------------------------------
   const triggerFileInput = () => {
+    if (!limits.canAddMember) {
+      const check = limits.checkAddMemberLimit();
+      setUpgradeReason({
+        ...check,
+        reason: `Your ${limits.sub.tierConfig.name} plan is limited to ${limits.maxMembers} active members. Upgrade your plan to import additional member records.`
+      });
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -475,13 +494,49 @@ export default function MembersList() {
             
             <GradientButton 
               onClick={handleAddClick}
-              icon={Plus}
+              icon={limits.canAddMember ? Plus : Lock}
             >
-              Add Member
+              {limits.canAddMember ? 'Add Member' : 'Roster Full (Upgrade)'}
             </GradientButton>
           </div>
         )}
       </div>
+
+      {/* Creation Lock Safeguard Alert Banner */}
+      {limits.isMemberLimitReached && activeTab === 'members' && (
+        <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300 shadow-xs flex items-center justify-between flex-wrap gap-3 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-200/90 text-amber-950 shrink-0">
+              <ShieldAlert size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <strong className="text-xs font-black text-amber-950 uppercase tracking-wider">
+                  Roster Capacity Lock Active ({limits.currentMembersCount} / {limits.maxMembers} Members)
+                </strong>
+                <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black uppercase">
+                  Zero Data Loss Guarantee
+                </span>
+              </div>
+              <p className="text-xs text-amber-900 mt-0.5 max-w-2xl leading-relaxed">
+                All existing member records remain 100% safe, readable, and editable. To register or import new members beyond your {limits.sub.tierConfig.name} limit, upgrade to a higher tier.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setUpgradeReason(limits.checkAddMemberLimit());
+              setIsUpgradeModalOpen(true);
+            }}
+            className="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
+          >
+            <ArrowUpRight size={13} />
+            <span>Upgrade Member Limit</span>
+          </button>
+        </div>
+      )}
 
       {activeTab === 'households' ? (
         <HouseholdsList />
@@ -698,6 +753,12 @@ export default function MembersList() {
           setIsProfileOpen(false);
           handleEditClick(m);
         }}
+      />
+
+      <UpgradeModal 
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        reason={upgradeReason}
       />
     </div>
   );

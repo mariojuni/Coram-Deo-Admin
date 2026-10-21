@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Clock, ArrowRight, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { AlertCircle, Clock, ArrowRight, X, ShieldAlert } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 
 export default function SubscriptionBanner() {
@@ -9,6 +9,49 @@ export default function SubscriptionBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed || sub.isLoading) return null;
+
+  // Case 0: Scheduled Downgrade Active
+  if (sub.isScheduledDowngrade && sub.scheduledChange) {
+    const targetTierName = (sub.scheduledChange.targetTier || 'seed').toUpperCase();
+    const effectiveDateStr = sub.scheduledChange.scheduledEffectiveDate 
+      ? new Date(sub.scheduledChange.scheduledEffectiveDate).toLocaleDateString()
+      : 'end of billing cycle';
+
+    return (
+      <div className="mb-3 mx-2 md:mx-6 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-xs md:text-sm font-semibold shadow-sm transition-all border bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 text-amber-950">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-amber-200/90 text-amber-900 flex items-center justify-center shrink-0">
+            <Clock size={16} />
+          </div>
+          <div className="truncate">
+            <span className="font-extrabold mr-1">
+              Plan transition scheduled:
+            </span>
+            <span className="text-amber-800">
+              Workspace will switch to <strong>{targetTierName}</strong> on <strong>{effectiveDateStr}</strong>. Current high quotas and data remain active until then.
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => navigate('/admin/settings/billing')}
+            className="px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-sm transition-all text-xs bg-amber-700 hover:bg-amber-800 text-white"
+          >
+            <span>Manage Plan</span>
+            <ArrowRight size={13} />
+          </button>
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-1 hover:bg-black/5 rounded-lg text-amber-800 transition-colors"
+            aria-label="Dismiss banner"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Case 1A: Trial Expired
   if (sub.isTrialExpired) {
@@ -70,7 +113,7 @@ export default function SubscriptionBanner() {
                 : `${sub.daysRemaining} day${sub.daysRemaining === 1 ? '' : 's'} remaining in your ${sub.tierConfig.name} trial.`}
             </span>
             <span className="hidden sm:inline text-opacity-80">
-              Add payment details to ensure uninterrupted access to worship, members, and giving tools.
+              Submit subscription payment via bank transfer or GCash to ensure uninterrupted access to worship, members, and giving tools.
             </span>
           </div>
         </div>
@@ -120,7 +163,7 @@ export default function SubscriptionBanner() {
             onClick={() => navigate('/admin/settings/billing')}
             className="px-3 py-1.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white flex items-center gap-1.5 shadow-sm text-xs"
           >
-            <span>Update Card</span>
+            <span>Submit Payment</span>
             <ArrowRight size={13} />
           </button>
           <button
@@ -141,7 +184,7 @@ export default function SubscriptionBanner() {
       <div className="mb-3 mx-2 md:mx-6 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-xs md:text-sm font-semibold bg-gray-50 border border-gray-200 text-gray-800 shadow-sm">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 rounded-xl bg-gray-200 text-gray-700 flex items-center justify-center shrink-0">
-            <Sparkles size={16} />
+            <Clock size={16} />
           </div>
           <div className="truncate">
             <span>Operating under <strong>Seed Fellowship</strong>. Upgrade to restore premium growth features.</span>
