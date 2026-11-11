@@ -253,7 +253,7 @@ function AppRoutes() {
           <Route 
             path="bible" 
             element={
-              <RoleGuard allowedRoles={['super_admin', 'church_admin', 'pastor']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <BiblePlans />
               </RoleGuard>
             } 
@@ -368,6 +368,7 @@ function AppRoutes() {
           <Route path="churches" element={<ChurchesDashboard />} />
           <Route path="ledger" element={<PlatformLedgerHub />} />
           <Route path="pending-members" element={<PendingMembers />} />
+          <Route path="bible" element={<BiblePlans />} />
           <Route path="settings/roles" element={<SettingsUsersAndRoles />} />
         </Route>
 

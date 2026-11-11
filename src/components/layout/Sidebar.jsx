@@ -49,7 +49,6 @@ const churchNavCategories = [
       { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
       { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'], featureKey: 'worshipSetlists', requiredTier: 'growth' },
       { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
-      { name: 'Bible Plans', path: '/admin/bible', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
       { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin'] },
     ]
   },
@@ -76,6 +75,7 @@ const systemNavItems = [
   { name: 'Churches', path: '/super-admin/churches', icon: Building, roles: ['super_admin'] },
   { name: 'Billing & Ledger', path: '/super-admin/ledger', icon: CreditCard, roles: ['super_admin'] },
   { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
+  { name: 'Bible & Devotional Plans', path: '/super-admin/bible', icon: BookOpen, roles: ['super_admin'] },
   { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
   { name: 'Global Roles', path: '/super-admin/settings/roles', icon: Shield, roles: ['super_admin'] },
 ];

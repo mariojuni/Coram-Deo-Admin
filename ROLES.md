@@ -7,9 +7,9 @@ System roles control access to the modules and features within the admin portal.
 
 ### Hierarchy & Access Levels
 
-- **super_admin**: Has access to all sections, including global "Churches" management. Can assign any system role.
+- **super_admin**: Has access to all sections, including global "Churches" management, Global Bible & Devotional Plans, Bible Library, and System Administration. Can assign any system role.
 - **church_admin**: Has access to almost all sections within a specific church. Can assign any role except `super_admin`.
-- **pastor**: Has access to ministries, schedules, sermons, worship, bible plans, discipleship, and reports. Cannot assign system roles.
+- **pastor**: Has access to ministries, schedules, sermons, worship, and reports. Cannot assign system roles.
 - **secretary**: Has access to members, events, attendance, and announcements. Cannot assign system roles.
 - **finance_admin**: Has access to giving, giving campaigns, expenses, and reports. Cannot assign system roles.
 - **ministry_leader**: Has access to ministries, scheduling, songs & lyrics, and setlists. Cannot assign system roles. 
