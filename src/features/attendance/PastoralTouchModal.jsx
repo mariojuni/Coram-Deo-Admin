@@ -113,7 +113,7 @@ export default function PastoralTouchModal({ isOpen, onClose, memberRecord, onSa
                 <span>{memberRecord.membershipStatus || 'Member'}</span>
                 <span>&bull;</span>
                 <span className={memberRecord.consecutiveAbsences >= 3 ? 'text-rose-600 font-bold' : 'text-amber-600 font-bold'}>
-                  {memberRecord.consecutiveAbsences} consecutive absences
+                  {memberRecord.consecutiveAbsences} consecutive weeks absent
                 </span>
               </p>
             </div>

@@ -1,84 +1,190 @@
 import { formatStandardName } from '../../../utils/nameUtils';
 
 /**
- * Calculates member attendance retention, consecutive absences, and engagement tiers.
+ * Returns the Sunday-based week start key (YYYY-MM-DD) for any given date.
+ * All events from Sunday to Saturday fall into the same calendar week.
+ */
+export function getWeekStartKey(dateInput) {
+  if (!dateInput) return '';
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return '';
+  
+  const day = d.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+  const diff = d.getDate() - day;
+  const sunday = new Date(d);
+  sunday.setDate(diff);
+  return sunday.toISOString().split('T')[0];
+}
+
+/**
+ * Formats a week start key into a human-readable range, e.g.:
+ * "Nov 8 – Nov 14, 2026"
+ */
+export function formatWeekLabel(weekStartKey) {
+  if (!weekStartKey) return '';
+  const start = new Date(weekStartKey + 'T00:00:00');
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  
+  const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+  const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+  const startDay = start.getDate();
+  const endDay = end.getDate();
+  const year = end.getFullYear();
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay}–${endDay}, ${year}`;
+  }
+  return `${startMonth} ${startDay} – ${endMonth} ${endDay}, ${year}`;
+}
+
+/**
+ * Groups sessions into calendar weeks (Sunday–Saturday).
  * 
- * @param {Array} sessions - Array of attendance sessions (sorted descending by date)
+ * @param {Array} sessions - Array of attendance sessions
+ * @returns {Array} Array of week objects sorted descending by week start date
+ */
+export function groupSessionsByWeek(sessions = []) {
+  const validSessions = (sessions || []).filter(s => s.status !== 'Draft' && s.date);
+  const weekMap = {};
+
+  validSessions.forEach(session => {
+    const weekKey = getWeekStartKey(session.date);
+    if (!weekKey) return;
+
+    if (!weekMap[weekKey]) {
+      weekMap[weekKey] = {
+        weekKey,
+        weekLabel: formatWeekLabel(weekKey),
+        sessions: []
+      };
+    }
+    weekMap[weekKey].sessions.push(session);
+  });
+
+  // Sort weeks descending (most recent first)
+  return Object.values(weekMap).sort((a, b) => new Date(b.weekKey) - new Date(a.weekKey));
+}
+
+/**
+ * Calculates member attendance retention on a WEEKLY basis regardless of event.
+ * A member is considered ATTENDED for a calendar week if they attended ANY session that week.
+ * Consecutive absences represent consecutive calendar weeks with zero attendance across all events.
+ * 
+ * @param {Array} sessions - Array of attendance sessions
  * @param {Array} members - Array of active church members
- * @param {Object} recordsBySession - Map of sessionId -> Array of record objects { memberId, status, type, ... }
+ * @param {Object} recordsBySession - Map of sessionId -> Array of record objects { memberId, status, ... }
  * @param {Object} followupsMap - Map of memberId -> follow-up record { status, touches, ... }
+ * @param {number} maxWeeks - Maximum past weeks to evaluate (default: 8 weeks)
  * @returns {Array} List of analyzed member retention objects
  */
-export function calculateMemberRetention(sessions, members, recordsBySession = {}, followupsMap = {}) {
+export function calculateMemberRetention(
+  sessions, 
+  members, 
+  recordsBySession = {}, 
+  followupsMap = {},
+  maxWeeks = 8
+) {
   if (!members || members.length === 0) return [];
 
-  // Filter to valid completed or active sessions, max latest 10 sessions
-  const evaluatedSessions = (sessions || [])
-    .filter(s => s.status !== 'Draft')
-    .slice(0, 10);
-
-  const totalSessions = evaluatedSessions.length;
+  // Group church sessions into weekly calendar buckets
+  const allWeeks = groupSessionsByWeek(sessions);
+  const evaluatedWeeks = allWeeks.slice(0, maxWeeks);
+  const totalWeeks = evaluatedWeeks.length;
 
   return members.map(member => {
     const memberId = member.id;
-    let consecutiveAbsences = 0;
-    let attendedCount = 0;
-    let excusedCount = 0;
-    let explicitAbsentCount = 0;
+    let consecutiveAbsentWeeks = 0;
+    let attendedWeeksCount = 0;
+    let excusedWeeksCount = 0;
     let lastAttendedDate = null;
     let lastAttendedEvent = null;
 
     let streakBroken = false;
+    const weeklyBreakdown = [];
 
-    // Check attendance from most recent session to oldest
-    evaluatedSessions.forEach((session) => {
-      const sessionRecords = recordsBySession[session.id] || [];
-      const record = sessionRecords.find(r => r.memberId === memberId || r.userId === memberId || r.id === memberId);
-      const status = record?.status ? record.status.toLowerCase() : null;
+    // Evaluate each week from most recent down to oldest
+    evaluatedWeeks.forEach(week => {
+      let attendedThisWeek = false;
+      let allExcused = true;
+      let hadAnyRecord = false;
+      const attendedEventTitles = [];
 
-      const isPresent = status === 'present' || status === 'late';
-      const isExcused = status === 'excused';
+      week.sessions.forEach(session => {
+        const sessionRecords = recordsBySession[session.id] || [];
+        const record = sessionRecords.find(r => 
+          r.memberId === memberId || r.userId === memberId || r.id === memberId
+        );
 
-      if (isPresent) {
-        attendedCount++;
-        if (!lastAttendedDate && session.date) {
-          lastAttendedDate = session.date;
-          lastAttendedEvent = session.eventTitle || session.eventName || 'Worship Service';
+        if (record && record.status) {
+          hadAnyRecord = true;
+          const status = record.status.toLowerCase();
+          const isPresent = status === 'present' || status === 'late';
+          const isExcused = status === 'excused';
+
+          if (isPresent) {
+            attendedThisWeek = true;
+            attendedEventTitles.push(session.eventTitle || session.eventName || 'Gathering');
+            
+            // Record last attended date if not already recorded
+            if (!lastAttendedDate && session.date) {
+              lastAttendedDate = session.date;
+              lastAttendedEvent = session.eventTitle || session.eventName || 'Worship Gathering';
+            }
+          }
+
+          if (!isExcused) {
+            allExcused = false;
+          }
+        } else {
+          allExcused = false;
         }
+      });
+
+      if (attendedThisWeek) {
+        attendedWeeksCount++;
         streakBroken = true;
-      } else if (isExcused) {
-        excusedCount++;
+      } else if (hadAnyRecord && allExcused) {
+        excusedWeeksCount++;
         // Excused does not increase absence count or break consecutive streak
       } else {
-        explicitAbsentCount++;
         if (!streakBroken) {
-          consecutiveAbsences++;
+          consecutiveAbsentWeeks++;
         }
       }
+
+      weeklyBreakdown.push({
+        weekKey: week.weekKey,
+        weekLabel: week.weekLabel,
+        attended: attendedThisWeek,
+        excused: hadAnyRecord && allExcused,
+        eventsAttended: attendedEventTitles,
+        totalEventsInWeek: week.sessions.length
+      });
     });
 
-    // Attendance rate over evaluated sessions (excluding excused)
-    const effectiveTotal = Math.max(1, totalSessions - excusedCount);
-    const attendanceRate = totalSessions > 0 
-      ? Math.round((attendedCount / effectiveTotal) * 100) 
+    // Attendance rate over evaluated weeks (excluding excused weeks)
+    const effectiveTotalWeeks = Math.max(1, totalWeeks - excusedWeeksCount);
+    const attendanceRate = totalWeeks > 0 
+      ? Math.round((attendedWeeksCount / effectiveTotalWeeks) * 100) 
       : 0;
 
-    // Determine Risk Tier
+    // Determine Risk Tier based on consecutive absent weeks
     let riskTier = 'healthy';
     let riskLabel = 'Consistent';
     let riskSeverity = 0; // 0: healthy, 1: irregular, 2: warning, 3: critical
 
-    if (consecutiveAbsences >= 3) {
+    if (consecutiveAbsentWeeks >= 3) {
       riskTier = 'critical';
-      riskLabel = `${consecutiveAbsences} Consecutive Absences`;
+      riskLabel = `${consecutiveAbsentWeeks} Consecutive Weeks Missed`;
       riskSeverity = 3;
-    } else if (consecutiveAbsences === 2) {
+    } else if (consecutiveAbsentWeeks === 2) {
       riskTier = 'warning';
-      riskLabel = '2 Consecutive Absences';
+      riskLabel = '2 Consecutive Weeks Missed';
       riskSeverity = 2;
-    } else if (attendanceRate < 50 && totalSessions >= 3) {
+    } else if (attendanceRate < 50 && totalWeeks >= 3) {
       riskTier = 'irregular';
-      riskLabel = 'Irregular (<50%)';
+      riskLabel = 'Irregular Attendance (<50%)';
       riskSeverity = 1;
     } else {
       riskTier = 'healthy';
@@ -97,12 +203,14 @@ export function calculateMemberRetention(sessions, members, recordsBySession = {
       phone: member.phone || member.mobilePhone || member.contactNumber || '',
       membershipStatus: member.membershipStatus || 'Active',
       householdName: member.householdName || member.familyName || '',
-      consecutiveAbsences,
-      attendedCount,
-      totalSessions,
+      consecutiveAbsences: consecutiveAbsentWeeks, // alias for UI consistency
+      consecutiveAbsentWeeks,
+      attendedWeeksCount,
+      totalEvaluatedWeeks: totalWeeks,
       attendanceRate,
       lastAttendedDate,
       lastAttendedEvent,
+      weeklyBreakdown,
       riskTier,
       riskLabel,
       riskSeverity,

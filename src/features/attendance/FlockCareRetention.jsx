@@ -71,14 +71,14 @@ export default function FlockCareRetention({
   // Export CSV for pastoral meetings
   const handleExportCSV = () => {
     if (!filteredMembers.length) return;
-    const headers = ['Full Name', 'Membership Status', 'Household', 'Phone', 'Email', 'Consecutive Absences', 'Attendance Rate', 'Last Attended Date', 'Followup Status', 'Assigned To'];
+    const headers = ['Full Name', 'Membership Status', 'Household', 'Phone', 'Email', 'Consecutive Absent Weeks', 'Weekly Attendance Rate', 'Last Attended Date', 'Followup Status', 'Assigned To'];
     const rows = filteredMembers.map(m => [
       `"${m.fullName}"`,
       `"${m.membershipStatus}"`,
       `"${m.householdName || 'None'}"`,
       `"${m.phone || 'N/A'}"`,
       `"${m.email || 'N/A'}"`,
-      m.consecutiveAbsences,
+      m.consecutiveAbsentWeeks || m.consecutiveAbsences,
       `${m.attendanceRate}%`,
       `"${m.lastAttendedDate || 'Unrecorded'}"`,
       `"${m.followupStatus}"`,
@@ -109,7 +109,7 @@ export default function FlockCareRetention({
             <div className="text-3xl font-black text-slate-900 mt-1">
               {metrics.criticalCount || 0}
             </div>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Missed 3+ consecutive services</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Missed 3+ consecutive weeks</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shadow-2xs">
             <ShieldAlert size={24} />
@@ -125,7 +125,7 @@ export default function FlockCareRetention({
             <div className="text-3xl font-black text-slate-900 mt-1">
               {metrics.warningCount || 0}
             </div>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Missed last 2 services</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Missed last 2 consecutive weeks</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-2xs">
             <AlertTriangle size={24} />
@@ -141,7 +141,7 @@ export default function FlockCareRetention({
             <div className="text-3xl font-black text-slate-900 mt-1">
               {metrics.averageAttendanceRate || 0}%
             </div>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Average consistency score</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Weekly consistency score</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center border border-[#D5E3EC] shadow-2xs">
             <UserCheck size={24} />
@@ -172,8 +172,8 @@ export default function FlockCareRetention({
           <div className="flex flex-wrap gap-1.5">
             {[
               { id: 'at_risk', label: 'All At-Risk', count: (metrics.criticalCount || 0) + (metrics.warningCount || 0) },
-              { id: 'critical', label: '🔴 3+ Absences', count: metrics.criticalCount || 0 },
-              { id: 'warning', label: '🟡 2 Absences', count: metrics.warningCount || 0 },
+              { id: 'critical', label: '🔴 3+ Weeks Absent', count: metrics.criticalCount || 0 },
+              { id: 'warning', label: '🟡 2 Weeks Absent', count: metrics.warningCount || 0 },
               { id: 'irregular', label: '🔵 Irregular (<50%)', count: metrics.irregularCount || 0 },
               { id: 'visitors', label: '🟣 Visitors', count: metrics.visitorsCount || 0 },
               { id: 'in_progress', label: '📋 In Care Queue', count: metrics.activeFollowupsCount || 0 },
@@ -320,40 +320,66 @@ export default function FlockCareRetention({
                 </div>
 
                 {/* Middle: Attendance Metrics & Streaks */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-2 px-3.5 bg-white/70 rounded-xl border border-slate-100 text-xs shrink-0 lg:w-96">
-                  {/* Streak */}
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Consecutive</span>
-                    <span className={`font-black text-sm ${
-                      isCritical ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-slate-700'
-                    }`}>
-                      {record.consecutiveAbsences > 0 ? `${record.consecutiveAbsences} missed` : 'Active'}
-                    </span>
-                  </div>
+                <div className="flex flex-col gap-2 py-2 px-3.5 bg-white/70 rounded-xl border border-slate-100 text-xs shrink-0 lg:w-[420px]">
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Consecutive Absent Weeks */}
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Consecutive</span>
+                      <span className={`font-black text-xs ${
+                        isCritical ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-emerald-700'
+                      }`}>
+                        {record.consecutiveAbsentWeeks > 0 ? `${record.consecutiveAbsentWeeks} wks absent` : 'Active this week'}
+                      </span>
+                    </div>
 
-                  {/* Attendance Rate */}
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Consistency</span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${
-                            record.attendanceRate >= 70 ? 'bg-emerald-500' : record.attendanceRate >= 40 ? 'bg-amber-500' : 'bg-rose-500'
-                          }`}
-                          style={{ width: `${Math.max(5, record.attendanceRate)}%` }}
-                        />
+                    {/* Weekly Rate */}
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Weekly Rate</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="w-10 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${
+                              record.attendanceRate >= 70 ? 'bg-emerald-500' : record.attendanceRate >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${Math.max(5, record.attendanceRate)}%` }}
+                          />
+                        </div>
+                        <span className="font-bold text-slate-700">{record.attendanceRate}%</span>
                       </div>
-                      <span className="font-bold text-slate-700">{record.attendanceRate}%</span>
+                    </div>
+
+                    {/* Last Seen */}
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Last Gathering</span>
+                      <span className="font-semibold text-slate-700 truncate block text-[11px]" title={record.lastAttendedEvent || ''}>
+                        {record.lastAttendedDate ? new Date(record.lastAttendedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'None'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Last Seen */}
-                  <div className="col-span-2 sm:col-span-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Last Attended</span>
-                    <span className="font-semibold text-slate-700 truncate block">
-                      {record.lastAttendedDate ? new Date(record.lastAttendedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'None recorded'}
-                    </span>
-                  </div>
+                  {/* Past Weeks Presence Dots */}
+                  {record.weeklyBreakdown && record.weeklyBreakdown.length > 0 && (
+                    <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="font-medium">Recent {record.weeklyBreakdown.length} weeks (any event):</span>
+                      <div className="flex items-center gap-1.5">
+                        {record.weeklyBreakdown.map((w, idx) => (
+                          <div
+                            key={w.weekKey || idx}
+                            title={`${w.weekLabel}: ${w.attended ? `Attended (${w.eventsAttended.join(', ')})` : w.excused ? 'Excused' : 'Absent'}`}
+                            className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-black cursor-help transition-transform hover:scale-125 ${
+                              w.attended 
+                                ? 'bg-emerald-500 text-white shadow-2xs' 
+                                : w.excused 
+                                ? 'bg-amber-300 text-amber-900' 
+                                : 'bg-slate-200 text-slate-400'
+                            }`}
+                          >
+                            {w.attended ? '✓' : ''}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Care Status & Action Button */}

@@ -266,7 +266,7 @@ export default function AttendanceDashboard() {
                     Pastoral Care Attention Needed
                   </h4>
                   <p className="text-xs text-rose-700 font-medium mt-0.5">
-                    <strong>{metrics.criticalCount} member{metrics.criticalCount > 1 ? 's have' : ' has'} missed 3+ consecutive Sunday services.</strong> Click to review the flock care outreach queue.
+                    <strong>{metrics.criticalCount} member{metrics.criticalCount > 1 ? 's have' : ' has'} missed 3+ consecutive weeks across all church events.</strong> Click to review the flock care outreach queue.
                   </p>
                 </div>
               </div>

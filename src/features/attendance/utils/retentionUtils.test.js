@@ -1,69 +1,106 @@
 import { describe, it, expect } from 'vitest';
-import { calculateMemberRetention, calculateRetentionMetrics } from './retentionUtils';
+import { 
+  getWeekStartKey, 
+  groupSessionsByWeek, 
+  calculateMemberRetention, 
+  calculateRetentionMetrics 
+} from './retentionUtils';
 
-describe('retentionUtils', () => {
-  const mockSessions = [
-    { id: 's3', date: '2026-11-15', eventTitle: 'Sunday Worship Service', status: 'Closed' },
-    { id: 's2', date: '2026-11-08', eventTitle: 'Sunday Worship Service', status: 'Closed' },
-    { id: 's1', date: '2026-11-01', eventTitle: 'Sunday Worship Service', status: 'Closed' },
-  ];
+describe('retentionUtils - Weekly Attendance Evaluation', () => {
+  it('correctly maps dates to Sunday week start keys', () => {
+    // 2026-11-15 is Sunday -> week start 2026-11-15
+    expect(getWeekStartKey('2026-11-15')).toBe('2026-11-15');
+    // 2026-11-18 is Wednesday -> week start 2026-11-15
+    expect(getWeekStartKey('2026-11-18')).toBe('2026-11-15');
+    // 2026-11-20 is Friday -> week start 2026-11-15
+    expect(getWeekStartKey('2026-11-20')).toBe('2026-11-15');
+    // 2026-11-22 is following Sunday -> week start 2026-11-22
+    expect(getWeekStartKey('2026-11-22')).toBe('2026-11-22');
+  });
 
-  const mockMembers = [
-    { id: 'm1', firstName: 'John', lastName: 'Doe', membershipStatus: 'Active', phone: '123-456' },
-    { id: 'm2', firstName: 'Sarah', lastName: 'Smith', membershipStatus: 'Active' },
-    { id: 'm3', firstName: 'David', lastName: 'Johnson', membershipStatus: 'Active' },
-  ];
+  it('groups multiple sessions in the same week into one weekly bucket regardless of event', () => {
+    const sessions = [
+      { id: 'sun_worship', date: '2026-11-15', eventTitle: 'Sunday Morning Worship', status: 'Closed' },
+      { id: 'wed_prayer', date: '2026-11-18', eventTitle: 'Midweek Prayer Gathering', status: 'Closed' },
+      { id: 'fri_youth', date: '2026-11-20', eventTitle: 'Youth Night', status: 'Closed' },
+      { id: 'prev_sun', date: '2026-11-08', eventTitle: 'Sunday Morning Worship', status: 'Closed' },
+    ];
 
-  it('correctly calculates critical consecutive absences (3 missed)', () => {
-    // m1 was absent for all 3 sessions
+    const weeks = groupSessionsByWeek(sessions);
+    expect(weeks.length).toBe(2);
+    expect(weeks[0].weekKey).toBe('2026-11-15');
+    expect(weeks[0].sessions.length).toBe(3); // 3 events in current week
+    expect(weeks[1].weekKey).toBe('2026-11-08');
+    expect(weeks[1].sessions.length).toBe(1); // 1 event in previous week
+  });
+
+  it('counts member as attended for the week if they attended ANY event in that week', () => {
+    // Week 1 has Sunday Morning and Wednesday Prayer
+    const sessions = [
+      { id: 's_sun', date: '2026-11-15', eventTitle: 'Sunday Morning Worship', status: 'Closed' },
+      { id: 's_wed', date: '2026-11-18', eventTitle: 'Midweek Prayer Gathering', status: 'Closed' },
+    ];
+
+    const members = [
+      { id: 'm1', firstName: 'John', lastName: 'Doe', membershipStatus: 'Active' },
+    ];
+
+    // John missed Sunday morning, but attended Wednesday prayer
     const recordsBySession = {
-      s3: [{ memberId: 'm1', status: 'Absent' }],
-      s2: [{ memberId: 'm1', status: 'Absent' }],
-      s1: [{ memberId: 'm1', status: 'Absent' }],
+      s_sun: [{ memberId: 'm1', status: 'Absent' }],
+      s_wed: [{ memberId: 'm1', status: 'Present' }],
     };
 
-    const results = calculateMemberRetention(mockSessions, mockMembers, recordsBySession);
+    const results = calculateMemberRetention(sessions, members, recordsBySession);
     const m1 = results.find(m => m.memberId === 'm1');
 
-    expect(m1.consecutiveAbsences).toBe(3);
+    // John should NOT be marked absent for the week because he attended Wednesday!
+    expect(m1.consecutiveAbsentWeeks).toBe(0);
+    expect(m1.attendedWeeksCount).toBe(1);
+    expect(m1.attendanceRate).toBe(100);
+    expect(m1.riskTier).toBe('healthy');
+    expect(m1.lastAttendedEvent).toBe('Midweek Prayer Gathering');
+  });
+
+  it('correctly calculates 3 consecutive absent weeks across multi-event calendar weeks', () => {
+    // 3 distinct weeks
+    const sessions = [
+      // Week 3 (most recent): Nov 15
+      { id: 'w3_sun', date: '2026-11-15', eventTitle: 'Sunday Worship', status: 'Closed' },
+      { id: 'w3_wed', date: '2026-11-18', eventTitle: 'Midweek Prayer', status: 'Closed' },
+      // Week 2: Nov 08
+      { id: 'w2_sun', date: '2026-11-08', eventTitle: 'Sunday Worship', status: 'Closed' },
+      // Week 1: Nov 01
+      { id: 'w1_sun', date: '2026-11-01', eventTitle: 'Sunday Worship', status: 'Closed' },
+      // Week 0: Oct 25 (attended here)
+      { id: 'w0_sun', date: '2026-10-25', eventTitle: 'Sunday Worship', status: 'Closed' },
+    ];
+
+    const members = [
+      { id: 'm1', firstName: 'Sister', lastName: 'Anna', membershipStatus: 'Active' },
+    ];
+
+    // Anna was absent from Week 3 (both Sun and Wed), Week 2, and Week 1. But attended Week 0.
+    const recordsBySession = {
+      w3_sun: [{ memberId: 'm1', status: 'Absent' }],
+      w3_wed: [{ memberId: 'm1', status: 'Absent' }],
+      w2_sun: [{ memberId: 'm1', status: 'Absent' }],
+      w1_sun: [{ memberId: 'm1', status: 'Absent' }],
+      w0_sun: [{ memberId: 'm1', status: 'Present' }],
+    };
+
+    const results = calculateMemberRetention(sessions, members, recordsBySession);
+    const m1 = results.find(m => m.memberId === 'm1');
+
+    expect(m1.consecutiveAbsentWeeks).toBe(3);
     expect(m1.riskTier).toBe('critical');
-    expect(m1.attendanceRate).toBe(0);
+    expect(m1.riskLabel).toBe('3 Consecutive Weeks Missed');
+    expect(m1.attendedWeeksCount).toBe(1);
+    expect(m1.totalEvaluatedWeeks).toBe(4);
+    expect(m1.attendanceRate).toBe(25); // 1 out of 4 weeks = 25%
   });
 
-  it('correctly resets consecutive absences when present in recent session', () => {
-    // m2 was present in s3, absent in s2 and s1
-    const recordsBySession = {
-      s3: [{ memberId: 'm2', status: 'Present' }],
-      s2: [{ memberId: 'm2', status: 'Absent' }],
-      s1: [{ memberId: 'm2', status: 'Absent' }],
-    };
-
-    const results = calculateMemberRetention(mockSessions, mockMembers, recordsBySession);
-    const m2 = results.find(m => m.memberId === 'm2');
-
-    expect(m2.consecutiveAbsences).toBe(0);
-    expect(m2.attendedCount).toBe(1);
-    expect(m2.lastAttendedDate).toBe('2026-11-15');
-    expect(m2.lastAttendedEvent).toBe('Sunday Worship Service');
-  });
-
-  it('flags warning tier for exactly 2 consecutive missed sessions', () => {
-    // m3 was absent in s3 and s2, but present in s1
-    const recordsBySession = {
-      s3: [{ memberId: 'm3', status: 'Absent' }],
-      s2: [{ memberId: 'm3', status: 'Absent' }],
-      s1: [{ memberId: 'm3', status: 'Present' }],
-    };
-
-    const results = calculateMemberRetention(mockSessions, mockMembers, recordsBySession);
-    const m3 = results.find(m => m.memberId === 'm3');
-
-    expect(m3.consecutiveAbsences).toBe(2);
-    expect(m3.riskTier).toBe('warning');
-    expect(m3.attendanceRate).toBe(33); // 1 out of 3 = 33%
-  });
-
-  it('calculates retention summary metrics accurately', () => {
+  it('computes aggregate retention metrics accurately', () => {
     const analyzed = [
       { riskTier: 'critical', attendanceRate: 0, isVisitor: false, followupStatus: 'needs_contact' },
       { riskTier: 'warning', attendanceRate: 50, isVisitor: false, followupStatus: 'in_conversation' },
@@ -78,6 +115,6 @@ describe('retentionUtils', () => {
     expect(metrics.healthyCount).toBe(1);
     expect(metrics.visitorsCount).toBe(1);
     expect(metrics.activeFollowupsCount).toBe(2);
-    expect(metrics.averageAttendanceRate).toBe(50); // (0 + 50 + 100) / 3 = 50%
+    expect(metrics.averageAttendanceRate).toBe(50);
   });
 });
