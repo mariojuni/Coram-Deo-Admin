@@ -245,6 +245,47 @@ service cloud.firestore {
       allow write: if isFinanceOrChurchAdmin(request.resource.data.churchId) || isFinanceOrChurchAdmin(resource.data.churchId);
     }
 
+    // ── Platform Billing & Ledger ─────────────────────────────────────────────
+
+    // Super Admin multi-tenant company receiving bank accounts.
+    // Any authenticated user can view active receiving accounts to transfer subscription payments.
+    match /platformBankAccounts/{accountId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Tenant payment receipt submissions for platform subscriptions.
+    match /subscriptionPaymentSubmissions/{submissionId} {
+      allow read: if isSuperAdmin() || (
+        userDocExists() &&
+        userDoc().get('churchId', null) != null &&
+        resource.data.churchId == userDoc().get('churchId', null)
+      );
+
+      allow create: if isSignedIn() && (
+        isSuperAdmin() || (
+          userDocExists() &&
+          userDoc().get('churchId', null) != null &&
+          request.resource.data.churchId == userDoc().get('churchId', null)
+        )
+      );
+
+      allow update: if isSuperAdmin() || (
+        isSignedIn() &&
+        userDocExists() &&
+        userDoc().get('churchId', null) != null &&
+        resource.data.churchId == userDoc().get('churchId', null) &&
+        (resource.data.get('status', 'pending') == 'pending' || resource.data.get('status', 'pending') == 'pending_review')
+      );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // Super Admin multi-tenant financial ledger tracking platform subscription revenue.
+    match /platformBillingLedger/{entryId} {
+      allow read, write: if isSuperAdmin();
+    }
+
     // ── Worship Library ──────────────────────────────────────────────────────
     match /songs/{songId} {
       allow read: if canReadWorship(resource.data.churchId, resource.data.get('ministryId', null));
@@ -615,18 +656,42 @@ service cloud.firestore {
         );
       }
 
-      // Bible plans subcollection (church-scoped)
+      // Church-scoped plans subcollections (migrated from bible_plans)
+      match /plans/{planId} {
+        allow read: if isSignedIn();
+        allow write: if isRoleAdmin(churchId);
+
+        match /days/{dayId} {
+          allow read: if isSignedIn();
+          allow write: if isRoleAdmin(churchId);
+        }
+      }
+
+      // User Plans (per-user progress, migrated from userBiblePlans)
+      match /userPlans/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+
+      // Plan Progress (day completion records, migrated from biblePlanProgress)
+      match /planProgress/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+
+      // Legacy Bible plans subcollection (church-scoped)
       match /bible_plans/{planId} {
         allow read: if isSignedIn();
         allow write: if isRoleAdmin(churchId);
       }
 
-      // User Bible Plans (per-user progress)
+      // Legacy User Bible Plans (per-user progress)
       match /userBiblePlans/{docId} {
         allow read: if isSignedIn();
         allow write: if isSignedIn();
       }
 
+      // Legacy Bible Plan Progress
       match /biblePlanProgress/{docId} {
         allow read: if isSignedIn();
         allow write: if isSignedIn();
@@ -691,6 +756,14 @@ service cloud.firestore {
       match /records/{recordId} {
         allow read, write: if isSignedIn();
       }
+    }
+
+    match /attendance_followups/{docId} {
+      allow read: if isSignedIn() && isPastorOrAdmin(resource.data.churchId);
+      allow create, update: if isSignedIn() && isPastorOrAdmin(request.resource.data.churchId != null
+        ? request.resource.data.churchId
+        : resource.data.churchId);
+      allow delete: if isSignedIn() && isPastorOrAdmin(resource.data.churchId);
     }
 
     // ── Services ─────────────────────────────────────────────────────────────

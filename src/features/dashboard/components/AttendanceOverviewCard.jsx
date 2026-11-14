@@ -14,9 +14,15 @@ export default function AttendanceOverviewCard({ attendanceData, loading }) {
           <h2 className="text-base md:text-lg font-black text-church-charcoal tracking-tight">Attendance Overview</h2>
           <p className="text-xs text-church-slate">{currentMonthLabel} check-ins and service metrics</p>
         </div>
-        <Link to="/admin/attendance" className="text-xs font-bold text-[#2C4A60] hover:text-[#1D3547] hover:underline">
-          Take Roll
-        </Link>
+        <div className="flex items-center space-x-2.5">
+          <Link to="/admin/attendance?tab=flock_care" className="text-xs font-bold text-[#2C4A60] hover:text-[#1D3547] hover:underline">
+            Flock Care
+          </Link>
+          <span className="text-slate-300">&bull;</span>
+          <Link to="/admin/attendance" className="text-xs font-bold text-slate-600 hover:text-slate-900 hover:underline">
+            Take Roll
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -64,6 +70,14 @@ export default function AttendanceOverviewCard({ attendanceData, loading }) {
               </p>
             </div>
           </div>
+
+          <Link
+            to="/admin/attendance?tab=flock_care"
+            className="pt-2 flex items-center justify-between text-xs font-bold text-[#2C4A60] hover:text-[#162533] transition-colors group"
+          >
+            <span>Flock Retention & Absence Alerts</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </Link>
         </div>
       )}
     </SoftCard>
