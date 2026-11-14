@@ -362,21 +362,18 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
   const totalGivingAmount = givingHistory.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-4xl shadow-church-soft overflow-hidden flex flex-col my-4 sm:my-6 max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+      <div className="glass-light-card rounded-2xl border border-white/95 w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col my-4 sm:my-6 max-h-[90vh]">
         
-        {/* Brand Accent Top Stripe */}
-        <div className="h-1 w-full bg-gradient-coram shrink-0" />
-
-        {/* ── Compact Header ── */}
-        <div className="bg-church-navy text-white relative px-6 py-5 sm:px-8 sm:py-6 shrink-0">
+        {/* ── Soft Glass Header ── */}
+        <div className="bg-white/80 backdrop-blur-md relative px-6 py-5 sm:px-8 sm:py-6 border-b border-slate-100 shrink-0">
           {/* Header Action Buttons */}
           <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
             {onEdit && (
               <button 
                 type="button"
                 onClick={() => onEdit(member)} 
-                className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-xs font-semibold text-white transition-colors flex items-center gap-1.5 backdrop-blur-sm"
+                className="px-3.5 py-1.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-full text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
                 title="Edit member"
               >
                 <Edit size={12} />
@@ -386,7 +383,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
             <button 
               type="button"
               onClick={onClose} 
-              className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full text-white/80 hover:text-white transition-colors"
+              className="p-2 bg-white/80 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 border border-slate-100 shadow-sm transition-colors"
               aria-label="Close modal"
             >
               <X size={18} />
@@ -395,7 +392,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
           
           {/* Avatar and Identity */}
           <div className="flex items-center gap-4 sm:gap-5 pr-24">
-            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-coram flex items-center justify-center text-2xl font-black text-white shadow-church-glow shrink-0 overflow-hidden ring-2 ring-white/20">
+            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-coram flex items-center justify-center text-2xl font-black text-white shadow-md shrink-0 overflow-hidden ring-2 ring-white/60">
               {member.photoUrl || member.avatarUrl || member.profilePictureUrl ? (
                 <img 
                   src={member.photoUrl || member.avatarUrl || member.profilePictureUrl} 
@@ -413,42 +410,42 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                   {badgeInfo.label}
                 </span>
                 {member.isAbroad && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/20 text-blue-200 border border-blue-400/30">
-                    <Globe size={10} /> Abroad
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    <Globe size={11} /> Abroad
                   </span>
                 )}
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                 {memberName}
               </h1>
 
-              <div className="flex flex-wrap items-center text-xs text-church-slate mt-1 gap-x-4 gap-y-1 font-medium">
+              <div className="flex flex-wrap items-center text-xs text-slate-500 mt-1 gap-x-4 gap-y-1 font-medium">
                 {member.email && (
-                  <span className="flex items-center gap-1 text-gray-300">
-                    <Mail size={13} className="text-[#7B9EB2] shrink-0" />
+                  <span className="flex items-center gap-1 text-slate-600">
+                    <Mail size={13} className="text-[#2C4A60] shrink-0" />
                     <span className="truncate max-w-[200px] sm:max-w-none">{member.email}</span>
                     <button 
                       type="button"
                       onClick={() => handleCopy(member.email, 'email')}
-                      className="p-0.5 hover:text-white text-gray-400 transition-colors"
+                      className="p-0.5 hover:text-slate-900 text-slate-400 transition-colors"
                       title="Copy email"
                     >
-                      {copiedKey === 'email' ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                      {copiedKey === 'email' ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                     </button>
                   </span>
                 )}
                 {(member.phoneNumber || member.phone) && (
-                  <span className="flex items-center gap-1 text-gray-300">
-                    <Phone size={13} className="text-church-violet shrink-0" />
+                  <span className="flex items-center gap-1 text-slate-600">
+                    <Phone size={13} className="text-[#2C4A60] shrink-0" />
                     <span>{member.phoneNumber || member.phone}</span>
                     <button 
                       type="button"
                       onClick={() => handleCopy(member.phoneNumber || member.phone, 'phone')}
-                      className="p-0.5 hover:text-white text-gray-400 transition-colors"
+                      className="p-0.5 hover:text-slate-900 text-slate-400 transition-colors"
                       title="Copy phone"
                     >
-                      {copiedKey === 'phone' ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                      {copiedKey === 'phone' ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                     </button>
                   </span>
                 )}
@@ -457,8 +454,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
           </div>
         </div>
 
-        {/* ── Compact Tab Navigation (Just like previous) ── */}
-        <div className="px-6 sm:px-8 border-b border-gray-100 flex space-x-6 overflow-x-auto text-xs sm:text-sm font-bold bg-white shrink-0">
+        {/* ── Compact Tab Navigation ── */}
+        <div className="px-6 sm:px-8 border-b border-slate-100 flex space-x-6 overflow-x-auto text-xs sm:text-sm font-bold bg-white/70 backdrop-blur-sm shrink-0">
           <button 
             type="button"
             onClick={() => setActiveTab('profile')}
@@ -542,7 +539,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
         </div>
 
         {/* ── Content Area ── */}
-        <div className="p-6 sm:p-7 flex-1 overflow-y-auto bg-gray-50/50">
+        <div className="p-6 sm:p-7 flex-1 overflow-y-auto bg-slate-50/40">
           
           {/* TAB 1: Profile Details (Compact 2-Column Grid) */}
           {activeTab === 'profile' && (
@@ -550,30 +547,30 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               
               {/* Left Column */}
               <div className="space-y-5">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="glass-light-card p-5 rounded-2xl shadow-sm border border-white/95">
                   <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <User size={15} /> Demographics
                   </h3>
                   <dl className="space-y-2.5 text-xs sm:text-sm">
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Gender</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">{member.gender || 'Not specified'}</dd>
+                      <dt className="text-slate-500 font-medium">Gender</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">{member.gender || 'Not specified'}</dd>
                     </div>
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Birth Date</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">{member.birthDate || member.birthday || 'Not specified'}</dd>
+                      <dt className="text-slate-500 font-medium">Birth Date</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">{member.birthDate || member.birthday || 'Not specified'}</dd>
                     </div>
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Age</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">{calculateAge(member.birthDate || member.birthday)}</dd>
+                      <dt className="text-slate-500 font-medium">Age</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">{calculateAge(member.birthDate || member.birthday)}</dd>
                     </div>
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Address</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">{member.address || 'Not specified'}</dd>
+                      <dt className="text-slate-500 font-medium">Address</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">{member.address || 'Not specified'}</dd>
                     </div>
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Location</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">
+                      <dt className="text-slate-500 font-medium">Location</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">
                         {member.isAbroad ? (
                           <span className="text-blue-700 font-bold">Abroad (Overseas)</span>
                         ) : (
@@ -584,27 +581,27 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                   </dl>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="glass-light-card p-5 rounded-2xl shadow-sm border border-white/95">
                   <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Phone size={15} /> Emergency Contact
                   </h3>
                   {member.emergencyContact ? (
-                    <p className="text-sm font-semibold text-church-navy">{member.emergencyContact}</p>
+                    <p className="text-sm font-bold text-slate-900">{member.emergencyContact}</p>
                   ) : (
-                    <p className="text-xs text-gray-400 italic">No emergency contact provided.</p>
+                    <p className="text-xs text-slate-400 italic">No emergency contact provided.</p>
                   )}
                 </div>
               </div>
 
               {/* Right Column */}
               <div className="space-y-5">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="glass-light-card p-5 rounded-2xl shadow-sm border border-white/95">
                   <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <CheckCircle size={15} /> Church Status
                   </h3>
                   <dl className="space-y-2.5 text-xs sm:text-sm">
                     <div className="grid grid-cols-3 py-0.5 items-center">
-                      <dt className="text-gray-500 font-medium">Status</dt>
+                      <dt className="text-slate-500 font-medium">Status</dt>
                       <dd className="col-span-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${badgeInfo.className}`}>
                           {badgeInfo.label}
@@ -613,11 +610,11 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                     </div>
 
                     <div className="grid grid-cols-3 py-0.5 items-center">
-                      <dt className="text-gray-500 font-medium">Role(s)</dt>
+                      <dt className="text-slate-500 font-medium">Role(s)</dt>
                       <dd className="col-span-2">
                         <div className="flex flex-wrap gap-1">
                           {getSystemRoles(member).map(r => (
-                            <span key={r} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100 capitalize">
+                            <span key={r} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] capitalize">
                               {r.replace(/_/g, ' ')}
                             </span>
                           ))}
@@ -626,25 +623,25 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                     </div>
 
                     <div className="grid grid-cols-3 py-0.5 items-baseline">
-                      <dt className="text-gray-500 font-medium">Baptism</dt>
-                      <dd className="col-span-2 text-xs sm:text-sm font-medium text-church-navy">
+                      <dt className="text-slate-500 font-medium">Baptism</dt>
+                      <dd className="col-span-2 text-xs sm:text-sm font-medium text-slate-900">
                         {member?.baptismStatus === 'Baptized' ? (
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
                               Baptized
                             </span>
                             {member.baptismDate && (
-                              <span className="text-xs text-church-slate">
+                              <span className="text-xs text-slate-500 font-semibold">
                                 {new Date(member.baptismDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                               </span>
                             )}
                           </div>
                         ) : member?.baptismStatus === 'To Be Baptized' ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             To Be Baptized
                           </span>
                         ) : (
-                          <span className="text-gray-500 text-xs font-medium">
+                          <span className="text-slate-500 text-xs font-medium">
                             {member?.baptismStatus || 'Not Baptized'}
                           </span>
                         )}
@@ -652,8 +649,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                     </div>
 
                     <div className="grid grid-cols-3 py-0.5">
-                      <dt className="text-gray-500 font-medium">Joined</dt>
-                      <dd className="col-span-2 font-semibold text-church-navy">
+                      <dt className="text-slate-500 font-medium">Joined</dt>
+                      <dd className="col-span-2 font-bold text-slate-900">
                         {member.createdAt?.toDate 
                           ? member.createdAt.toDate().toLocaleDateString() 
                           : member.createdAt 
@@ -664,8 +661,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
 
                     {userHousehold && (
                       <div className="grid grid-cols-3 py-0.5">
-                        <dt className="text-gray-500 font-medium">Household</dt>
-                        <dd className="col-span-2 font-semibold text-church-navy">
+                        <dt className="text-slate-500 font-medium">Household</dt>
+                        <dd className="col-span-2 font-bold text-slate-900">
                           {userHousehold.name}
                         </dd>
                       </div>
@@ -673,12 +670,12 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                   </dl>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="glass-light-card p-5 rounded-2xl shadow-sm border border-white/95">
                   <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <HeartHandshake size={15} /> Pastoral & Admin Notes
                   </h3>
-                  <p className="text-xs sm:text-sm text-church-navy whitespace-pre-wrap leading-relaxed">
-                    {member.notes || <span className="text-gray-400 italic">No notes available.</span>}
+                  <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    {member.notes || <span className="text-slate-400 italic">No notes available.</span>}
                   </p>
                 </div>
               </div>
@@ -688,38 +685,38 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
 
           {/* TAB 2: Ministry & Discipleship */}
           {activeTab === 'ministry' && (
-            <div className="bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <div className="glass-light-card p-6 sm:p-7 rounded-2xl border border-white/95 shadow-sm space-y-6">
               <div className="text-center space-y-1.5 max-w-md mx-auto">
-                <div className="w-12 h-12 bg-[#EBF2F7] text-[#2C4A60] rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm">
+                <div className="w-12 h-12 bg-[#EBF2F7] text-[#2C4A60] rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-2xs border border-[#D5E3EC]/70">
                   <HeartHandshake size={24} />
                 </div>
-                <h2 className="text-base font-bold text-church-navy">Family Group & Ministries</h2>
-                <p className="text-xs sm:text-sm text-church-slate">
-                  {memberName} is part of the <strong>{member.familyGroup || 'General Fellowship'}</strong> family group.
+                <h2 className="text-base font-bold text-slate-900">Family Group & Ministries</h2>
+                <p className="text-xs sm:text-sm text-slate-600">
+                  {memberName} is part of the <strong className="text-slate-900">{member.familyGroup || 'General Fellowship'}</strong> family group.
                 </p>
               </div>
 
               {/* Ministry Assignments */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-church-slate mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
                   Assigned Ministries ({memberMinistries.length})
                 </h4>
                 {loadingMinistries ? (
-                  <div className="p-6 text-center text-xs text-gray-500">Loading ministries...</div>
+                  <div className="p-6 text-center text-xs text-slate-500">Loading ministries...</div>
                 ) : memberMinistries.length === 0 ? (
-                  <div className="p-5 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                    <p className="text-xs text-gray-500 italic">No ministry assignments found for this member.</p>
+                  <div className="p-5 bg-slate-50/70 rounded-xl border border-slate-200/60 text-center">
+                    <p className="text-xs text-slate-500 italic">No ministry assignments found for this member.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {memberMinistries.map(ministry => (
-                      <div key={ministry.id} className="p-3.5 border border-gray-100 rounded-xl bg-gray-50/40 flex items-center space-x-3">
-                        <div className="w-9 h-9 bg-[#EBF2F7] text-[#2C4A60] rounded-xl flex items-center justify-center shrink-0">
+                      <div key={ministry.id} className="p-3.5 border border-slate-200/60 rounded-xl bg-white/60 hover:bg-white/90 transition-colors flex items-center space-x-3">
+                        <div className="w-9 h-9 bg-[#EBF2F7] text-[#2C4A60] rounded-xl flex items-center justify-center shrink-0 border border-[#D5E3EC]/70">
                           <HeartHandshake size={18} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-bold text-sm text-church-navy truncate">{ministry.name}</h4>
-                          <p className="text-xs text-gray-500 truncate">{ministry.roles?.length || 0} Roles Available</p>
+                          <h4 className="font-bold text-sm text-slate-900 truncate">{ministry.name}</h4>
+                          <p className="text-xs text-slate-500 truncate">{ministry.roles?.length || 0} Roles Available</p>
                         </div>
                       </div>
                     ))}
@@ -730,20 +727,22 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               {/* Small / Discipleship Groups (if any) */}
               {memberGroups.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-church-slate mb-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
                     Discipleship Groups ({memberGroups.length})
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {memberGroups.map(group => {
                       const isLeader = group.leaderMemberIds && group.leaderMemberIds.includes(member.id);
                       return (
-                        <div key={group.id} className="p-3.5 border border-gray-100 rounded-xl bg-gray-50/40 flex items-center justify-between">
+                        <div key={group.id} className="p-3.5 border border-slate-200/60 rounded-xl bg-white/60 hover:bg-white/90 transition-colors flex items-center justify-between">
                           <div>
-                            <h4 className="font-bold text-sm text-church-navy">{group.name}</h4>
-                            <p className="text-xs text-gray-500">{group.meetingDay || 'Weekly'} • {group.meetingTime || 'TBD'}</p>
+                            <h4 className="font-bold text-sm text-slate-900">{group.name}</h4>
+                            <p className="text-xs text-slate-500">{group.meetingDay || 'Weekly'} • {group.meetingTime || 'TBD'}</p>
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isLeader ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800'
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            isLeader 
+                              ? 'bg-amber-50 text-amber-800 border-amber-200' 
+                              : 'bg-purple-50 text-purple-800 border-purple-200'
                           }`}>
                             {isLeader ? 'Leader' : 'Member'}
                           </span>
@@ -758,35 +757,35 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
 
           {/* TAB 3: Attendance History */}
           {activeTab === 'attendance' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="glass-light-card rounded-2xl border border-white/95 shadow-sm overflow-hidden">
+              <div className="p-4 px-6 border-b border-slate-100 flex justify-between items-center bg-white/60">
                 <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider flex items-center gap-1.5">
                   <ClipboardCheck size={15} /> Attendance Records
                 </h3>
-                <span className="text-xs text-church-slate font-semibold">
+                <span className="text-xs text-slate-500 font-semibold">
                   {attendanceHistory.length} Total Sessions
                 </span>
               </div>
               
               {loadingAttendance ? (
-                <div className="p-8 text-center text-xs text-gray-500">Loading records...</div>
+                <div className="p-8 text-center text-xs text-slate-500">Loading records...</div>
               ) : attendanceHistory.length === 0 ? (
-                <div className="p-8 text-center text-xs text-gray-500">No attendance records found for {memberName}.</div>
+                <div className="p-8 text-center text-xs text-slate-500">No attendance records found for {memberName}.</div>
               ) : (
                 <div className="overflow-x-auto max-h-[50vh]">
                   <table className="w-full text-left">
-                    <thead className="sticky top-0 bg-white">
-                      <tr className="border-b border-gray-100 text-[11px] font-semibold text-gray-500 uppercase">
+                    <thead className="sticky top-0 bg-slate-50/90 backdrop-blur-xs">
+                      <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                         <th className="px-6 py-3">Event</th>
                         <th className="px-6 py-3">Date</th>
                         <th className="px-6 py-3 text-right">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 text-xs sm:text-sm">
+                    <tbody className="divide-y divide-slate-100/70 text-xs sm:text-sm">
                       {attendanceHistory.map(record => (
-                        <tr key={record.id} className="hover:bg-gray-50/60 transition-colors">
-                          <td className="px-6 py-3.5 font-medium text-church-navy">{record.eventTitle || 'Unknown Event'}</td>
-                          <td className="px-6 py-3.5 text-church-slate">
+                        <tr key={record.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-6 py-3.5 font-medium text-slate-900">{record.eventTitle || 'Unknown Event'}</td>
+                          <td className="px-6 py-3.5 text-slate-600">
                             {record.checkedInAt 
                               ? new Date(record.checkedInAt).toLocaleDateString() 
                               : (record.timestamp ? new Date(record.timestamp).toLocaleDateString() : '')}
@@ -814,12 +813,12 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
           {activeTab === 'giving' && canSeeGiving && (
             <div className="space-y-4">
               {userHousehold && (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3.5 text-xs">
-                  <p className="text-blue-900 mb-2">
-                    <strong>Note:</strong> {memberName} belongs to the <strong>{userHousehold.name}</strong>. Showing combined household giving.
+                <div className="bg-[#EBF2F7]/70 border border-[#D5E3EC] rounded-xl p-3.5 text-xs">
+                  <p className="text-slate-800 mb-2">
+                    <strong className="text-slate-900">Note:</strong> {memberName} belongs to the <strong className="text-slate-900">{userHousehold.name}</strong>. Showing combined household giving.
                   </p>
                   <div className="flex items-center space-x-6">
-                    <label className="flex items-center font-medium text-blue-900 cursor-pointer">
+                    <label className="flex items-center font-medium text-slate-700 cursor-pointer">
                       <input 
                         type="checkbox" 
                         checked={showHouseholdGiving} 
@@ -828,7 +827,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                       />
                       Show Household Giving
                     </label>
-                    <label className="flex items-center font-medium text-blue-900 cursor-pointer">
+                    <label className="flex items-center font-medium text-slate-700 cursor-pointer">
                       <input 
                         type="checkbox" 
                         checked={!showHouseholdGiving} 
@@ -841,42 +840,42 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                 </div>
               )}
               
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="glass-light-card rounded-2xl border border-white/95 shadow-sm overflow-hidden">
+                <div className="p-4 px-6 border-b border-slate-100 flex justify-between items-center bg-white/60">
                   <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider flex items-center gap-1.5">
                     <CreditCard size={15} /> Giving Records
                   </h3>
-                  <div className="text-xs sm:text-sm font-bold text-church-navy">
-                    Total: <strong className="text-emerald-600">{formatCurrency(totalGivingAmount)}</strong>
+                  <div className="text-xs sm:text-sm font-bold text-slate-900">
+                    Total: <strong className="text-emerald-700">{formatCurrency(totalGivingAmount)}</strong>
                   </div>
                 </div>
                 
                 {loadingGiving ? (
-                  <div className="p-8 text-center text-xs text-gray-500">Loading records...</div>
+                  <div className="p-8 text-center text-xs text-slate-500">Loading records...</div>
                 ) : givingHistory.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-gray-500">No giving records found under "{memberName}".</div>
+                  <div className="p-8 text-center text-xs text-slate-500">No giving records found under "{memberName}".</div>
                 ) : (
                   <div className="overflow-x-auto max-h-[50vh]">
                     <table className="w-full text-left">
-                      <thead className="sticky top-0 bg-white">
-                        <tr className="border-b border-gray-100 text-[11px] font-semibold text-gray-500 uppercase">
+                      <thead className="sticky top-0 bg-slate-50/90 backdrop-blur-xs">
+                        <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                           <th className="px-6 py-3">Date</th>
                           <th className="px-6 py-3">Fund</th>
                           <th className="px-6 py-3">Method</th>
                           <th className="px-6 py-3 text-right">Amount</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50 text-xs sm:text-sm">
+                      <tbody className="divide-y divide-slate-100/70 text-xs sm:text-sm">
                         {givingHistory.map(record => (
-                          <tr key={record.id} className="hover:bg-gray-50/60 transition-colors">
-                            <td className="px-6 py-3.5 text-church-slate">{new Date(record.date).toLocaleDateString()}</td>
-                            <td className="px-6 py-3.5 font-medium text-church-navy">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                          <tr key={record.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="px-6 py-3.5 text-slate-600">{new Date(record.date).toLocaleDateString()}</td>
+                            <td className="px-6 py-3.5 font-medium text-slate-900">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]/70">
                                 {fundsMap[record.fundId] || record.fundType || 'Unknown'}
                               </span>
                             </td>
-                            <td className="px-6 py-3.5 text-church-slate">{record.method}</td>
-                            <td className="px-6 py-3.5 font-bold text-emerald-600 text-right">
+                            <td className="px-6 py-3.5 text-slate-600">{record.method}</td>
+                            <td className="px-6 py-3.5 font-bold text-emerald-700 text-right">
                               {formatCurrency(record.amount || 0)}
                             </td>
                           </tr>
@@ -891,23 +890,23 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
 
           {/* TAB 5: Access & Role */}
           {activeTab === 'access' && (
-            <div className="bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto space-y-5">
+            <div className="glass-light-card p-6 sm:p-7 rounded-2xl border border-white/95 shadow-sm max-w-2xl mx-auto space-y-5">
               <div>
-                <h2 className="text-base font-bold text-church-navy">System Access & Security</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Manage what this user can access in the admin portal.</p>
+                <h2 className="text-base font-bold text-slate-900">System Access & Security</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Manage what this user can access in the admin portal.</p>
               </div>
 
               {myCanManageRoles ? (
                 <div className="space-y-5">
-                  <div className="bg-amber-50 text-amber-900 p-3.5 rounded-xl text-xs flex items-start border border-amber-200/80 leading-relaxed">
+                  <div className="bg-amber-50/80 text-amber-900 p-3.5 rounded-xl text-xs flex items-start border border-amber-200/80 leading-relaxed">
                     <p>
-                      Users can hold multiple roles. The <strong>first selected role</strong> becomes their primary display role.
+                      Users can hold multiple roles. The <strong className="text-amber-950">first selected role</strong> becomes their primary display role.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-church-navy uppercase tracking-wider mb-2">
-                      System Roles <span className="text-gray-400 font-normal lowercase">(select one or more)</span>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                      System Roles <span className="text-slate-400 font-normal lowercase">(select one or more)</span>
                     </label>
                     <div className="space-y-2">
                       {availableRoles.map(role => {
@@ -920,8 +919,8 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                             key={role}
                             className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                               isChecked
-                                ? 'bg-[#2C4A60]/5 border-[#2C4A60]/40'
-                                : 'bg-white border-gray-200 hover:border-gray-300'
+                                ? 'bg-[#2C4A60]/5 border-[#2C4A60]/40 shadow-2xs'
+                                : 'bg-white/80 border-slate-200 hover:border-slate-300'
                             }`}
                           >
                             <input
@@ -933,7 +932,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-church-navy capitalize">
+                                <span className="text-sm font-semibold text-slate-900 capitalize">
                                   {role.replace(/_/g, ' ')}
                                 </span>
                                 {isFirst && isChecked && (
@@ -943,7 +942,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                                 )}
                               </div>
                               {desc && (
-                                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                               )}
                             </div>
                           </label>
@@ -956,7 +955,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-church-navy uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                       Reason for Change (Optional)
                     </label>
                     <textarea
@@ -964,13 +963,13 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                       onChange={(e) => setReason(e.target.value)}
                       placeholder="Why are these roles being changed?"
                       rows="2"
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F748E]/30 focus:border-[#2C4A60] text-xs sm:text-sm resize-none"
+                      className="w-full px-3.5 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs sm:text-sm resize-none text-slate-900 placeholder:text-slate-400"
                     />
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <p className="text-xs text-gray-500">
-                      Primary role: <strong>{newRoles[0]?.replace(/_/g, ' ') || 'None'}</strong>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <p className="text-xs text-slate-500">
+                      Primary role: <strong className="text-slate-900">{newRoles[0]?.replace(/_/g, ' ') || 'None'}</strong>
                     </p>
                     <GradientButton
                       onClick={handleSaveRole}
@@ -986,12 +985,12 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                 <div className="text-center py-6">
                   <div className="flex flex-wrap gap-2 justify-center mb-3">
                     {getSystemRoles(member).map(r => (
-                      <span key={r} className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 capitalize font-bold text-xs border border-blue-100">
+                      <span key={r} className="inline-flex items-center px-3 py-1 rounded-full bg-[#EBF2F7] text-[#2C4A60] capitalize font-bold text-xs border border-[#D5E3EC]">
                         {r.replace(/_/g, ' ')}
                       </span>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500">You do not have permission to change system roles.</p>
+                  <p className="text-xs text-slate-500">You do not have permission to change system roles.</p>
                 </div>
               )}
             </div>
