@@ -17,32 +17,50 @@ import {
 import { useSubscriptionLimits } from '../subscription/hooks/useSubscriptionLimits';
 import UpgradeModal from '../subscription/components/UpgradeModal';
 
+const GENDER_OPTIONS = [
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' }
+];
+
+const ROLE_OPTIONS = [
+  { value: 'member', label: 'Member' },
+  { value: 'ministry_leader', label: 'Ministry Leader' },
+  { value: 'pastor', label: 'Pastor' },
+  { value: 'secretary', label: 'Secretary' },
+  { value: 'finance_admin', label: 'Finance Admin' },
+  { value: 'church_admin', label: 'Church Admin' }
+];
+
+const INITIAL_FORM_STATE = {
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  email: '',
+  phoneNumber: '',
+  role: 'member',
+  familyGroup: '',
+  birthDate: '',
+  gender: 'Male',
+  address: '',
+  membershipCategory: 'Full Member',
+  membershipStatus: 'Active',
+  baptismStatus: 'Not Baptized',
+  baptismDate: '',
+  emergencyContact: '',
+  notes: '',
+  isAbroad: false
+};
+
 export default function MemberFormModal({ isOpen, onClose, member = null, existingMembers = [] }) {
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile, currentUser, activeChurchId } = useAuth();
   const { canAddMember, checkAddMemberLimit } = useSubscriptionLimits();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState(null);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    role: 'member',
-    familyGroup: '',
-    birthDate: '',
-    gender: 'Male',
-    address: '',
-    membershipCategory: 'Full Member',
-    membershipStatus: 'Active',
-    baptismStatus: 'Not Baptized',
-    baptismDate: '',
-    emergencyContact: '',
-    notes: '',
-    isAbroad: false
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const targetChurchId = activeChurchId || userProfile?.churchId || member?.churchId || null;
 
   useEffect(() => {
     if (member) {
@@ -54,9 +72,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
       const resolvedSubStatus = getMembershipSubStatus(member);
 
       setFormData({
-        firstName: member.firstName || fallbackFirst,
+        firstName: member.firstName || fallbackFirst || '',
         middleName: member.middleName || '',
-        lastName: member.lastName || fallbackLast,
+        lastName: member.lastName || fallbackLast || '',
         email: member.email || '',
         phoneNumber: member.phoneNumber || member.phone || '',
         role: member.role || 'member',
@@ -64,34 +82,16 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         birthDate: member.birthDate || member.birthday || '',
         gender: member.gender || 'Male',
         address: member.address || '',
-        membershipCategory: resolvedCategory,
-        membershipStatus: resolvedCategory === 'Full Member' ? resolvedSubStatus : (member.membershipStatus || resolvedCategory),
+        membershipCategory: resolvedCategory || 'Full Member',
+        membershipStatus: resolvedCategory === 'Full Member' ? (resolvedSubStatus || 'Active') : (member.membershipStatus || resolvedCategory || 'Active'),
         baptismStatus: member.baptismStatus || 'Not Baptized',
         baptismDate: member.baptismDate || '',
         emergencyContact: member.emergencyContact || '',
         notes: member.notes || '',
-        isAbroad: member.isAbroad || false
+        isAbroad: Boolean(member.isAbroad)
       });
     } else {
-      setFormData({
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        role: 'member',
-        familyGroup: '',
-        birthDate: '',
-        gender: 'Male',
-        address: '',
-        membershipCategory: 'Full Member',
-        membershipStatus: 'Active',
-        baptismStatus: 'Not Baptized',
-        baptismDate: '',
-        emergencyContact: '',
-        notes: '',
-        isAbroad: false
-      });
+      setFormData(INITIAL_FORM_STATE);
     }
     setError('');
   }, [member, isOpen]);
@@ -144,7 +144,8 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         membershipCategory: category,
         membershipStatus: status,
         baptismStatus: formData.baptismStatus || 'Not Baptized',
-        baptismDate: cleanBaptismDate
+        baptismDate: cleanBaptismDate,
+        churchId: targetChurchId
       };
 
       // Firestore throws an error if any field is explicitly undefined
@@ -154,22 +155,25 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
       let matchingPendingUser = null;
       
-      // Try to match by email first
-      if (cleanData.email) {
-        const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
-        const emailSnap = await getDocs(emailQ);
-        if (!emailSnap.empty) {
-          matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
+      // Try to match pending users safely without crashing if unpermitted
+      try {
+        if (cleanData.email) {
+          const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
+          const emailSnap = await getDocs(emailQ);
+          if (!emailSnap.empty) {
+            matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
+          }
         }
-      }
-      
-      // Try to match by phone if not found by email
-      if (!matchingPendingUser && cleanData.phoneNumber) {
-        const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
-        const phoneSnap = await getDocs(phoneQ);
-        if (!phoneSnap.empty) {
-          matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
+        
+        if (!matchingPendingUser && cleanData.phoneNumber) {
+          const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
+          const phoneSnap = await getDocs(phoneQ);
+          if (!phoneSnap.empty) {
+            matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
+          }
         }
+      } catch (matchErr) {
+        console.warn("Could not check pendingChurchLink user (non-fatal):", matchErr);
       }
 
       if (member) {
@@ -178,25 +182,26 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
           const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
           await updateDoc(registeredUserRef, {
             ...cleanData,
-            churchId: member.churchId || userProfile?.churchId || null,
-            status: 'Active', // Remove pending status and set to Active
+            churchId: member.churchId || targetChurchId,
+            status: 'Active',
             birthday: deleteField(),
             phone: deleteField(),
             updatedAt: serverTimestamp(),
             updatedBy: currentUser?.uid || null
           });
           
-          // Delete old imported member document
-          const oldMemberRef = doc(db, 'users', member.id);
-          await deleteDoc(oldMemberRef);
+          try {
+            const oldMemberRef = doc(db, 'users', member.id);
+            await deleteDoc(oldMemberRef);
+          } catch (delErr) {
+            console.warn("Could not delete old member doc (non-fatal):", delErr);
+          }
         } else {
           // Update existing member normally
           const docRef = doc(db, 'users', member.id);
           await updateDoc(docRef, {
             ...cleanData,
-            // Always preserve/set churchId so legacy docs without it get migrated
-            // and so the Firestore rule (churchId must not change) always passes
-            churchId: member.churchId || userProfile?.churchId || null,
+            churchId: member.churchId || targetChurchId,
             birthday: deleteField(),
             phone: deleteField(),
             updatedAt: serverTimestamp(),
@@ -205,23 +210,20 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         }
       } else {
         if (matchingPendingUser) {
-          // Admin is adding a new member, and we found a pending auth account!
-          // We should just update the pending auth account instead of duplicating
           const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
           await updateDoc(registeredUserRef, {
             ...cleanData,
-            churchId: userProfile?.churchId || null,
+            churchId: targetChurchId,
             status: 'Active',
             updatedAt: serverTimestamp(),
             updatedBy: currentUser?.uid || null
           });
         } else {
-          // Add new member profile
           await addDoc(collection(db, 'users'), {
             ...cleanData,
             createdAt: serverTimestamp(),
             createdBy: currentUser?.uid || null,
-            churchId: userProfile?.churchId || null
+            churchId: targetChurchId
           });
         }
       }
@@ -280,7 +282,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       type="text" 
                       name="firstName" 
                       required 
-                      value={formData.firstName} 
+                      value={formData.firstName || ''} 
                       onChange={handleChange} 
                       className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                     />
@@ -290,7 +292,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     <input 
                       type="text" 
                       name="middleName" 
-                      value={formData.middleName} 
+                      value={formData.middleName || ''} 
                       onChange={handleChange} 
                       className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                     />
@@ -301,7 +303,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       type="text" 
                       name="lastName" 
                       required 
-                      value={formData.lastName} 
+                      value={formData.lastName || ''} 
                       onChange={handleChange} 
                       className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                     />
@@ -312,7 +314,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Birth Date</label>
                   <ModernDatePicker 
                     name="birthDate" 
-                    value={formData.birthDate} 
+                    value={formData.birthDate || ''} 
                     onChange={handleChange} 
                   />
                 </div>
@@ -320,12 +322,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Gender</label>
                   <ModernDropdown
-                    value={formData.gender}
+                    value={formData.gender || 'Male'}
                     onChange={(val) => handleChange({ target: { name: 'gender', value: val } })}
-                    options={[
-                      { value: 'Male', label: 'Male' },
-                      { value: 'Female', label: 'Female' }
-                    ]}
+                    options={GENDER_OPTIONS}
                   />
                 </div>
                 
@@ -334,7 +333,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     <input
                       type="checkbox"
                       name="isAbroad"
-                      checked={formData.isAbroad}
+                      checked={Boolean(formData.isAbroad)}
                       onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
                       className="mr-2 w-4 h-4 rounded accent-[#2C4A60] text-[#2C4A60] focus:ring-[#2C4A60] border-slate-300"
                     />
@@ -355,7 +354,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <input 
                     type="email" 
                     name="email" 
-                    value={formData.email} 
+                    value={formData.email || ''} 
                     onChange={handleChange} 
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                   />
@@ -366,7 +365,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <input 
                     type="tel" 
                     name="phoneNumber" 
-                    value={formData.phoneNumber} 
+                    value={formData.phoneNumber || ''} 
                     onChange={handleChange} 
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                   />
@@ -377,7 +376,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <input 
                     type="text" 
                     name="address" 
-                    value={formData.address} 
+                    value={formData.address || ''} 
                     onChange={handleChange} 
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                   />
@@ -388,7 +387,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <input 
                     type="text" 
                     name="emergencyContact" 
-                    value={formData.emergencyContact} 
+                    value={formData.emergencyContact || ''} 
                     onChange={handleChange} 
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
                   />
@@ -405,7 +404,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Membership Category</label>
                   <ModernDropdown
-                    value={formData.membershipCategory}
+                    value={formData.membershipCategory || 'Full Member'}
                     onChange={(val) => {
                       setFormData(prev => ({
                         ...prev,
@@ -423,7 +422,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Member Status</label>
                     <ModernDropdown
-                      value={formData.membershipStatus}
+                      value={formData.membershipStatus || 'Active'}
                       onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
                       options={FULL_MEMBER_SUBSTATUSES}
                     />
@@ -432,16 +431,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">System Role</label>
                     <ModernDropdown
-                      value={formData.role}
+                      value={formData.role || 'member'}
                       onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
-                      options={[
-                        { value: 'member', label: 'Member' },
-                        { value: 'ministry_leader', label: 'Ministry Leader' },
-                        { value: 'pastor', label: 'Pastor' },
-                        { value: 'secretary', label: 'Secretary' },
-                        { value: 'finance_admin', label: 'Finance Admin' },
-                        { value: 'church_admin', label: 'Church Admin' }
-                      ]}
+                      options={ROLE_OPTIONS}
                     />
                   </div>
                 )}
@@ -450,16 +442,9 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">System Role</label>
                     <ModernDropdown
-                      value={formData.role}
+                      value={formData.role || 'member'}
                       onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
-                      options={[
-                        { value: 'member', label: 'Member' },
-                        { value: 'ministry_leader', label: 'Ministry Leader' },
-                        { value: 'pastor', label: 'Pastor' },
-                        { value: 'secretary', label: 'Secretary' },
-                        { value: 'finance_admin', label: 'Finance Admin' },
-                        { value: 'church_admin', label: 'Church Admin' }
-                      ]}
+                      options={ROLE_OPTIONS}
                     />
                   </div>
                 )}
@@ -467,7 +452,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Status</label>
                   <ModernDropdown
-                    value={formData.baptismStatus}
+                    value={formData.baptismStatus || 'Not Baptized'}
                     onChange={(val) => {
                       setFormData(prev => ({
                         ...prev,
@@ -484,7 +469,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Date</label>
                     <ModernDatePicker 
                       name="baptismDate" 
-                      value={formData.baptismDate} 
+                      value={formData.baptismDate || ''} 
                       onChange={handleChange} 
                       placeholder="Select baptism date"
                     />
@@ -496,7 +481,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                   <input 
                     type="text" 
                     name="familyGroup" 
-                    value={formData.familyGroup} 
+                    value={formData.familyGroup || ''} 
                     onChange={handleChange} 
                     placeholder="e.g. Grace Group" 
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
@@ -513,7 +498,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
               <textarea 
                 name="notes" 
                 rows="3" 
-                value={formData.notes} 
+                value={formData.notes || ''} 
                 onChange={handleChange} 
                 className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400 resize-none" 
                 placeholder="Any additional pastoral or administrative notes..."
