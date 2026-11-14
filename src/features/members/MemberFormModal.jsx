@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, CheckCircle, HeartHandshake } from 'lucide-react';
+import { User, Phone, CheckCircle, HeartHandshake } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, deleteField, serverTimestamp, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import GradientButton from '../../components/ui/GradientButton';
+import Modal from '../../components/ui/Modal';
 import {
   getMembershipCategory,
   getMembershipSubStatus,
@@ -234,37 +235,37 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="glass-light-card rounded-2xl border border-white/95 w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col my-4 sm:my-6 max-h-[90vh]">
-        
-        {/* Soft Glass Modal Header */}
-        <div className="bg-white/80 backdrop-blur-md px-6 py-4.5 sm:px-7 sm:py-5 border-b border-slate-100 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2C4A60]/10 text-[#2C4A60] flex items-center justify-center font-bold shrink-0">
-              <User size={20} />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
-                {member ? 'Edit Member Profile' : 'Add New Member'}
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {member ? `Updating records for ${member.displayName || member.name || 'member'}` : 'Create a new church membership profile'}
-              </p>
-            </div>
-          </div>
-          <button 
-            type="button"
-            onClick={onClose} 
-            className="p-2 bg-white/80 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 border border-slate-100 shadow-sm transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        
-        <div className="overflow-y-auto flex-1">
-          <form id="member-form" onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-6">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-medium">{error}</div>}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={member ? 'Edit Member Profile' : 'Add New Member'}
+        subtitle={member ? `Updating records for ${member.displayName || member.name || 'member'}` : 'Create a new church membership profile'}
+        icon={User}
+        maxWidth="2xl"
+        footer={
+          <>
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={loading} 
+              className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              form="member-form" 
+              disabled={loading}
+              className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : member ? 'Save Changes' : 'Create Member'}
+            </button>
+          </>
+        }
+      >
+        <form id="member-form" onSubmit={handleSubmit} className="space-y-6">
+          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-medium">{error}</div>}
             
             {/* Personal Details */}
             <div>
@@ -519,37 +520,16 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
               />
             </div>
           </form>
-        </div>
+        </Modal>
 
-        {/* Modal Action Footer */}
-        <div className="px-6 py-4 sm:px-7 sm:py-4.5 border-t border-slate-100 flex justify-end items-center gap-3 bg-white/60 backdrop-blur-md shrink-0">
-          <button 
-            type="button" 
-            onClick={onClose} 
-            disabled={loading} 
-            className="px-5 py-2.5 bg-white border border-slate-200 rounded-full text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-2xs"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            form="member-form" 
-            disabled={loading}
-            className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-xs sm:text-sm font-bold hover:bg-[#1E2E3D] transition-colors shadow-sm disabled:opacity-50"
-          >
-            {loading ? 'Saving...' : member ? 'Save Changes' : 'Create Member'}
-          </button>
-        </div>
-      </div>
-
-      {/* Subscription Quota Upgrade Gate Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        title="Member Limit Reached"
-        message={upgradeReason?.reason}
-        targetTier={upgradeReason?.targetPlan || 'growth'}
-      />
-    </div>
-  );
-}
+        {/* Subscription Quota Upgrade Gate Modal */}
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          title="Member Limit Reached"
+          message={upgradeReason?.reason}
+          targetTier={upgradeReason?.targetPlan || 'growth'}
+        />
+      </>
+    );
+  }

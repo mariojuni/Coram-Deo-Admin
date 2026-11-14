@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import Modal from '../../components/ui/Modal';
 
 export default function HouseholdFormModal({ isOpen, onClose, household = null }) {
   const { userProfile, currentUser } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
-  
+
   const [formData, setFormData] = useState({
     name: '',
     primaryMemberId: '',
@@ -56,7 +57,7 @@ export default function HouseholdFormModal({ isOpen, onClose, household = null }
             })
             .filter(Boolean)
             .sort((a, b) => a.name.localeCompare(b.name));
-            
+
           setMembers(activeMembers);
         } catch (e) {
           console.error("Failed to fetch members", e);
@@ -81,13 +82,13 @@ export default function HouseholdFormModal({ isOpen, onClose, household = null }
       } else {
         newMemberIds = [...prev.memberIds, memberId];
       }
-      
+
       // If primary member is removed, unset primary
       let newPrimary = prev.primaryMemberId;
       if (isSelected && prev.primaryMemberId === memberId) {
         newPrimary = '';
       }
-      
+
       return { ...prev, memberIds: newMemberIds, primaryMemberId: newPrimary };
     });
   };
@@ -132,105 +133,94 @@ export default function HouseholdFormModal({ isOpen, onClose, household = null }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
-        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-2xl bg-[#EBF2F7] flex items-center justify-center mr-3 text-[#2C4A60] border border-[#D5E3EC]/70 shadow-2xs">
-              <Users size={20} />
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900">{household ? 'Edit Household' : 'Add Household'}</h2>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={household ? 'Edit Household' : 'Add Household'}
+      subtitle="Group related family members together for directory and giving"
+      icon={Users}
+      maxWidth="md"
+      footer={
+        <>
           <button 
-            type="button"
-            onClick={onClose} 
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-full hover:bg-slate-100"
+            type="button" 
+            onClick={onClose}
+            disabled={loading}
+            className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
           >
-            <X size={20} />
+            Cancel
           </button>
-        </div>
-        
-        <div className="overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-            
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Household Name *</label>
-              <input 
-                type="text" 
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="e.g. Smith Family"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-slate-900 bg-white placeholder:text-slate-400 text-sm" 
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Members</label>
-              <input
-                type="text"
-                placeholder="Search by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 mb-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm bg-white transition-all text-slate-900 placeholder:text-slate-400"
-              />
-              <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl p-2 space-y-1 bg-white/80">
-                {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).map(member => (
-                  <label key={member.id} className="flex items-center p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
-                    <input 
-                      type="checkbox"
-                      checked={formData.memberIds.includes(member.id)}
-                      onChange={() => handleToggleMember(member.id)}
-                      className="mr-3 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60] rounded"
-                    />
-                    <span className="text-sm font-medium text-slate-900">{member.name}</span>
-                  </label>
-                ))}
-                {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                  <div className="p-2 text-sm text-slate-400 text-center">No members found.</div>
-                )}
-              </div>
-            </div>
+          <button 
+            type="submit"
+            form="household-form"
+            disabled={loading}
+            className="px-6 py-2.5 bg-[#162533] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
+          >
+            {loading ? 'Saving...' : 'Save Household'}
+          </button>
+        </>
+      }
+    >
+      <form id="household-form" onSubmit={handleSubmit} className="space-y-5">
+        {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
 
-            {formData.memberIds.length > 0 && (
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Primary Member (Head of Household)</label>
-                <ModernDropdown
-                  value={formData.primaryMemberId}
-                  onChange={(val) => setFormData(prev => ({ ...prev, primaryMemberId: val }))}
-                  options={[
-                    { value: '', label: '-- Select Primary Member --' },
-                    ...formData.memberIds.map(id => {
-                      const m = members.find(mem => mem.id === id);
-                      return { value: id, label: m ? m.name : id };
-                    })
-                  ]}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Household Name *</label>
+          <input
+            type="text"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="e.g. Smith Family"
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-slate-900 bg-white placeholder:text-slate-400 text-sm" 
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Members</label>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 mb-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm bg-white transition-all text-slate-900 placeholder:text-slate-400"
+          />
+          <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl p-2 space-y-1 bg-white/80">
+            {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).map(member => (
+              <label key={member.id} className="flex items-center p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                <input
+                  type="checkbox"
+                  checked={formData.memberIds.includes(member.id)}
+                  onChange={() => handleToggleMember(member.id)}
+                  className="mr-3 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60] rounded"
                 />
-              </div>
+                <span className="text-sm font-medium text-slate-900">{member.name}</span>
+              </label>
+            ))}
+            {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              <div className="p-2 text-sm text-slate-400 text-center">No members found.</div>
             )}
-
-            <div className="pt-5 border-t border-slate-100 flex justify-end space-x-3">
-              <button 
-                type="button" 
-                onClick={onClose}
-                disabled={loading}
-                className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="px-6 py-2.5 bg-[#162533] text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
-              >
-                {loading ? 'Saving...' : 'Save Household'}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+
+        {formData.memberIds.length > 0 && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Primary Member (Head of Household)</label>
+            <ModernDropdown
+              value={formData.primaryMemberId}
+              onChange={(val) => setFormData(prev => ({ ...prev, primaryMemberId: val }))}
+              options={[
+                { value: '', label: '-- Select Primary Member --' },
+                ...formData.memberIds.map(id => {
+                  const m = members.find(mem => mem.id === id);
+                  return { value: id, label: m ? m.name : id };
+                })
+              ]}
+            />
+          </div>
+        )}
+      </form>
+    </Modal>
   );
 }

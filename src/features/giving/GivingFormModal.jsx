@@ -1,10 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, DollarSign } from 'lucide-react';
+import { DollarSign, User, Users, HeartHandshake } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import Modal from '../../components/ui/Modal';
+
+const METHOD_OPTIONS = [
+  { value: 'Cash', label: 'Cash' },
+  { value: 'GCash', label: 'GCash' },
+  { value: 'Maya', label: 'Maya' },
+  { value: 'Bank Transfer', label: 'Bank Transfer' },
+  { value: 'Check', label: 'Check' },
+  { value: 'Online Payment', label: 'Online Payment' }
+];
+
+const GIVER_TYPE_OPTIONS = [
+  { id: 'individual', label: 'Individual', icon: User },
+  { id: 'household', label: 'Household', icon: Users },
+  { id: 'anonymous', label: 'Loose Offering', icon: HeartHandshake }
+];
 
 const normalizeMethod = (m) => {
   if (!m) return 'Cash';
@@ -299,212 +315,195 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 flex items-center justify-center mr-3 text-[#2C4A60]">
-              <DollarSign size={20} />
-            </div>
-            <h2 className="text-xl font-bold text-church-navy">{activeRecord ? 'Edit Contribution' : 'Add Contribution'}</h2>
-          </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={activeRecord ? 'Edit Contribution' : 'Add Contribution'}
+      subtitle="Record a tithe, offering, mission pledge, or donation"
+      icon={DollarSign}
+      maxWidth="lg"
+      footer={
+        <>
+          <button 
+            type="button" 
+            onClick={onClose}
+            disabled={loading}
+            className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            Cancel
           </button>
-        </div>
+          <button 
+            type="submit"
+            form="giving-form"
+            disabled={loading}
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Record'}
+          </button>
+        </>
+      }
+    >
+      <form id="giving-form" onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-medium border border-red-100">
+            {error}
+          </div>
+        )}
         
-        <div className="overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-            
-            <div className="flex space-x-4 mb-4">
-              <label className="flex items-center cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="giverEntityType" 
-                  value="individual" 
-                  checked={formData.giverEntityType === 'individual'} 
-                  onChange={handleChange} 
-                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
-                />
-                <span className="text-sm font-medium text-church-navy">Individual</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="giverEntityType" 
-                  value="household" 
-                  checked={formData.giverEntityType === 'household'} 
-                  onChange={handleChange} 
-                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
-                />
-                <span className="text-sm font-medium text-church-navy">Household</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="giverEntityType" 
-                  value="anonymous" 
-                  checked={formData.giverEntityType === 'anonymous'} 
-                  onChange={handleChange} 
-                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
-                />
-                <span className="text-sm font-medium text-church-navy">Loose Offering</span>
-              </label>
-            </div>
-
-            {formData.giverEntityType === 'household' && (
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Household</label>
-                <ModernDropdown
-                  value={formData.householdId}
-                  onChange={(val) => {
-                    const selectedHousehold = households.find(h => h.id === val);
-                    setFormData(prev => ({
-                      ...prev,
-                      householdId: val,
-                      donorName: selectedHousehold ? selectedHousehold.name : ''
-                    }));
-                  }}
-                  options={[
-                    { value: '', label: '-- Select Household --' },
-                    ...households.map(h => ({ value: h.id, label: h.name }))
-                  ]}
-                  placeholder="-- Select Household --"
-                  searchable={true}
-                />
-              </div>
-            )}
-            
-            {formData.giverEntityType === 'individual' && (
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Donor Name</label>
-                <ModernDropdown
-                  value={formData.userId ? formData.userId : (formData.donorName && formData.donorName !== 'Anonymous' ? 'custom_donor' : '')}
-                  onChange={(val) => {
-                    if (typeof val === 'string' && val.startsWith('custom:')) {
-                      const customName = val.replace('custom:', '');
-                      setFormData(prev => ({
-                        ...prev,
-                        userId: '',
-                        donorName: customName
-                      }));
-                    } else {
-                      const selectedMember = members.find(m => m.id === val);
-                      setFormData(prev => ({
-                        ...prev,
-                        userId: val,
-                        donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
-                      }));
+        {/* Donor Type Segmented Control */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Giver Entity Type
+          </label>
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70">
+            {GIVER_TYPE_OPTIONS.map(({ id, label, icon: GiverIcon }) => {
+              const isActive = formData.giverEntityType === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, giverEntityType: id }))}
+                  className={`
+                    flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm transition-all
+                    ${isActive 
+                      ? 'bg-white text-slate-900 font-bold shadow-2xs border border-white' 
+                      : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-white/50'
                     }
-                  }}
-                  options={donorOptions}
-                  placeholder="-- Select Donor --"
-                  searchable={true}
-                />
-              </div>
-            )}
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Amount *</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 font-medium">₱</span>
-                  </div>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    min="0"
-                    name="amount"
-                    required
-                    value={formData.amount}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-medium text-church-navy bg-white" 
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Date *</label>
-                <ModernDatePicker 
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Fund Type *</label>
-                <ModernDropdown
-                  value={formData.fundId}
-                  onChange={(val) => handleChange({ target: { name: 'fundId', value: val } })}
-                  options={funds.map(f => ({ value: f.id, label: f.name }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1.5">Method *</label>
-                <ModernDropdown
-                  value={formData.method}
-                  onChange={(val) => handleChange({ target: { name: 'method', value: val } })}
-                  options={[
-                    { value: 'Cash', label: 'Cash' },
-                    { value: 'GCash', label: 'GCash' },
-                    { value: 'Maya', label: 'Maya' },
-                    { value: 'Bank Transfer', label: 'Bank Transfer' },
-                    { value: 'Check', label: 'Check' },
-                    { value: 'Online Payment', label: 'Online Payment' }
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-church-navy mb-1.5">Campaign (Optional)</label>
-              <ModernDropdown
-                value={formData.campaignId || ''}
-                onChange={(val) => handleChange({ target: { name: 'campaignId', value: val } })}
-                options={[
-                  { value: '', label: 'None' },
-                  ...campaigns.map(c => ({ value: c.id, label: c.title }))
-                ]}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-church-navy mb-1.5">Notes (Optional)</label>
-              <textarea 
-                name="notes"
-                rows="2"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Check number, specific designation, etc."
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white" 
-              />
-            </div>
-
-            <div className="pt-6 border-t border-gray-100 flex justify-end space-x-3">
-              <button 
-                type="button" 
-                onClick={onClose}
-                disabled={loading}
-                className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
-              >
-                {loading ? 'Saving...' : 'Save Record'}
-              </button>
-            </div>
-          </form>
+                  `}
+                >
+                  <GiverIcon size={15} className={isActive ? 'text-[#2C4A60]' : 'text-slate-400'} />
+                  <span className="truncate">{label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </div>
+
+        {formData.giverEntityType === 'household' && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Household</label>
+            <ModernDropdown
+              value={formData.householdId}
+              onChange={(val) => {
+                const selectedHousehold = households.find(h => h.id === val);
+                setFormData(prev => ({
+                  ...prev,
+                  householdId: val,
+                  donorName: selectedHousehold ? selectedHousehold.name : ''
+                }));
+              }}
+              options={[
+                { value: '', label: '-- Select Household --' },
+                ...households.map(h => ({ value: h.id, label: h.name }))
+              ]}
+              placeholder="-- Select Household --"
+              searchable={true}
+            />
+          </div>
+        )}
+        
+        {formData.giverEntityType === 'individual' && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Donor Name</label>
+            <ModernDropdown
+              value={formData.userId ? formData.userId : (formData.donorName && formData.donorName !== 'Anonymous' ? 'custom_donor' : '')}
+              onChange={(val) => {
+                if (typeof val === 'string' && val.startsWith('custom:')) {
+                  const customName = val.replace('custom:', '');
+                  setFormData(prev => ({
+                    ...prev,
+                    userId: '',
+                    donorName: customName
+                  }));
+                } else {
+                  const selectedMember = members.find(m => m.id === val);
+                  setFormData(prev => ({
+                    ...prev,
+                    userId: val,
+                    donorName: selectedMember ? selectedMember.name : (val === '' ? 'Anonymous' : prev.donorName)
+                  }));
+                }
+              }}
+              options={donorOptions}
+              placeholder="-- Select Donor --"
+              searchable={true}
+            />
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Amount *</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
+                ₱
+              </div>
+              <input 
+                type="number" 
+                step="0.01"
+                min="0"
+                name="amount"
+                required
+                value={formData.amount}
+                onChange={handleChange}
+                placeholder="0.00"
+                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-semibold text-slate-900 bg-white placeholder:text-slate-400 text-sm" 
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Date *</label>
+            <ModernDatePicker 
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Fund Type *</label>
+            <ModernDropdown
+              value={formData.fundId}
+              onChange={(val) => handleChange({ target: { name: 'fundId', value: val } })}
+              options={funds.map(f => ({ value: f.id, label: f.name }))}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Payment Method *</label>
+            <ModernDropdown
+              value={formData.method}
+              onChange={(val) => handleChange({ target: { name: 'method', value: val } })}
+              options={METHOD_OPTIONS}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Giving Campaign (Optional)</label>
+          <ModernDropdown
+            value={formData.campaignId || ''}
+            onChange={(val) => handleChange({ target: { name: 'campaignId', value: val } })}
+            options={[
+              { value: '', label: 'None' },
+              ...campaigns.map(c => ({ value: c.id, label: c.title }))
+            ]}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Notes (Optional)</label>
+          <textarea 
+            name="notes"
+            rows="2"
+            value={formData.notes}
+            onChange={handleChange}
+            placeholder="Check number, specific designation, donor request, etc."
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm" 
+          />
+        </div>
+      </form>
+    </Modal>
   );
 }

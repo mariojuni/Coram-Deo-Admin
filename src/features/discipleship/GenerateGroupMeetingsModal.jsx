@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Check, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Calendar, Check, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { previewWeeklyGroupMeetings, saveGroupMeetingEvents } from './discipleshipGroupService';
+import Modal from '../../components/ui/Modal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -80,32 +81,42 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-      <div className="glass-light-card rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-white/95 flex flex-col max-h-[85vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2C4A60]/10 text-[#2C4A60] flex items-center justify-center">
-              <Calendar size={20} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Generate Weekly Meetings</h2>
-              <p className="text-xs text-slate-500">{group.name} ({group.meetingDay}s at {group.meetingTime})</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-white/80">
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Generate Weekly Meetings"
+      subtitle={`${group.name} (${group.meetingDay}s at ${group.meetingTime})`}
+      icon={Calendar}
+      maxWidth="xl"
+      footer={
+        <>
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            Cancel
           </button>
-        </div>
-
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={generating || previews.filter(p => p.selected && !p.isDuplicate).length === 0}
+            className="px-6 py-2.5 bg-[#162533] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm hover:bg-[#1E2E3D] transition-all disabled:opacity-50"
+          >
+            {generating ? 'Generating...' : `Generate ${previews.filter(p => p.selected && !p.isDuplicate).length} Meetings`}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
         {/* Month/Year selector */}
-        <div className="grid grid-cols-2 gap-3 my-4 shrink-0">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50/70 border border-slate-200/60 rounded-2xl">
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Month</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Month</label>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:outline-none"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
             >
               {MONTH_NAMES.map((m, idx) => (
                 <option key={m} value={idx}>{m}</option>
@@ -113,11 +124,11 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
             </select>
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Year</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Year</label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:outline-none"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
             >
               {[selectedYear - 1, selectedYear, selectedYear + 1].map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -127,7 +138,11 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
         </div>
 
         {/* Meeting Previews List */}
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
+        <div className="space-y-2.5">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Detected Sessions ({previews.filter(p => p.selected && !p.isDuplicate).length} Selected)
+          </label>
+
           {loadingPreview ? (
             <div className="text-center py-8 text-xs text-slate-400 font-medium flex items-center justify-center space-x-2">
               <RefreshCw size={14} className="animate-spin text-[#2C4A60]" />
@@ -143,10 +158,10 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
                 key={item._previewId}
                 className={`flex items-start justify-between p-3.5 rounded-xl border transition-all ${
                   item.isDuplicate
-                    ? 'bg-amber-50/50 border-amber-200 opacity-80 cursor-not-allowed'
+                    ? 'bg-amber-50/60 border-amber-200/80 opacity-80 cursor-not-allowed'
                     : item.selected
-                    ? 'border-[#2C4A60] bg-[#2C4A60]/5'
-                    : 'border-slate-100 hover:border-slate-200'
+                    ? 'border-[#2C4A60] bg-[#2C4A60]/5 shadow-2xs'
+                    : 'border-slate-200/70 bg-white/70 hover:border-slate-300'
                 }`}
               >
                 <div className="flex-1 mr-4">
@@ -175,42 +190,30 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
                         type="text"
                         value={item.location}
                         onChange={(e) => handlePreviewChange(item._previewId, 'location', e.target.value)}
-                        className="mt-1 border-b border-dashed border-slate-300 focus:outline-none focus:border-solid focus:border-[#2C4A60] bg-transparent flex-1 min-w-[150px]"
+                        className="mt-1 border-b border-dashed border-slate-300 focus:outline-none focus:border-solid focus:border-[#2C4A60] bg-transparent flex-1 min-w-[150px] text-slate-800"
                       />
                     ) : (
-                      <span className="mt-1">{item.location}</span>
+                      <span className="mt-1 text-slate-700">{item.location}</span>
                     )}
                   </div>
                 </div>
 
                 {!item.isDuplicate && (
-                  <div 
+                  <button
+                    type="button" 
                     onClick={() => toggleSelect(item._previewId)}
                     className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-1 ${
-                      item.selected ? 'bg-[#2C4A60] text-white' : 'border border-slate-300 hover:border-[#2C4A60]'
-                    }`}>
+                      item.selected ? 'bg-[#2C4A60] text-white shadow-2xs' : 'border border-slate-300 hover:border-[#2C4A60] bg-white'
+                    }`}
+                  >
                     {item.selected && <Check size={14} />}
-                  </div>
+                  </button>
                 )}
               </div>
             ))
           )}
         </div>
-
-        {/* Footer */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900">
-            Cancel
-          </button>
-          <button
-            onClick={handleGenerate}
-            disabled={generating || previews.filter(p => p.selected && !p.isDuplicate).length === 0}
-            className="px-5 py-2 bg-[#162533] text-white text-xs font-bold rounded-xl shadow-sm hover:bg-[#1E2E3D] transition-colors disabled:opacity-50"
-          >
-            {generating ? 'Generating...' : `Generate ${previews.filter(p => p.selected && !p.isDuplicate).length} Meetings`}
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
