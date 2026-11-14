@@ -8,10 +8,17 @@ import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import ModernTimePicker from '../../components/ui/ModernTimePicker';
 
 const EVENT_CATEGORIES = [
-  'Weekly Service', 'Worship Service', 'Discipleship', 'Sunday School', 
-  'Prayer Meeting', 'Bible Study', 'Youth Fellowship', 
+  'Weekly Service', 'Discipleship', 'Youth Fellowship', 
   'Church Anniversary', 'VBS', 'Outreach', 
   'Visitation', 'Leadership Meeting'
+];
+
+const EVENT_CATEGORY_OPTIONS = EVENT_CATEGORIES.map(cat => ({ value: cat, label: cat }));
+
+const STATUS_OPTIONS = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'published', label: 'Published' },
+  { value: 'cancelled', label: 'Cancelled' }
 ];
 
 export const REMINDER_OPTIONS = [
@@ -248,7 +255,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
               <ModernDropdown
                 value={formData.category}
                 onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
-                options={EVENT_CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                options={EVENT_CATEGORY_OPTIONS}
               />
             </div>
             <div>
@@ -256,11 +263,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
               <ModernDropdown
                 value={formData.status}
                 onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
-                options={[
-                  { value: 'draft', label: 'Draft' },
-                  { value: 'published', label: 'Published' },
-                  { value: 'cancelled', label: 'Cancelled' }
-                ]}
+                options={STATUS_OPTIONS}
               />
             </div>
             <div>
