@@ -90,10 +90,10 @@ export default function BibleLibraryDashboard() {
         </div>
         <button
           onClick={() => navigate('/admin/bible-library/import')}
-          className="flex items-center px-4 py-2 bg-church-navy text-white rounded-lg hover:bg-church-navy/90 transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
         >
-          <Plus size={18} className="mr-2" />
-          Import Bible Version
+          <Plus size={16} />
+          <span>Import Bible Version</span>
         </button>
       </div>
 
@@ -116,7 +116,7 @@ export default function BibleLibraryDashboard() {
               placeholder="Search languages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-church-navy focus:border-transparent"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2C4A60] focus:border-transparent"
             />
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function BibleLibraryDashboard() {
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-church-navy flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-[#162533] flex items-center justify-center shrink-0">
                   <span className="text-white font-black text-base leading-tight text-center">
                     {selectedVersion.abbreviation}
                   </span>

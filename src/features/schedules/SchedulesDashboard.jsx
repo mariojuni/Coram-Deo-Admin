@@ -88,7 +88,7 @@ export default function SchedulesDashboard() {
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <StatusPill variant="steel" dot className="mb-2">
             Ministry Service Roster
           </StatusPill>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Ministry Scheduling</h1>
@@ -123,7 +123,7 @@ export default function SchedulesDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`pb-3.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                   isActive 
-                    ? 'border-church-rose text-church-rose' 
+                    ? 'border-[#2C4A60] text-[#2C4A60]' 
                     : 'border-transparent text-church-slate hover:text-church-charcoal'
                 }`}
               >
@@ -136,7 +136,7 @@ export default function SchedulesDashboard() {
         <div className="p-6 md:p-8">
           {assignments.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl mx-auto flex items-center justify-center mb-4 border border-pink-100 shadow-sm">
+              <div className="w-16 h-16 bg-[#EBF2F7] text-[#2C4A60] rounded-3xl mx-auto flex items-center justify-center mb-4 border border-[#D5E3EC] shadow-sm">
                 <Calendar size={28} />
               </div>
               <h3 className="text-lg font-black text-church-charcoal mb-1">No assignments scheduled</h3>
@@ -158,7 +158,7 @@ export default function SchedulesDashboard() {
                     <div key={dateStr} className="border border-gray-100 rounded-2xl overflow-hidden bg-white">
                       <div className="bg-gray-50/80 px-6 py-3.5 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-bold text-church-charcoal text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-church-rose" />
+                          <span className="w-2 h-2 rounded-full bg-[#2C4A60]" />
                           {new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </h3>
                         <span className="text-xs font-bold text-church-slate">{dateAssignments.length} Assigned</span>
@@ -167,7 +167,7 @@ export default function SchedulesDashboard() {
                         {dateAssignments.map(a => (
                           <div key={a.id} className="p-4 border border-gray-100 rounded-2xl hover:border-gray-200 transition-all bg-white relative group">
                             <h4 className="font-bold text-church-charcoal text-sm mb-1 pr-7 truncate">{a.eventName}</h4>
-                            <p className="text-xs text-church-rose font-bold mb-2">{a.ministryName} &bull; {a.roleName}</p>
+                            <p className="text-xs text-[#2C4A60] font-bold mb-2">{a.ministryName} &bull; {a.roleName}</p>
                             <div className="flex items-center text-xs font-medium text-church-slate mb-3">
                               <Users size={13} className="mr-1.5 text-church-muted" /> 
                               <span className="text-church-charcoal font-semibold">{a.memberName}</span>
@@ -176,7 +176,7 @@ export default function SchedulesDashboard() {
                               <p className="text-[11px] font-semibold text-church-muted mb-3">Call Time: {a.callTime}</p>
                             )}
                             <div className="flex items-center space-x-2">
-                              <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'rose' : 'amber')}>
+                              <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'red' : 'amber')}>
                                 {a.status || 'Pending'}
                               </StatusPill>
                               {a.canViewSongList && (
@@ -228,7 +228,7 @@ export default function SchedulesDashboard() {
                     <div key={ministryName} className="border border-gray-100 rounded-2xl overflow-hidden bg-white">
                       <div className="bg-gray-50/80 px-6 py-3.5 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-bold text-church-charcoal text-sm flex items-center">
-                          <Shield size={16} className="mr-2 text-church-rose" /> {ministryName}
+                          <Shield size={16} className="mr-2 text-[#2C4A60]" /> {ministryName}
                         </h3>
                         <span className="text-xs font-bold text-church-slate">{minAssignments.length} Assignments</span>
                       </div>
@@ -237,10 +237,10 @@ export default function SchedulesDashboard() {
                           <div key={a.id} className="p-4 border border-gray-100 rounded-2xl hover:border-gray-200 transition-all bg-white relative">
                             <h4 className="font-bold text-church-charcoal text-sm mb-1 pr-7 truncate">{a.eventName}</h4>
                             <p className="text-xs text-church-muted font-medium mb-1.5">{a.eventDate}</p>
-                            <p className="text-xs font-bold text-church-rose">{a.roleName}</p>
+                            <p className="text-xs font-bold text-[#2C4A60]">{a.roleName}</p>
                             <p className="text-xs text-church-slate font-medium mb-3">{a.memberName}</p>
                             
-                            <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'rose' : 'amber')}>
+                            <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'red' : 'amber')}>
                               {a.status || 'Pending'}
                             </StatusPill>
                             
@@ -288,7 +288,7 @@ export default function SchedulesDashboard() {
                             <p className="text-xs text-church-muted font-medium mb-1.5">{a.eventDate}</p>
                             <p className="text-xs font-bold text-church-violet">{a.ministryName} &bull; {a.roleName}</p>
                             <div className="mt-3">
-                              <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'rose' : 'amber')}>
+                              <StatusPill variant={a.status === 'Confirmed' ? 'emerald' : (a.status === 'Declined' ? 'red' : 'amber')}>
                                 {a.status || 'Pending'}
                               </StatusPill>
                             </div>

@@ -82,17 +82,17 @@ export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       <div 
-        className="absolute inset-0 bg-church-navy/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xl flex flex-col z-10">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="relative glass-light-card rounded-3xl shadow-2xl w-full max-w-xl flex flex-col z-10 border border-white/95 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center mr-3">
-              <Upload size={20} className="text-church-green" />
+            <div className="w-10 h-10 bg-[#2C4A60]/10 rounded-2xl flex items-center justify-center mr-3 text-[#2C4A60]">
+              <Upload size={20} />
             </div>
             <div>
               <h2 className="text-xl font-bold text-church-navy">Import Bible Plan JSON</h2>
@@ -149,17 +149,17 @@ export default function BiblePlanImportModal({ isOpen, onClose, onImportSuccess 
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-3xl flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl"
+            className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleImport}
             disabled={!previewData || loading}
-            className="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-church-green hover:bg-church-green-dark rounded-xl disabled:opacity-50"
+            className="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-full disabled:opacity-50 shadow-sm transition-all"
           >
             {loading ? 'Importing...' : 'Confirm Import'}
           </button>

@@ -167,7 +167,7 @@ export default function PendingVerification() {
     return (
       <SoftCard className="p-16 text-center">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+          <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
           <p className="text-sm font-semibold text-church-slate">Loading pending verifications...</p>
         </div>
       </SoftCard>
@@ -178,7 +178,7 @@ export default function PendingVerification() {
     <SoftCard className="p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <span className="text-[11px] font-extrabold text-church-rose tracking-wider uppercase bg-church-rose-light px-3 py-1 rounded-full border border-pink-100">
+          <span className="text-[11px] font-bold text-[#2C4A60] tracking-wider uppercase bg-[#EBF2F7] px-3 py-1 rounded-full border border-[#D5E3EC]">
             AUDIT & VERIFICATION
           </span>
           <h2 className="text-xl sm:text-2xl font-black text-church-charcoal tracking-tight mt-2">
@@ -195,7 +195,7 @@ export default function PendingVerification() {
             placeholder="Search by donor or fund..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose bg-gray-50/50 transition-all"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#4F748E]/20 focus:border-[#2C4A60] bg-gray-50/50 transition-all"
           />
           <Search size={16} className="absolute left-3.5 top-2.5 text-gray-400" />
         </div>
@@ -240,7 +240,7 @@ export default function PendingVerification() {
                     </td>
                     <td className="p-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] border border-slate-200/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
                           {donorName.charAt(0)}
                         </div>
                         <div>
@@ -272,7 +272,7 @@ export default function PendingVerification() {
                           href={record.proofOfPaymentUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-xs font-bold text-church-rose hover:text-church-rose-dark bg-rose-50 hover:bg-rose-100/80 px-3 py-1.5 rounded-xl transition-colors border border-rose-100"
+                          className="inline-flex items-center text-xs font-bold text-[#2C4A60] hover:text-[#1D3547] bg-[#EBF2F7] hover:bg-[#D5E3EC] px-3 py-1.5 rounded-xl transition-colors border border-[#D5E3EC]"
                         >
                           <FileImage size={15} className="mr-1.5" />
                           View Receipt

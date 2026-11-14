@@ -426,7 +426,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               <div className="flex flex-wrap items-center text-xs text-church-slate mt-1 gap-x-4 gap-y-1 font-medium">
                 {member.email && (
                   <span className="flex items-center gap-1 text-gray-300">
-                    <Mail size={13} className="text-church-rose shrink-0" />
+                    <Mail size={13} className="text-[#7B9EB2] shrink-0" />
                     <span className="truncate max-w-[200px] sm:max-w-none">{member.email}</span>
                     <button 
                       type="button"
@@ -464,7 +464,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
             onClick={() => setActiveTab('profile')}
             className={`py-3.5 transition-colors border-b-2 whitespace-nowrap ${
               activeTab === 'profile' 
-                ? 'border-church-rose text-church-rose' 
+                ? 'border-[#2C4A60] text-[#2C4A60]' 
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -475,14 +475,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
             onClick={() => setActiveTab('ministry')}
             className={`py-3.5 transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'ministry' 
-                ? 'border-church-rose text-church-rose' 
+                ? 'border-[#2C4A60] text-[#2C4A60]' 
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
             <span>Ministry & Discipleship</span>
             {(memberMinistries.length + memberGroups.length) > 0 && (
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'ministry' ? 'bg-church-rose-light text-church-rose' : 'bg-gray-100 text-gray-500'
+                activeTab === 'ministry' ? 'bg-[#EBF2F7] text-[#2C4A60]' : 'bg-gray-100 text-gray-500'
               }`}>
                 {memberMinistries.length + memberGroups.length}
               </span>
@@ -493,14 +493,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
             onClick={() => setActiveTab('attendance')}
             className={`py-3.5 transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'attendance' 
-                ? 'border-church-rose text-church-rose' 
+                ? 'border-[#2C4A60] text-[#2C4A60]' 
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
             <span>Attendance</span>
             {attendanceHistory.length > 0 && (
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'attendance' ? 'bg-church-rose-light text-church-rose' : 'bg-gray-100 text-gray-500'
+                activeTab === 'attendance' ? 'bg-[#EBF2F7] text-[#2C4A60]' : 'bg-gray-100 text-gray-500'
               }`}>
                 {attendanceHistory.length}
               </span>
@@ -512,14 +512,14 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               onClick={() => setActiveTab('giving')}
               className={`py-3.5 transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'giving' 
-                  ? 'border-church-rose text-church-rose' 
+                  ? 'border-[#2C4A60] text-[#2C4A60]' 
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
               <span>Giving History</span>
               {givingHistory.length > 0 && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  activeTab === 'giving' ? 'bg-church-rose-light text-church-rose' : 'bg-gray-100 text-gray-500'
+                  activeTab === 'giving' ? 'bg-[#EBF2F7] text-[#2C4A60]' : 'bg-gray-100 text-gray-500'
                 }`}>
                   {givingHistory.length}
                 </span>
@@ -532,7 +532,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               onClick={() => setActiveTab('access')}
               className={`py-3.5 transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === 'access' 
-                  ? 'border-church-rose text-church-rose' 
+                  ? 'border-[#2C4A60] text-[#2C4A60]' 
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -551,7 +551,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               {/* Left Column */}
               <div className="space-y-5">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                  <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <User size={15} /> Demographics
                   </h3>
                   <dl className="space-y-2.5 text-xs sm:text-sm">
@@ -585,7 +585,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                  <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Phone size={15} /> Emergency Contact
                   </h3>
                   {member.emergencyContact ? (
@@ -599,7 +599,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               {/* Right Column */}
               <div className="space-y-5">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                  <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <CheckCircle size={15} /> Church Status
                   </h3>
                   <dl className="space-y-2.5 text-xs sm:text-sm">
@@ -674,7 +674,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                  <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <HeartHandshake size={15} /> Pastoral & Admin Notes
                   </h3>
                   <p className="text-xs sm:text-sm text-church-navy whitespace-pre-wrap leading-relaxed">
@@ -690,7 +690,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
           {activeTab === 'ministry' && (
             <div className="bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-gray-100 space-y-6">
               <div className="text-center space-y-1.5 max-w-md mx-auto">
-                <div className="w-12 h-12 bg-church-rose-light text-church-rose rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm">
+                <div className="w-12 h-12 bg-[#EBF2F7] text-[#2C4A60] rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm">
                   <HeartHandshake size={24} />
                 </div>
                 <h2 className="text-base font-bold text-church-navy">Family Group & Ministries</h2>
@@ -714,7 +714,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {memberMinistries.map(ministry => (
                       <div key={ministry.id} className="p-3.5 border border-gray-100 rounded-xl bg-gray-50/40 flex items-center space-x-3">
-                        <div className="w-9 h-9 bg-church-rose-light text-church-rose rounded-xl flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 bg-[#EBF2F7] text-[#2C4A60] rounded-xl flex items-center justify-center shrink-0">
                           <HeartHandshake size={18} />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -760,7 +760,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
           {activeTab === 'attendance' && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider flex items-center gap-1.5">
                   <ClipboardCheck size={15} /> Attendance Records
                 </h3>
                 <span className="text-xs text-church-slate font-semibold">
@@ -794,7 +794,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                           <td className="px-6 py-3.5 text-right font-medium">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
                               record.status === 'Present' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
-                              record.status === 'Absent' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                              record.status === 'Absent' ? 'bg-red-50 text-red-700 border border-red-200' :
                               record.status === 'Late' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                               'bg-purple-50 text-purple-700 border border-purple-200'
                             }`}>
@@ -824,7 +824,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                         type="checkbox" 
                         checked={showHouseholdGiving} 
                         onChange={() => setShowHouseholdGiving(true)} 
-                        className="mr-2 accent-church-rose rounded"
+                        className="mr-2 accent-[#2C4A60] rounded"
                       />
                       Show Household Giving
                     </label>
@@ -833,7 +833,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                         type="checkbox" 
                         checked={!showHouseholdGiving} 
                         onChange={() => setShowHouseholdGiving(false)} 
-                        className="mr-2 accent-church-rose rounded"
+                        className="mr-2 accent-[#2C4A60] rounded"
                       />
                       Show Only Individual Giving
                     </label>
@@ -843,7 +843,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
               
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 px-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                  <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider flex items-center gap-1.5">
                     <CreditCard size={15} /> Giving Records
                   </h3>
                   <div className="text-xs sm:text-sm font-bold text-church-navy">
@@ -920,7 +920,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                             key={role}
                             className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                               isChecked
-                                ? 'bg-church-rose/5 border-church-rose/40'
+                                ? 'bg-[#2C4A60]/5 border-[#2C4A60]/40'
                                 : 'bg-white border-gray-200 hover:border-gray-300'
                             }`}
                           >
@@ -929,7 +929,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                               checked={isChecked}
                               onChange={() => toggleRole(role)}
                               disabled={member.id === userProfile?.uid}
-                              className="w-4 h-4 mt-0.5 rounded accent-church-rose"
+                              className="w-4 h-4 mt-0.5 rounded accent-[#2C4A60]"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -937,7 +937,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                                   {role.replace(/_/g, ' ')}
                                 </span>
                                 {isFirst && isChecked && (
-                                  <span className="text-[10px] font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-church-rose/20">
+                                  <span className="text-[10px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2 py-0.5 rounded-full border border-[#D5E3EC]">
                                     PRIMARY
                                   </span>
                                 )}
@@ -951,7 +951,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                       })}
                     </div>
                     {member.id === userProfile?.uid && (
-                      <p className="text-xs text-rose-500 mt-1.5 font-medium">You cannot change your own role.</p>
+                      <p className="text-xs text-red-500 mt-1.5 font-medium">You cannot change your own role.</p>
                     )}
                   </div>
 
@@ -964,7 +964,7 @@ export default function MemberProfileModal({ isOpen, onClose, member = null, onE
                       onChange={(e) => setReason(e.target.value)}
                       placeholder="Why are these roles being changed?"
                       rows="2"
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose text-xs sm:text-sm resize-none"
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F748E]/30 focus:border-[#2C4A60] text-xs sm:text-sm resize-none"
                     />
                   </div>
 

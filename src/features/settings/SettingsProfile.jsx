@@ -467,7 +467,7 @@ export default function SettingsProfile() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin mb-3" />
+        <div className="w-10 h-10 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin mb-3" />
         <p className="text-sm font-semibold text-church-slate">Loading church profile...</p>
       </div>
     );
@@ -545,7 +545,7 @@ export default function SettingsProfile() {
           {/* Church Emblem & Seal */}
           <SoftCard className="p-6">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-church-rose/10 flex items-center justify-center text-church-rose">
+              <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] flex items-center justify-center text-[#2C4A60]">
                 <Church size={18} />
               </div>
               <div>
@@ -555,7 +555,7 @@ export default function SettingsProfile() {
             </div>
 
             <div>
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-church-canvas relative group transition-all hover:border-church-rose/40 hover:bg-church-rose/5">
+              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-church-canvas relative group transition-all hover:border-[#2C4A60]/40 hover:bg-[#EBF2F7]/50">
                 {activeDisplayLogo ? (
                   <div className="relative group/logo">
                     <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white shadow-church-soft border border-gray-100 flex items-center justify-center p-2.5">
@@ -581,7 +581,7 @@ export default function SettingsProfile() {
                   </div>
                 )}
 
-                <label className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-xs font-bold text-church-navy rounded-full shadow-sm hover:border-church-rose hover:text-church-rose cursor-pointer transition-colors">
+                <label className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-xs font-bold text-church-navy rounded-full shadow-sm hover:border-[#2C4A60] hover:text-[#2C4A60] cursor-pointer transition-colors">
                   <Upload size={14} />
                   <span>{activeDisplayLogo ? 'Change Emblem' : 'Upload Emblem'}</span>
                   <input
@@ -654,7 +654,7 @@ export default function SettingsProfile() {
                     value={formData.currency.symbol}
                     onChange={(e) => handleCurrencyFieldChange('symbol', e.target.value)}
                     placeholder="e.g. ₱, $, AED"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                   />
                 </div>
 
@@ -702,7 +702,7 @@ export default function SettingsProfile() {
                       onClick={() => handleCurrencyFieldChange('decimalPlaces', decimals)}
                       className={`px-3 py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                         formData.currency.decimalPlaces === decimals
-                          ? 'border-church-rose bg-church-rose/5 text-church-rose'
+                          ? 'border-[#2C4A60] bg-[#EBF2F7]/50 text-[#2C4A60]'
                           : 'border-gray-200 bg-gray-50/70 text-church-slate hover:bg-white'
                       }`}
                     >
@@ -726,8 +726,8 @@ export default function SettingsProfile() {
               </div>
 
               {/* Live Preview Card */}
-              <div className="p-4 bg-gradient-to-br from-church-rose-light/50 to-white rounded-2xl border border-church-rose/20 shadow-2xs">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-church-rose block mb-1">
+              <div className="p-4 bg-gradient-to-br from-[#EBF2F7]/80 to-white rounded-2xl border border-[#D5E3EC] shadow-2xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2C4A60] block mb-1">
                   Live Display Preview
                 </span>
                 <div className="flex items-baseline justify-between">
@@ -756,7 +756,7 @@ export default function SettingsProfile() {
           {/* General Church Information */}
           <SoftCard className="p-6">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-church-rose/10 flex items-center justify-center text-church-rose">
+              <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] flex items-center justify-center text-[#2C4A60]">
                 <Building2 size={18} />
               </div>
               <div>
@@ -778,7 +778,7 @@ export default function SettingsProfile() {
                     value={formData.churchName}
                     onChange={handleChange}
                     placeholder="e.g. Grace Fellowship Baptist Church"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -793,7 +793,7 @@ export default function SettingsProfile() {
                     value={formData.shortName}
                     onChange={handleChange}
                     placeholder="e.g. GFBC"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all uppercase"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all uppercase"
                   />
                 </div>
               </div>
@@ -810,7 +810,7 @@ export default function SettingsProfile() {
                     value={formData.seniorPastor}
                     onChange={handleChange}
                     placeholder="e.g. Pastor David Reynolds"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -825,7 +825,7 @@ export default function SettingsProfile() {
                     value={formData.denomination}
                     onChange={handleChange}
                     placeholder="e.g. Reformed Baptist, Non-Denominational, PCA"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -842,7 +842,7 @@ export default function SettingsProfile() {
                     value={formData.district}
                     onChange={handleChange}
                     placeholder="e.g. Metro Manila District"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -857,7 +857,7 @@ export default function SettingsProfile() {
                     value={formData.dateOrganized}
                     onChange={handleChange}
                     placeholder="e.g. October 1998"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -873,7 +873,7 @@ export default function SettingsProfile() {
                   value={formData.tagline}
                   onChange={handleChange}
                   placeholder="e.g. Soli Deo Gloria — Knowing Christ and Making Him Known"
-                  className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -903,7 +903,7 @@ export default function SettingsProfile() {
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="Building, Suite, Street name, Barangay / Neighborhood"
-                  className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none resize-none transition-all"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-sm font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none resize-none transition-all"
                 />
               </div>
 
@@ -919,7 +919,7 @@ export default function SettingsProfile() {
                     value={formData.city}
                     onChange={handleChange}
                     placeholder="e.g. Quezon City"
-                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                   />
                 </div>
 
@@ -933,7 +933,7 @@ export default function SettingsProfile() {
                     value={formData.province}
                     onChange={handleChange}
                     placeholder="e.g. Metro Manila"
-                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                   />
                 </div>
 
@@ -947,7 +947,7 @@ export default function SettingsProfile() {
                     value={formData.postalCode}
                     onChange={handleChange}
                     placeholder="e.g. 1100"
-                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                   />
                 </div>
 
@@ -961,7 +961,7 @@ export default function SettingsProfile() {
                     value={formData.country}
                     onChange={handleChange}
                     placeholder="e.g. Philippines"
-                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                    className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                   />
                 </div>
               </div>
@@ -993,7 +993,7 @@ export default function SettingsProfile() {
                     value={formData.contact.phone}
                     onChange={(e) => handleChange(e, 'contact')}
                     placeholder="+63 (02) 8123-4567"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -1007,7 +1007,7 @@ export default function SettingsProfile() {
                     value={formData.contact.pastoralPhone}
                     onChange={(e) => handleChange(e, 'contact')}
                     placeholder="+63 917 123 4567"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -1021,7 +1021,7 @@ export default function SettingsProfile() {
                     value={formData.contact.email}
                     onChange={(e) => handleChange(e, 'contact')}
                     placeholder="office@church.org"
-                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 focus:outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -1045,7 +1045,7 @@ export default function SettingsProfile() {
                       value={formData.social.website}
                       onChange={(e) => handleChange(e, 'social')}
                       placeholder="https://..."
-                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                     />
                   </div>
 
@@ -1059,7 +1059,7 @@ export default function SettingsProfile() {
                       value={formData.social.youtube}
                       onChange={(e) => handleChange(e, 'social')}
                       placeholder="@churchstream"
-                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                     />
                   </div>
 
@@ -1073,7 +1073,7 @@ export default function SettingsProfile() {
                       value={formData.social.facebook}
                       onChange={(e) => handleChange(e, 'social')}
                       placeholder="facebook.com/church"
-                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                     />
                   </div>
 
@@ -1087,7 +1087,7 @@ export default function SettingsProfile() {
                       value={formData.social.instagram}
                       onChange={(e) => handleChange(e, 'social')}
                       placeholder="@churchcommunity"
-                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-church-rose focus:outline-none"
+                      className="w-full px-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:bg-white focus:border-[#2C4A60] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1120,7 +1120,7 @@ export default function SettingsProfile() {
                 onClick={addService}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-church-cream/70 hover:bg-church-cream text-church-navy text-xs font-bold rounded-full border border-gray-200/80 transition-colors self-start sm:self-auto shadow-xs"
               >
-                <Plus size={14} className="text-church-rose" />
+                <Plus size={14} className="text-[#2C4A60]" />
                 <span>Add Service</span>
               </button>
             </div>
@@ -1165,7 +1165,7 @@ export default function SettingsProfile() {
                           placeholder="Time (e.g. 09:00 AM)"
                           value={service.time}
                           onChange={(e) => updateService(index, 'time', e.target.value)}
-                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:border-church-rose focus:outline-none"
+                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-church-navy focus:border-[#2C4A60] focus:outline-none"
                         />
                       </div>
 
@@ -1179,7 +1179,7 @@ export default function SettingsProfile() {
                           placeholder="Service Name (e.g. Sunday Worship Celebration)"
                           value={service.name}
                           onChange={(e) => updateService(index, 'name', e.target.value)}
-                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:border-church-rose focus:outline-none"
+                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-church-navy focus:border-[#2C4A60] focus:outline-none"
                         />
                       </div>
 
@@ -1193,7 +1193,7 @@ export default function SettingsProfile() {
                           placeholder="Venue (e.g. Main Sanctuary)"
                           value={service.venue || ''}
                           onChange={(e) => updateService(index, 'venue', e.target.value)}
-                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:border-church-rose focus:outline-none"
+                          className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:border-[#2C4A60] focus:outline-none"
                         />
                       </div>
                     </div>

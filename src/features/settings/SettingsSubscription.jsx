@@ -232,7 +232,7 @@ export default function SettingsSubscription({ churchId }) {
 
       {/* Sponsored Banner */}
       {sub.subscription?.isSponsored && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-transparent border border-purple-200 flex items-center justify-between gap-3 text-xs md:text-sm">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#2C4A60]/10 via-[#4F748E]/10 to-transparent border border-[#D5E3EC] flex items-center justify-between gap-3 text-xs md:text-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black">
               <Gift size={20} />
@@ -342,7 +342,7 @@ export default function SettingsSubscription({ churchId }) {
               setManualTier(latestRejectedSubmission.tier || 'growth');
               setIsManualModalOpen(true);
             }}
-            className="px-4 py-2 rounded-xl bg-church-rose text-white font-bold text-xs hover:bg-church-ruby shrink-0 shadow-sm"
+            className="px-4 py-2 rounded-xl bg-[#162533] text-white font-bold text-xs hover:bg-[#1E2E3D] shrink-0 shadow-sm"
           >
             Re-upload Payment Proof
           </button>
@@ -357,7 +357,7 @@ export default function SettingsSubscription({ churchId }) {
             <div>
               <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-church-rose/10 text-church-rose flex items-center justify-center font-black">
+                  <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center font-black">
                     <Receipt size={18} />
                   </div>
                   <div>
@@ -401,7 +401,7 @@ export default function SettingsSubscription({ churchId }) {
                 <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 col-span-2 sm:col-span-1">
                   <span className="text-church-slate font-medium block text-[11px]">Payment Method</span>
                   <span className="font-bold text-church-navy flex items-center gap-1.5">
-                    <Building2 size={13} className="text-church-rose" />
+                    <Building2 size={13} className="text-[#2C4A60]" />
                     <span>Direct Bank & GCash</span>
                   </span>
                 </div>
@@ -419,7 +419,7 @@ export default function SettingsSubscription({ churchId }) {
                   setManualTier(sub.isSeed ? 'growth' : sub.tier);
                   setIsManualModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-church-rose hover:bg-church-ruby text-white text-xs font-bold shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold shadow-sm transition-all"
               >
                 <Building2 size={14} />
                 <span>Submit Bank / GCash Payment</span>
@@ -635,7 +635,7 @@ export default function SettingsSubscription({ churchId }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Category 1: Sermons */}
             <div className="p-3.5 rounded-2xl bg-gray-50/80 border border-gray-100 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-rose-50 text-church-rose flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center shrink-0">
                 <Film size={16} />
               </div>
               <div className="min-w-0 flex-1">
@@ -720,12 +720,12 @@ export default function SettingsSubscription({ churchId }) {
                 key={plan.id}
                 className={`rounded-3xl p-6 transition-all relative flex flex-col justify-between border-2 ${
                   isCurrent
-                    ? 'bg-white border-church-rose shadow-church-glow'
-                    : 'bg-white border-gray-100 hover:border-gray-300 shadow-church-soft'
+                    ? 'bg-white border-[#2C4A60] shadow-sm'
+                    : 'bg-white border-gray-100 hover:border-gray-300 shadow-sm'
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-church-rose text-white text-[10px] font-extrabold uppercase px-3 py-0.5 rounded-full shadow-sm tracking-wider">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2C4A60] text-white text-[10px] font-extrabold uppercase px-3 py-0.5 rounded-full shadow-sm tracking-wider">
                     Recommended
                   </div>
                 )}
@@ -846,10 +846,10 @@ export default function SettingsSubscription({ churchId }) {
                   : 'text-church-slate hover:text-church-navy'
               }`}
             >
-              <Receipt size={13} className={historyTab === 'invoices' ? 'text-church-rose' : 'text-church-slate'} />
+              <Receipt size={13} className={historyTab === 'invoices' ? 'text-[#2C4A60]' : 'text-church-slate'} />
               <span>Tax Invoices</span>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                historyTab === 'invoices' ? 'bg-church-rose/10 text-church-rose' : 'bg-gray-200 text-church-slate'
+                historyTab === 'invoices' ? 'bg-[#EBF2F7] text-[#2C4A60]' : 'bg-gray-200 text-church-slate'
               }`}>
                 {invoices.length}
               </span>
@@ -859,17 +859,17 @@ export default function SettingsSubscription({ churchId }) {
               onClick={() => setHistoryTab('submissions')}
               className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 ${
                 historyTab === 'submissions' 
-                  ? 'bg-white shadow text-church-rose font-bold' 
+                  ? 'bg-white shadow text-[#2C4A60] font-bold' 
                   : 'text-church-slate hover:text-church-navy'
               }`}
             >
-              <Building2 size={13} className={historyTab === 'submissions' ? 'text-church-rose' : 'text-church-slate'} />
+              <Building2 size={13} className={historyTab === 'submissions' ? 'text-[#2C4A60]' : 'text-church-slate'} />
               <span>Bank Deposits</span>
               {pendingSubmission && (
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               )}
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                historyTab === 'submissions' ? 'bg-church-rose/10 text-church-rose' : 'bg-gray-200 text-church-slate'
+                historyTab === 'submissions' ? 'bg-[#EBF2F7] text-[#2C4A60]' : 'bg-gray-200 text-church-slate'
               }`}>
                 {submissions.length}
               </span>
@@ -961,7 +961,7 @@ export default function SettingsSubscription({ churchId }) {
                               invoice: inv,
                               subscription: sub
                             })}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-church-rose/10 hover:bg-church-rose/20 text-church-rose font-bold text-xs transition-colors shadow-xs"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#EBF2F7] hover:bg-[#D5E3EC] text-[#2C4A60] font-bold text-xs transition-colors shadow-xs"
                             title="Download Official Tax PDF"
                           >
                             <Download size={12} />
@@ -1044,7 +1044,7 @@ export default function SettingsSubscription({ churchId }) {
                           <button
                             type="button"
                             onClick={() => window.open(subm.receiptUrl, '_blank')}
-                            className="inline-flex items-center gap-1 text-church-rose hover:text-church-ruby font-bold"
+                            className="inline-flex items-center gap-1 text-[#2C4A60] hover:text-[#1D3547] font-bold"
                           >
                             <Eye size={13} />
                             <span>View</span>
@@ -1067,7 +1067,7 @@ export default function SettingsSubscription({ churchId }) {
                             setManualTier(sub.isSeed ? 'growth' : sub.tier);
                             setIsManualModalOpen(true);
                           }}
-                          className="mt-2 text-church-rose font-bold hover:underline"
+                          className="mt-2 text-[#2C4A60] font-bold hover:underline"
                         >
                           Submit your first bank receipt
                         </button>

@@ -6,28 +6,34 @@ import React from 'react';
  */
 export default function StatusPill({
   children,
-  variant = 'rose',
+  variant = 'glass',
   dot = false,
   className = '',
   icon: Icon,
 }) {
   const variantClasses = {
-    rose: 'bg-[#FFF0F5] text-[#FF577F] border border-[#FFE4EC]',
-    amber: 'bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]',
-    emerald: 'bg-[#ECFDF5] text-[#10B981] border border-[#A7F3D0]',
-    violet: 'bg-[#F5F3FF] text-[#B66DFF] border border-[#DDD6FE]',
-    slate: 'bg-[#F3F4F6] text-[#4B5563] border border-[#E5E7EB]',
-    glass: 'glass-pill text-white font-medium',
-  }[variant] || 'bg-[#FFF0F5] text-[#FF577F] border border-[#FFE4EC]';
+    navy: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]',
+    steel: 'bg-slate-100 text-slate-700 border border-slate-200',
+    blue: 'bg-blue-50 text-blue-700 border border-blue-200',
+    amber: 'bg-amber-50 text-amber-700 border border-amber-200/80',
+    emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80',
+    rose: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]',
+    violet: 'bg-slate-100 text-[#4F748E] border border-slate-200',
+    slate: 'bg-slate-100 text-slate-700 border border-slate-200',
+    glass: 'glass-light-pill text-[#2C4A60] font-bold shadow-2xs',
+  }[variant] || 'glass-light-pill text-[#2C4A60] font-bold shadow-2xs';
 
   const dotClasses = {
-    rose: 'bg-[#FF577F]',
-    amber: 'bg-[#D97706]',
-    emerald: 'bg-[#10B981]',
-    violet: 'bg-[#B66DFF]',
-    slate: 'bg-[#6B7280]',
-    glass: 'bg-white',
-  }[variant] || 'bg-[#FF577F]';
+    navy: 'bg-[#2C4A60]',
+    steel: 'bg-[#2C4A60]',
+    blue: 'bg-blue-500',
+    amber: 'bg-amber-500',
+    emerald: 'bg-emerald-500',
+    rose: 'bg-[#2C4A60]',
+    violet: 'bg-[#4F748E]',
+    slate: 'bg-slate-500',
+    glass: 'bg-[#2C4A60]',
+  }[variant] || 'bg-[#2C4A60]';
 
   return (
     <span

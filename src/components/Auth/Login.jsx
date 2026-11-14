@@ -25,7 +25,7 @@ import {
 import { RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider, signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getActiveAuth, getActiveApp } from '../../firebase';
-import logo from '../../assets/logo.svg';
+import { CathedralLogo } from '../ui/icons';
 import GradientButton from '../ui/GradientButton';
 import StatusPill from '../ui/StatusPill';
 
@@ -258,28 +258,28 @@ export default function Login() {
       <header className="border-b border-gray-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2 group-hover:scale-105 transition-transform duration-200">
-              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/30 flex items-center justify-center shadow-church-soft p-0.5 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+              <CathedralLogo size={36} />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
-                <span className="text-[10px] font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-pink-100">
+                <span className="text-xl font-black text-[#1E2E3D] tracking-tight">CoramDeo</span>
+                <span className="text-[10px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2.5 py-0.5 rounded-full border border-[#D5E3EC]">
                   Church Platform
                 </span>
               </div>
-              <span className="text-[10px] font-medium text-church-slate -mt-0.5">Faithful Stewardship & Ministry</span>
+              <span className="text-[10px] font-medium text-[#7E97A8] -mt-0.5">Faithful Stewardship & Ministry</span>
             </div>
           </Link>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-xs font-semibold text-church-slate">Need to register your church?</span>
+            <span className="hidden sm:inline text-xs font-semibold text-[#5A7385]">Need to register your church?</span>
             <Link 
               to="/register"
-              className="text-xs font-bold text-church-charcoal hover:text-church-rose px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-church-rose/40 bg-white transition-all shadow-church-soft flex items-center gap-1.5"
+              className="text-xs font-bold text-[#1E2E3D] hover:text-[#2C4A60] px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-slate-300 bg-white transition-all shadow-church-soft flex items-center gap-1.5"
             >
               <span>Register Church</span>
-              <ArrowRight size={13} className="text-church-rose" />
+              <ArrowRight size={13} className="text-[#2C4A60]" />
             </Link>
           </div>
         </div>
@@ -288,9 +288,9 @@ export default function Login() {
       {/* ── Main Layout Body ── */}
       <div className="flex-1 flex flex-col justify-center relative overflow-hidden">
         {/* Ambient background glow orbs */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-pink-100/60 blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-[30rem] h-[30rem] rounded-full bg-purple-100/50 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-rose-50/70 blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#C8DFEE]/35 blur-[160px] pointer-events-none" />
+        <div className="absolute top-1/3 right-1/4 w-[30rem] h-[30rem] rounded-full bg-[#DCEBF4]/40 blur-[140px] pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#C8DFEE]/30 blur-[150px] pointer-events-none" />
 
         {/* ── Inner Content (Strict alignment with Landing max-w-7xl margins) ── */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative z-10 flex-1 flex flex-col justify-center">
@@ -299,13 +299,13 @@ export default function Login() {
             {/* ── Left Showcase Panel (Desktop lg:flex) ── */}
             <div className="hidden lg:flex lg:col-span-7 flex-col justify-between space-y-8 pr-4 lg:pr-6">
               <div className="space-y-4">
-                <StatusPill variant="rose" dot>
+                <StatusPill variant="glass" dot>
                   CoramDeo Life Management Suite
                 </StatusPill>
-                <h1 className="text-4xl lg:text-5xl font-black text-church-charcoal tracking-tight leading-[1.15]">
-                  Where ministry and community <span className="bg-gradient-to-r from-church-rose to-church-violet bg-clip-text text-transparent">thrive together.</span>
+                <h1 className="text-4xl lg:text-5xl font-black text-[#1E2E3D] tracking-tight leading-[1.15]">
+                  Where ministry and community <span className="text-gradient-coram">thrive together.</span>
                 </h1>
-                <p className="text-church-slate text-base leading-relaxed max-w-xl">
+                <p className="text-[#476072] text-base leading-relaxed max-w-xl">
                   Designed for pastors, worship directors, secretaries, and leadership teams to steward God's house with joy, clarity, and excellence.
                 </p>
               </div>
@@ -341,33 +341,33 @@ export default function Login() {
               {/* Real-time Ministry Pulse Micro-cards */}
               <div className="grid grid-cols-3 gap-3 max-w-xl">
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-                  <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2C4A60] flex items-center justify-center mb-2">
                     <Calendar size={16} />
                   </div>
-                  <div className="text-base font-bold text-church-charcoal">Worship</div>
-                  <div className="text-xs text-church-slate">Setlists & Rosters</div>
+                  <div className="text-base font-bold text-[#1E2E3D]">Worship</div>
+                  <div className="text-xs text-[#5A7385]">Setlists & Rosters</div>
                 </div>
 
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-church-violet flex items-center justify-center mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-[#4F748E] flex items-center justify-center mb-2">
                     <Users size={16} />
                   </div>
-                  <div className="text-base font-bold text-church-charcoal">Members</div>
-                  <div className="text-xs text-church-slate">Directory & Care</div>
+                  <div className="text-base font-bold text-[#1E2E3D]">Members</div>
+                  <div className="text-xs text-[#5A7385]">Directory & Care</div>
                 </div>
 
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-gray-100 shadow-church-soft">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-church-emerald flex items-center justify-center mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2">
                     <Heart size={16} />
                   </div>
-                  <div className="text-base font-bold text-church-charcoal">Giving</div>
-                  <div className="text-xs text-church-slate">Causes & Records</div>
+                  <div className="text-base font-bold text-[#1E2E3D]">Giving</div>
+                  <div className="text-xs text-[#5A7385]">Causes & Records</div>
                 </div>
               </div>
 
               {/* Scriptural Footer Quote */}
-              <div className="flex items-center gap-2 text-church-slate text-xs font-medium pt-2">
-                <span className="w-2 h-2 rounded-full bg-church-rose" />
+              <div className="flex items-center gap-2 text-[#5A7385] text-xs font-medium pt-2">
+                <span className="w-2 h-2 rounded-full bg-[#2C4A60]" />
                 <span>&ldquo;Serve one another humbly in love.&rdquo; — Galatians 5:13</span>
               </div>
             </div>
@@ -413,7 +413,7 @@ export default function Login() {
                       placeholder="pastor@church.org"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
+                      className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all duration-150"
                     />
                   </div>
                 </div>
@@ -427,7 +427,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={openForgotPassword}
-                      className="text-xs text-church-rose hover:text-church-rose-hover font-bold transition-colors"
+                      className="text-xs text-[#2C4A60] hover:text-[#1E2E3D] font-bold transition-colors"
                     >
                       Forgot password?
                     </button>
@@ -444,7 +444,7 @@ export default function Login() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-11 pr-11 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
+                      className="w-full pl-11 pr-11 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all duration-150"
                     />
                     <button
                       type="button"
@@ -463,7 +463,7 @@ export default function Login() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-church-rose accent-church-rose focus:ring-church-rose"
+                    className="w-4 h-4 rounded border-gray-300 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#4F748E]"
                   />
                   <span className="text-sm font-medium text-church-slate">Keep me signed in</span>
                 </label>
@@ -507,7 +507,7 @@ export default function Login() {
               {/* Footer */}
               <p className="text-center text-xs text-church-slate mt-6 leading-relaxed">
                 Authorized church leaders and staff only.<br/>
-                <Link to="/privacy-policy" className="text-church-rose hover:underline font-bold mt-1 inline-block">
+                <Link to="/privacy-policy" className="text-[#2C4A60] hover:text-[#1E2E3D] hover:underline font-bold mt-1 inline-block">
                   Privacy Policy &bull; Terms of Service
                 </Link>
               </p>
@@ -527,7 +527,7 @@ export default function Login() {
               </button>
 
               <div className="mb-6">
-                <StatusPill variant="rose" className="mb-2">
+                <StatusPill variant="glass" className="mb-2">
                   Account Recovery
                 </StatusPill>
                 <h2 className="text-2xl font-black text-church-charcoal tracking-tight">Reset password</h2>
@@ -574,7 +574,7 @@ export default function Login() {
                             placeholder="123456"
                             value={otpCode}
                             onChange={(e) => setOtpCode(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all duration-150"
                           />
                         </div>
                       </div>
@@ -594,7 +594,7 @@ export default function Login() {
                             placeholder="Min 6 characters"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all duration-150"
                           />
                         </div>
                       </div>
@@ -625,7 +625,7 @@ export default function Login() {
                             placeholder="you@church.org or +639123456789"
                             value={resetIdentifier}
                             onChange={(e) => setResetIdentifier(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all duration-150"
+                            className="w-full pl-11 pr-4 py-3 text-sm font-medium border border-gray-200 rounded-xl bg-gray-50/60 text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all duration-150"
                           />
                         </div>
                       </div>

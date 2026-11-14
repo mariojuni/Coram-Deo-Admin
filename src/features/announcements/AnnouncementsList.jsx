@@ -88,18 +88,20 @@ export default function AnnouncementsList() {
       {/* Header aligned to CoramDeo Design System */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] text-xs font-bold mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2C4A60]" />
             Church Communications & News
-          </StatusPill>
+          </span>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Announcements</h1>
           <p className="text-sm text-church-slate mt-1">Broadcast updates, push notifications, and timely bulletins for the congregation.</p>
         </div>
-        <GradientButton 
+        <button 
           onClick={openCreate}
-          icon={Plus}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
         >
-          Create Post
-        </GradientButton>
+          <Plus size={16} />
+          <span>Create Post</span>
+        </button>
       </div>
 
       <div className="space-y-6">
@@ -111,12 +113,12 @@ export default function AnnouncementsList() {
               onClick={() => setActiveTab(tab)}
               className={`pb-3 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab 
-                  ? 'border-church-rose text-church-rose' 
+                  ? 'border-[#2C4A60] text-[#2C4A60]' 
                   : 'border-transparent text-church-slate hover:text-church-charcoal'
               }`}
             >
               {tab}
-              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-rose-50 text-church-rose border border-rose-100' : 'bg-gray-100 text-church-slate'}`}>
+              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]' : 'bg-gray-100 text-church-slate'}`}>
                 {tab === 'Active' ? announcements.filter(a => a.status === 'Published' && (!a.publishDate || new Date(a.publishDate) <= now) && (!a.expiryDate || new Date(a.expiryDate) >= now)).length :
                  tab === 'Scheduled' ? announcements.filter(a => a.status === 'Published' && a.publishDate && new Date(a.publishDate) > now).length :
                  tab === 'Drafts' ? announcements.filter(a => a.status === 'Draft').length :
@@ -131,23 +133,24 @@ export default function AnnouncementsList() {
           {loading ? (
             <div className="py-20 text-center">
               <div className="flex flex-col items-center space-y-3">
-                <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
                 <p className="text-sm font-medium text-church-slate">Loading announcements...</p>
               </div>
             </div>
           ) : filteredAnnouncements.length === 0 ? (
             <SoftCard className="p-16 text-center my-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center mb-4 mx-auto border border-[#D5E3EC] shadow-xs">
                 <Megaphone size={30} />
               </div>
               <p className="text-church-charcoal font-black text-lg">No {activeTab.toLowerCase()} announcements</p>
               <p className="text-church-slate text-sm mt-1 mb-6">Create a new post to engage and inform your church community.</p>
-              <GradientButton 
+              <button 
                 onClick={openCreate}
-                icon={Plus}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
               >
-                Create Post
-              </GradientButton>
+                <Plus size={16} />
+                <span>Create Post</span>
+              </button>
             </SoftCard>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -204,7 +207,7 @@ export default function AnnouncementsList() {
                     ))}
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors mb-2 line-clamp-2 leading-snug">
+                  <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-[#2C4A60] transition-colors mb-2 line-clamp-2 leading-snug">
                     {post.title}
                   </h3>
                   <p className="text-xs sm:text-sm text-church-slate line-clamp-3 mb-6 flex-1 leading-relaxed">

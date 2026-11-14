@@ -230,7 +230,7 @@ export default function GivingRecords() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[11px] font-extrabold text-church-rose tracking-wider uppercase bg-church-rose-light px-3 py-1 rounded-full border border-pink-100">
+          <span className="text-[11px] font-bold text-[#2C4A60] tracking-wider uppercase bg-[#EBF2F7] px-3 py-1 rounded-full border border-[#D5E3EC]">
             TRANSACTION LEDGER
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-church-charcoal tracking-tight mt-2">
@@ -242,12 +242,13 @@ export default function GivingRecords() {
         </div>
 
         <div className="flex items-center space-x-3 shrink-0">
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Add Record
-          </GradientButton>
+            <Plus size={16} />
+            <span>Add Record</span>
+          </button>
         </div>
       </div>
 
@@ -308,7 +309,7 @@ export default function GivingRecords() {
               placeholder="Search donor or fund..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose text-xs sm:text-sm transition-all bg-gray-50/50"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#4F748E]/20 focus:border-[#2C4A60] text-xs sm:text-sm transition-all bg-gray-50/50"
             />
           </div>
         </div>
@@ -342,7 +343,7 @@ export default function GivingRecords() {
                 <tr>
                   <td colSpan="6" className="p-16 text-center">
                     <div className="flex flex-col items-center space-y-3">
-                      <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                      <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
                       <p className="text-sm font-semibold text-church-slate">Loading records...</p>
                     </div>
                   </td>
@@ -350,7 +351,7 @@ export default function GivingRecords() {
               ) : filteredLedgerRecords.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="p-16 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 mx-auto border border-slate-200/60 shadow-sm">
                       <CreditCard size={30} />
                     </div>
                     <p className="text-church-charcoal font-black text-lg">No transactions found</p>
@@ -372,11 +373,11 @@ export default function GivingRecords() {
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] border border-slate-200/60 flex items-center justify-center font-black text-sm uppercase shrink-0">
                             {donorName.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-bold text-sm text-church-charcoal group-hover:text-church-rose transition-colors">
+                            <p className="font-bold text-sm text-church-charcoal group-hover:text-[#2C4A60] transition-colors">
                               {donorName}
                             </p>
                             <div className="flex items-center space-x-1.5 mt-0.5">
@@ -413,7 +414,7 @@ export default function GivingRecords() {
                               href={proofUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-church-slate hover:text-church-rose p-2 rounded-xl hover:bg-rose-50 transition-colors"
+                              className="text-church-slate hover:text-[#2C4A60] p-2 rounded-xl hover:bg-slate-100 transition-colors"
                               title="View Proof of Payment"
                             >
                               <ExternalLink size={16} />

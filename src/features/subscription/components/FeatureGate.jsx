@@ -37,11 +37,11 @@ export default function FeatureGate({
 
   return (
     <SoftCard className="p-8 my-4 text-center max-w-2xl mx-auto border-2 border-dashed border-gray-200">
-      <div className="w-14 h-14 rounded-3xl bg-church-rose/10 text-church-rose flex items-center justify-center mx-auto mb-4 shadow-sm">
+      <div className="w-14 h-14 rounded-3xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center mx-auto mb-4 shadow-sm">
         <Lock size={26} />
       </div>
 
-      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-black uppercase tracking-wider mb-2">
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] text-xs font-black uppercase tracking-wider mb-2">
         <Zap size={13} />
         <span>Available in {targetPlan.name}</span>
       </div>
@@ -56,13 +56,14 @@ export default function FeatureGate({
       </p>
 
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-        <GradientButton
+        <button
+          type="button"
           onClick={() => navigate('/admin/settings/billing')}
-          icon={ArrowRight}
-          size="md"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
         >
-          Upgrade to {targetPlan.name}
-        </GradientButton>
+          <span>Upgrade to {targetPlan.name}</span>
+          <ArrowRight size={15} />
+        </button>
       </div>
 
       <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-church-slate">

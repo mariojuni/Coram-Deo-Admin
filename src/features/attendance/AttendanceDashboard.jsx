@@ -68,7 +68,7 @@ export default function AttendanceDashboard() {
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <StatusPill variant="steel" dot className="mb-2">
             Service Check-in & Member Care
           </StatusPill>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Attendance</h1>
@@ -94,7 +94,7 @@ export default function AttendanceDashboard() {
         </div>
       ) : sessions.length === 0 ? (
         <SoftCard className="p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl flex items-center justify-center mb-4 border border-pink-100 shadow-sm">
+          <div className="w-16 h-16 bg-[#EBF2F7] text-[#2C4A60] rounded-3xl flex items-center justify-center mb-4 border border-[#D5E3EC] shadow-sm">
             <ClipboardCheck size={30} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No attendance records yet</h3>
@@ -125,7 +125,7 @@ export default function AttendanceDashboard() {
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
-                    <StatusPill variant={isToday ? "rose" : "slate"}>
+                    <StatusPill variant={isToday ? "steel" : "slate"}>
                       {isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </StatusPill>
                     <StatusPill variant={isOpen ? "emerald" : "slate"}>
@@ -133,7 +133,7 @@ export default function AttendanceDashboard() {
                     </StatusPill>
                   </div>
 
-                  <h3 className="text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors line-clamp-1 mb-4">
+                  <h3 className="text-lg font-black text-church-charcoal group-hover:text-[#2C4A60] transition-colors line-clamp-1 mb-4">
                     {session.eventTitle || session.eventName || 'Sunday Gathering'}
                   </h3>
 
@@ -157,12 +157,12 @@ export default function AttendanceDashboard() {
 
                     <div className="flex justify-between text-xs font-medium text-church-slate pt-1">
                       <span>Members: <strong className="text-church-charcoal">{memberCount}</strong> ({attendancePct}%)</span>
-                      <span>Visitors: <strong className="text-church-rose">{visitorCount}</strong></span>
+                      <span>Visitors: <strong className="text-[#2C4A60]">{visitorCount}</strong></span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-5 pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-church-rose group-hover:text-church-rose-hover">
+                <div className="mt-5 pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#2C4A60] group-hover:text-[#1D3547]">
                   <span>Take Attendance &bull; Roster</span>
                   <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                 </div>

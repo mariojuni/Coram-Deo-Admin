@@ -96,10 +96,10 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
   return (
     <div className="relative" ref={dropdownRef}>
       <div 
-        className={`w-full px-4 py-2.5 bg-white border ${isOpen ? 'border-church-green ring-1 ring-church-green' : 'border-gray-300'} rounded-xl text-left focus-within:ring-2 focus-within:ring-church-green focus-within:border-transparent transition-all hover:border-church-green/50 flex items-center justify-between shadow-sm`}
+        className={`w-full px-4 py-2.5 bg-white border ${isOpen ? 'border-brand-primary ring-1 ring-brand-primary' : 'border-slate-300'} rounded-xl text-left focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-transparent transition-all hover:border-brand-primary/50 flex items-center justify-between shadow-xs`}
       >
         <div className="flex items-center gap-3 w-full">
-          <Clock size={18} className={value ? "text-church-green shrink-0" : "text-gray-400 shrink-0"} />
+          <Clock size={18} className={value ? "text-brand-primary shrink-0" : "text-slate-400 shrink-0"} />
           <input
             type="text"
             name={name}
@@ -108,18 +108,18 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
             onBlur={handleInputBlur}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
-            className={`w-full block truncate text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-church-navy' : 'text-gray-400'}`}
+            className={`w-full block truncate text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
           />
         </div>
         <ChevronDown 
           size={18} 
           onClick={() => setIsOpen(!isOpen)}
-          className={`text-gray-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} 
+          className={`text-slate-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} 
         />
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           <div className="max-h-60 overflow-y-auto py-2 custom-scrollbar">
             {timeOptions.map((time) => (
               <div 
@@ -127,8 +127,8 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
                 onClick={() => handleSelect(time)}
                 className={`px-4 py-2.5 mx-2 my-0.5 rounded-xl cursor-pointer transition-colors ${
                   value === time 
-                    ? 'bg-church-green text-white font-semibold' 
-                    : 'text-church-slate hover:bg-gray-50'
+                    ? 'bg-brand-primary text-white font-semibold' 
+                    : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 {formatTime12h(time)}

@@ -102,37 +102,37 @@ export function getDashboardQuickActions(userProfile) {
 
   if (isSuperOrAdmin) {
     actions.push(
-      { id: 'create_event', label: 'Create Event', path: '/admin/events', primary: true, color: 'bg-church-green' },
-      { id: 'add_member', label: 'Add Member', path: '/admin/members', primary: true, color: 'bg-church-navy' },
+      { id: 'create_event', label: 'Create Event', path: '/admin/events', primary: true, color: 'bg-[#162533]' },
+      { id: 'add_member', label: 'Add Member', path: '/admin/members', primary: true, color: 'bg-[#2C4A60]' },
       { id: 'generate_events', label: 'Generate Monthly Events', path: '/admin/events', primary: false, color: 'bg-indigo-600' },
       { id: 'upload_sermon', label: 'Upload Sermon', path: '/admin/sermons', primary: false, color: 'bg-purple-600' },
       { id: 'create_announcement', label: 'Create Announcement', path: '/admin/announcements', primary: false, color: 'bg-blue-600' }
     );
   } else if (isPastor) {
     actions.push(
-      { id: 'view_prayers', label: 'View Prayer Requests', path: '/admin/prayer', primary: true, color: 'bg-blue-600' },
-      { id: 'view_sermons', label: 'View Sermons', path: '/admin/sermons', primary: false, color: 'bg-indigo-600' },
-      { id: 'view_attendance', label: 'View Attendance', path: '/admin/attendance', primary: false, color: 'bg-church-green' }
+      { id: 'view_prayers', label: 'View Prayer Requests', path: '/admin/prayer', primary: true, color: 'bg-[#162533]' },
+      { id: 'view_sermons', label: 'View Sermons', path: '/admin/sermons', primary: false, color: 'bg-[#2C4A60]' },
+      { id: 'view_attendance', label: 'View Attendance', path: '/admin/attendance', primary: false, color: 'bg-slate-600' }
     );
   } else if (isSecretary) {
     actions.push(
-      { id: 'create_event', label: 'Create Event', path: '/admin/events', primary: true, color: 'bg-church-green' },
+      { id: 'create_event', label: 'Create Event', path: '/admin/events', primary: true, color: 'bg-[#162533]' },
       { id: 'generate_events', label: 'Generate Monthly Events', path: '/admin/events', primary: false, color: 'bg-indigo-600' },
-      { id: 'take_attendance', label: 'Attendance', path: '/admin/attendance', primary: true, color: 'bg-purple-600' },
+      { id: 'take_attendance', label: 'Attendance', path: '/admin/attendance', primary: true, color: 'bg-[#2C4A60]' },
       { id: 'add_announcement', label: 'Add Announcement', path: '/admin/announcements', primary: false, color: 'bg-blue-600' },
-      { id: 'add_member', label: 'Add Member', path: '/admin/members', primary: false, color: 'bg-church-navy' }
+      { id: 'add_member', label: 'Add Member', path: '/admin/members', primary: false, color: 'bg-slate-600' }
     );
   } else if (isFinance) {
     actions.push(
-      { id: 'giving_input', label: 'Giving Input', path: '/admin/finance/giving', primary: true, color: 'bg-church-green' },
+      { id: 'giving_input', label: 'Giving Input', path: '/admin/finance/giving', primary: true, color: 'bg-[#162533]' },
       { id: 'pending_verification', label: 'Pending Verification', path: '/admin/finance/giving', primary: true, color: 'bg-amber-600' },
       { id: 'add_expense', label: 'Add Expense', path: '/admin/finance/expenses', primary: false, color: 'bg-red-600' },
-      { id: 'finance_reports', label: 'Finance Reports', path: '/admin/finance/reports', primary: false, color: 'bg-blue-600' }
+      { id: 'finance_reports', label: 'Finance Reports', path: '/admin/finance/reports', primary: false, color: 'bg-[#2C4A60]' }
     );
   } else if (isLeader) {
     actions.push(
-      { id: 'my_schedule', label: 'My Ministry Schedule', path: '/admin/schedules', primary: true, color: 'bg-church-green' },
-      { id: 'applications', label: 'Ministry Applications', path: '/admin/ministries/applications', primary: true, color: 'bg-purple-600' },
+      { id: 'my_schedule', label: 'My Ministry Schedule', path: '/admin/schedules', primary: true, color: 'bg-[#162533]' },
+      { id: 'applications', label: 'Ministry Applications', path: '/admin/ministries/applications', primary: true, color: 'bg-[#2C4A60]' },
       { id: 'serve_assignments', label: 'Serve Assignments', path: '/admin/schedules', primary: false, color: 'bg-blue-600' },
       { id: 'worship_setlists', label: 'Worship Setlists', path: '/admin/worship/setlists', primary: false, color: 'bg-indigo-600' }
     );

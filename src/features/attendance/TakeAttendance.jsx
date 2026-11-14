@@ -220,7 +220,7 @@ export default function TakeAttendance() {
               <StatusPill variant={session.status === 'Open' ? "emerald" : "slate"}>
                 {session.status} Session
               </StatusPill>
-              <StatusPill variant="rose">
+              <StatusPill variant="steel">
                 {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </StatusPill>
             </div>
@@ -260,7 +260,7 @@ export default function TakeAttendance() {
               </div>
               <input
                 type="text"
-                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose bg-white"
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] bg-white"
                 placeholder="Search member name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -324,7 +324,7 @@ export default function TakeAttendance() {
               disabled={isClosed}
               className="flex items-center px-4 py-2 bg-white border border-gray-200 text-church-charcoal rounded-full text-xs font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 shadow-sm"
             >
-              <Users size={14} className="mr-1.5 text-church-rose" /> Log Guest
+              <Users size={14} className="mr-1.5 text-[#2C4A60]" /> Log Guest
             </button>
           </div>
         </div>
@@ -343,7 +343,7 @@ export default function TakeAttendance() {
                   className="flex items-center justify-between p-3.5 rounded-2xl border border-gray-100/90 hover:border-gray-200 transition-all bg-white"
                 >
                   <div className="flex items-center space-x-3 min-w-0 pr-3">
-                    <div className="w-9 h-9 rounded-xl bg-pink-50 text-church-rose font-black text-xs flex items-center justify-center shrink-0 border border-pink-100">
+                    <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] text-[#2C4A60] font-black text-xs flex items-center justify-center shrink-0 border border-[#D5E3EC]">
                       {initial}
                     </div>
                     <div className="truncate">
@@ -418,7 +418,7 @@ export default function TakeAttendance() {
         <div className="p-4 border-t border-gray-100 bg-white flex flex-wrap justify-between items-center text-xs font-bold text-church-slate gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-church-charcoal">
-              Marked: <span className="text-church-rose font-black">{Object.keys(marks).length}</span> / {members.length}
+              Marked: <span className="text-[#2C4A60] font-black">{Object.keys(marks).length}</span> / {members.length}
             </span>
             <span className="text-gray-300">&bull;</span>
             <span className="text-emerald-600">Present: {Object.values(marks).filter(v => v === 'Present').length}</span>

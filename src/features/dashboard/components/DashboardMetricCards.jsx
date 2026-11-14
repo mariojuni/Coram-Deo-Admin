@@ -36,7 +36,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
     value: metrics.upcomingEventsCount,
     subtitle: 'Scheduled services',
     icon: Calendar,
-    iconStyle: 'bg-pink-50 text-church-rose',
+    iconStyle: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]',
     path: '/admin/events',
   });
 
@@ -111,7 +111,7 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       value: metrics.pendingPrayerCount,
       subtitle: 'Awaiting leadership review',
       icon: HeartHandshake,
-      iconStyle: 'bg-pink-50 text-church-rose',
+      iconStyle: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]',
       path: '/admin/prayer',
     });
   }
@@ -133,8 +133,8 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-church-rose" />
-            <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2C4A60]" />
+            <span className="text-[10px] font-extrabold text-[#2C4A60] uppercase tracking-wider">
               Operations
             </span>
           </div>
@@ -153,14 +153,14 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
             <Link
               key={card.id}
               to={card.path}
-              className="flex items-center justify-between p-3.5 border border-gray-100/90 rounded-2xl hover:border-gray-200 hover:bg-gray-50/70 transition-all duration-150 group bg-white"
+              className="flex items-center justify-between p-3.5 border border-white/95 rounded-2xl hover:border-[#D5E3EC] hover:bg-white transition-all duration-150 group bg-white/80 shadow-2xs"
             >
               <div className="flex items-center space-x-3 min-w-0 pr-2">
-                <div className={`w-9 h-9 rounded-xl ${card.iconStyle} flex items-center justify-center shrink-0 border border-gray-100/50`}>
+                <div className={`w-9 h-9 rounded-xl ${card.iconStyle} flex items-center justify-center shrink-0 border border-white/60`}>
                   <Icon size={16} />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs md:text-sm font-bold text-church-charcoal truncate group-hover:text-church-rose transition-colors">
+                  <h4 className="text-xs md:text-sm font-bold text-church-charcoal truncate group-hover:text-[#2C4A60] transition-colors">
                     {card.title}
                   </h4>
                   <p className="text-[11px] text-church-slate truncate mt-0.5">
@@ -170,14 +170,14 @@ export default function DashboardMetricCards({ metrics, loading, userProfile }) 
               </div>
 
               <div className="flex items-center space-x-2 shrink-0 pl-2">
-                <span className="text-base md:text-lg font-black text-church-charcoal tracking-tight group-hover:text-church-rose transition-colors">
+                <span className="text-base md:text-lg font-black text-church-charcoal tracking-tight group-hover:text-[#2C4A60] transition-colors">
                   {loading ? (
                     <span className="animate-pulse text-gray-200">...</span>
                   ) : (
                     card.value
                   )}
                 </span>
-                <ChevronRight size={15} className="text-church-muted group-hover:text-church-rose group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight size={15} className="text-church-muted group-hover:text-[#2C4A60] group-hover:translate-x-0.5 transition-all" />
               </div>
             </Link>
           );

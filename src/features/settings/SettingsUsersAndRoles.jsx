@@ -12,6 +12,7 @@ import {
   getAssignableRoles,
 } from '../../utils/permissions';
 import SettingsHeader from './SettingsHeader';
+import SoftCard from '../../components/ui/SoftCard';
 
 export default function SettingsUsersAndRoles({ embedded = false, onUserCountChange, churchId = null }) {
   const { userProfile, activeChurchId } = useAuth();
@@ -152,8 +153,8 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
         />
       )}
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
+      <SoftCard className="overflow-hidden p-0">
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input
@@ -161,7 +162,7 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
             />
           </div>
         </div>
@@ -169,22 +170,22 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-4 font-semibold">User</th>
-                <th className="px-6 py-4 font-semibold">System Roles</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Last Updated</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+              <tr className="bg-gray-50/80 border-b border-gray-100 text-[11px] uppercase tracking-wider text-church-slate font-bold">
+                <th className="px-6 py-4 font-bold">User</th>
+                <th className="px-6 py-4 font-bold">System Roles</th>
+                <th className="px-6 py-4 font-bold">Status</th>
+                <th className="px-6 py-4 font-bold">Last Updated</th>
+                <th className="px-6 py-4 font-bold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredUsers.map((user) => {
                 const userRoles = getSystemRoles(user);
                 return (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-church-green text-white flex items-center justify-center font-bold text-sm mr-3">
+                        <div className="w-9 h-9 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] flex items-center justify-center font-bold text-xs mr-3 shadow-2xs">
                           {user.name?.charAt(0) || 'U'}
                         </div>
                         <div>
@@ -198,7 +199,7 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
                         {userRoles.map(r => (
                           <span
                             key={r}
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize border border-blue-100"
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EBF2F7] text-[#2C4A60] capitalize border border-[#D5E3EC]"
                           >
                             <Shield size={10} className="mr-1" />
                             {r.replace(/_/g, ' ')}
@@ -238,25 +239,25 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
             </tbody>
           </table>
         </div>
-      </div>
+      </SoftCard>
 
       {/* Edit Roles Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-church-soft overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="glass-light-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-white/95">
+            <div className="p-6 border-b border-gray-100/80 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-church-navy">Change System Roles</h2>
                 <p className="text-sm text-gray-500 mt-1">For {editingUser.name}</p>
               </div>
-              <button onClick={() => setEditingUser(null)} className="p-1.5 text-gray-400 hover:text-gray-600">
+              <button onClick={() => setEditingUser(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
                 <X size={20} />
               </button>
             </div>
             
             <div className="p-6 space-y-4 bg-gray-50/50">
-              <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm flex items-start border border-yellow-200">
-                <AlertCircle size={18} className="mr-2 flex-shrink-0 mt-0.5" />
+              <div className="bg-amber-50/80 text-amber-900 p-4 rounded-2xl text-sm flex items-start border border-amber-200/60 shadow-sm">
+                <AlertCircle size={18} className="mr-2 flex-shrink-0 mt-0.5 text-amber-600" />
                 <p>
                   You are changing this user's system roles. Users can hold multiple roles simultaneously.
                   The <strong>first selected role</strong> becomes the primary (display) role.
@@ -275,9 +276,9 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
                     return (
                       <label
                         key={role}
-                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                           isChecked
-                            ? 'bg-church-green/5 border-church-green/40'
+                            ? 'bg-[#2C4A60]/5 border-[#2C4A60]/40 shadow-xs'
                             : 'bg-white border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -285,13 +286,13 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleRole(role)}
-                          className="w-4 h-4 rounded accent-church-green"
+                          className="w-4 h-4 rounded text-[#2C4A60] accent-[#2C4A60]"
                         />
                         <span className="text-sm font-medium text-church-navy capitalize flex-1">
                           {role.replace(/_/g, ' ')}
                         </span>
                         {isFirst && isChecked && (
-                          <span className="text-[10px] font-bold text-church-green bg-church-green/10 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold text-[#2C4A60] bg-[#2C4A60]/10 px-2.5 py-0.5 rounded-full">
                             PRIMARY
                           </span>
                         )}
@@ -313,12 +314,12 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Why are these roles being changed?"
                   rows="2"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] resize-none bg-white transition-all"
                 />
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-white">
+            <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-white/80">
               <button 
                 onClick={() => setEditingUser(null)}
                 disabled={saving}
@@ -329,7 +330,7 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
               <button 
                 onClick={handleSaveRole}
                 disabled={saving || selectedRoles.length === 0}
-                className="px-6 py-2.5 rounded-full font-bold text-white bg-church-navy hover:bg-church-navy/90 transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 rounded-full font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-sm"
               >
                 {saving ? 'Saving...' : 'Confirm Change'}
               </button>

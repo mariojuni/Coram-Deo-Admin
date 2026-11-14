@@ -325,7 +325,7 @@ export default function AssignmentFormModal({ isOpen, onClose, existingAssignmen
             <textarea 
               value={notes} 
               onChange={e => setNotes(e.target.value)} 
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl bg-white text-xs font-medium focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all h-20 resize-none"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl bg-white text-xs font-medium focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all h-20 resize-none"
               placeholder="Any specific instructions..."
             />
           </div>

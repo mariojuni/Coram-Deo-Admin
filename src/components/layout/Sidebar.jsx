@@ -31,7 +31,7 @@ import { hasAnyRole, hasRole, getPrimaryRole } from '../../utils/permissions';
 import { useSubscriptionLimits } from '../../features/subscription/hooks/useSubscriptionLimits';
 import UpgradeModal from '../../features/subscription/components/UpgradeModal';
 import { subscribeToPendingPayments } from '../../services/billingLedgerService';
-import logo from '../../assets/logo.svg';
+import { CathedralLogo, BibleIcon, CommunityIcon, ServeIcon } from '../ui/icons';
 
 const churchNavCategories = [
   {
@@ -49,14 +49,14 @@ const churchNavCategories = [
       { name: 'Songs & Lyrics', path: '/admin/worship/songs', icon: Music, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
       { name: 'Setlists', path: '/admin/worship/setlists', icon: ListMusic, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'], featureKey: 'worshipSetlists', requiredTier: 'growth' },
       { name: 'Sermons', path: '/admin/sermons', icon: BookOpen, roles: ['super_admin', 'church_admin', 'pastor'] },
-      { name: 'Discipleship', path: '/admin/discipleship/groups', icon: BookOpenCheck, roles: ['super_admin'] },
+      { name: 'Discipleship', path: '/admin/discipleship/groups', icon: CommunityIcon, roles: ['super_admin'] },
     ]
   },
   {
     category: 'PEOPLE & CARE',
     items: [
-      { name: 'Members', path: '/admin/members', icon: Users, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
-      { name: 'Ministries', path: '/admin/ministries', icon: Shield, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
+      { name: 'Members', path: '/admin/members', icon: CommunityIcon, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
+      { name: 'Ministries', path: '/admin/ministries', icon: ServeIcon, roles: ['super_admin', 'church_admin', 'pastor', 'ministry_leader'] },
       { name: 'Prayer Requests', path: '/admin/prayer', icon: HeartHandshake, roles: ['super_admin', 'church_admin', 'pastor'] },
       { name: 'Announcements', path: '/admin/announcements', icon: Megaphone, roles: ['super_admin', 'church_admin', 'secretary', 'pastor'] },
     ]
@@ -74,9 +74,9 @@ const churchNavCategories = [
 const systemNavItems = [
   { name: 'Churches', path: '/super-admin/churches', icon: Building, roles: ['super_admin'] },
   { name: 'Billing & Ledger', path: '/super-admin/ledger', icon: CreditCard, roles: ['super_admin'] },
-  { name: 'Global User Management', path: '/super-admin/pending-members', icon: Users, roles: ['super_admin'] },
-  { name: 'Bible & Devotional Plans', path: '/super-admin/bible', icon: BookOpen, roles: ['super_admin'] },
-  { name: 'Bible Library', path: '/admin/bible-library', icon: BookOpen, roles: ['super_admin'] },
+  { name: 'Global User Management', path: '/super-admin/pending-members', icon: CommunityIcon, roles: ['super_admin'] },
+  { name: 'Bible & Devotional Plans', path: '/super-admin/bible', icon: BibleIcon, roles: ['super_admin'] },
+  { name: 'Bible Library', path: '/admin/bible-library', icon: BibleIcon, roles: ['super_admin'] },
   { name: 'Global Roles', path: '/super-admin/settings/roles', icon: Shield, roles: ['super_admin'] },
 ];
 
@@ -142,25 +142,25 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
       {/* Sidebar Container */}
       <aside className={`
-        fixed inset-y-0 left-0 z-30 w-72 bg-white rounded-3xl transform transition-transform duration-300 ease-in-out shadow-church-elevated border border-gray-100/80
+        fixed inset-y-0 left-0 z-30 w-72 glass-light-shell rounded-3xl transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:inset-0 lg:h-[calc(100vh-2rem)] flex flex-col overflow-hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Top Header & Brand Mark */}
-        <div className="flex items-center justify-between h-20 px-6 shrink-0 border-b border-gray-50">
+        <div className="flex items-center justify-between h-20 px-6 shrink-0 border-b border-white/60">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2">
-              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/30 flex items-center justify-center shadow-church-soft p-0.5 overflow-hidden">
+              <CathedralLogo size={36} />
             </div>
             <div>
-              <span className="text-lg font-black text-church-charcoal tracking-tight">CoramDeo</span>
-              <span className="ml-1.5 text-[10px] font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-pink-100 uppercase tracking-wider">
+              <span className="text-lg font-black text-brand-dark tracking-tight">CoramDeo</span>
+              <span className="ml-1.5 text-[10px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2 py-0.5 rounded-full border border-[#D5E3EC] uppercase tracking-wider">
                 Admin
               </span>
             </div>
           </div>
           <button 
-            className="lg:hidden text-gray-400 hover:text-church-charcoal p-1.5 rounded-xl hover:bg-gray-50"
+            className="lg:hidden text-gray-400 hover:text-brand-dark p-1.5 rounded-xl hover:bg-gray-50"
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
           >
@@ -171,34 +171,34 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         {/* Church / Workspace Switcher (for Super Admin) */}
         {isSuperAdmin && (
           <div className="px-5 pt-4 pb-2 relative shrink-0">
-            <div className="text-[10px] font-bold text-church-muted uppercase tracking-wider mb-1.5 ml-1 flex items-center justify-between">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1 flex items-center justify-between">
               <span>Active Workspace</span>
-              <span className={`w-2 h-2 rounded-full ${activeChurchId === 'system' ? 'bg-church-violet' : 'bg-church-emerald'}`} />
+              <span className={`w-2 h-2 rounded-full ${activeChurchId === 'system' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
             </div>
             <button 
               onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-              className="w-full bg-gray-50/80 border border-gray-200/70 hover:border-church-rose/40 text-church-charcoal text-xs rounded-2xl px-3.5 py-2.5 font-bold flex items-center justify-between transition-all duration-150 shadow-sm"
+              className="w-full bg-white/75 backdrop-blur-md border border-white/90 hover:bg-white text-brand-dark text-xs rounded-2xl px-3.5 py-2.5 font-bold flex items-center justify-between transition-all duration-150 shadow-2xs"
             >
               <div className="flex items-center truncate">
-                <div className={`w-6 h-6 rounded-lg ${activeChurchId === 'system' ? 'bg-purple-100 text-church-violet' : 'bg-pink-100 text-church-rose'} flex items-center justify-center mr-2 shrink-0`}>
+                <div className={`w-6 h-6 rounded-lg ${activeChurchId === 'system' ? 'bg-indigo-100 text-brand-primary' : 'bg-blue-100 text-brand-primary'} flex items-center justify-center mr-2 shrink-0`}>
                   <Building size={13} />
                 </div>
                 <span className="truncate">{activeChurchName}</span>
               </div>
-              <ChevronDown size={14} className={`text-church-muted transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isSwitcherOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {isSwitcherOpen && (
-              <div className="absolute top-full mt-1.5 left-5 right-5 bg-white rounded-2xl shadow-church-elevated border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute top-full mt-1.5 left-5 right-5 bg-white/95 backdrop-blur-xl rounded-2xl shadow-church-elevated border border-white/90 p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-2 pt-1 pb-2">
                   <div className="relative">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-church-muted" />
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       placeholder="Search church..."
                       value={churchSearch}
                       onChange={(e) => setChurchSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-church-rose focus:border-church-rose"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-primary-light focus:border-brand-primary-light"
                     />
                   </div>
                 </div>
@@ -210,13 +210,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                       setIsSwitcherOpen(false);
                       navigate('/super-admin/churches');
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === 'system' ? 'bg-purple-50 text-church-violet font-bold' : 'text-church-charcoal hover:bg-gray-50'}`}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === 'system' ? 'bg-indigo-50 text-brand-primary font-bold' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
                     <span className="truncate pr-2">System Administration</span>
-                    {activeChurchId === 'system' && <Check size={14} className="text-church-violet shrink-0" />}
+                    {activeChurchId === 'system' && <Check size={14} className="text-brand-primary shrink-0" />}
                   </button>
 
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="border-t border-slate-100 my-1"></div>
 
                   {filteredChurches.map(c => (
                     <button
@@ -226,10 +226,10 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         setIsSwitcherOpen(false);
                         navigate('/admin');
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === c.id ? 'bg-church-rose-light text-church-rose font-bold' : 'text-church-charcoal hover:bg-gray-50'}`}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors ${activeChurchId === c.id ? 'bg-blue-50 text-brand-primary font-bold' : 'text-slate-700 hover:bg-slate-50'}`}
                     >
                       <span className="truncate pr-2">{c.name}</span>
-                      {activeChurchId === c.id && <Check size={14} className="text-church-rose shrink-0" />}
+                      {activeChurchId === c.id && <Check size={14} className="text-brand-primary shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -242,7 +242,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         <nav className="flex-1 px-3.5 py-2.5 overflow-y-auto space-y-4 custom-scrollbar">
           {activeChurchId === 'system' ? (
             <div>
-              <div className="text-[10px] font-extrabold text-church-muted uppercase tracking-wider mb-1.5 ml-2">
+              <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 ml-2">
                 System Administration
               </div>
               <div className="space-y-1">
@@ -254,21 +254,21 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                       to={item.path}
                       onClick={() => setIsOpen(false)}
                       className={({ isActive }) =>
-                        `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-150 ${
+                        `group flex items-center justify-between px-3 py-2 rounded-2xl text-xs transition-all duration-200 ${
                           isActive
-                            ? 'bg-gradient-to-r from-[#FF5E85] via-[#EA63AA] to-[#A66CF5] text-white shadow-[0_3px_12px_rgba(234,99,170,0.22)] font-bold'
-                            : 'text-[#475569] hover:bg-gray-50/80 hover:text-church-navy font-semibold'
+                            ? 'glass-nav-active font-extrabold text-[#2C4A60]'
+                            : 'text-slate-600 hover:bg-white/50 hover:text-brand-dark font-semibold'
                         }`
                       }
                     >
                       {({ isActive }) => (
                         <>
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                              className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                                 isActive
-                                  ? 'bg-white/20 backdrop-blur-xs text-white'
-                                  : 'bg-[#F1F4F9] text-[#5A6A80] group-hover:bg-[#E4E9F2] group-hover:text-church-navy'
+                                  ? 'bg-[#EBF2F7] text-[#2C4A60]'
+                                  : 'bg-white/60 text-slate-500 group-hover:bg-white group-hover:text-brand-dark shadow-2xs'
                               }`}
                             >
                               <Icon size={15} strokeWidth={2.2} />
@@ -276,7 +276,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             <span className="truncate">{item.name}</span>
                             {item.name === 'Billing & Ledger' && pendingPaymentsCount > 0 && (
                               <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
-                                isActive ? 'bg-white text-church-rose shadow-sm' : 'bg-amber-500 text-white animate-pulse'
+                                isActive ? 'bg-[#EBF2F7] text-[#2C4A60] shadow-xs' : 'bg-amber-500 text-white animate-pulse'
                               }`}>
                                 {pendingPaymentsCount}
                               </span>
@@ -286,7 +286,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             size={13}
                             strokeWidth={isActive ? 2.6 : 2.2}
                             className={`shrink-0 transition-all ${
-                              isActive ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
+                              isActive ? 'text-[#2C4A60]' : 'text-slate-300 opacity-0 group-hover:opacity-100'
                             }`}
                           />
                         </>
@@ -306,7 +306,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
               return (
                 <div key={cat.category}>
-                  <div className="text-[10px] font-extrabold text-church-muted uppercase tracking-wider mb-1.5 ml-2">
+                  <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 ml-2">
                     {cat.category}
                   </div>
                   <div className="space-y-1">
@@ -335,10 +335,10 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                           }}
                           className={({ isActive }) => {
                             const isCurrent = isActive || isDiscipleshipActive;
-                            return `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-150 ${
+                            return `group flex items-center justify-between px-3 py-2 rounded-2xl text-xs transition-all duration-200 ${
                               isCurrent
-                                ? 'bg-gradient-to-r from-[#FF5E85] via-[#EA63AA] to-[#A66CF5] text-white shadow-[0_3px_12px_rgba(234,99,170,0.22)] font-bold'
-                                : 'text-[#475569] hover:bg-gray-50/80 hover:text-church-navy font-semibold'
+                                ? 'glass-nav-active font-extrabold text-[#2C4A60]'
+                                : 'text-slate-600 hover:bg-white/50 hover:text-brand-dark font-semibold'
                             }`;
                           }}
                         >
@@ -346,12 +346,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                             const isCurrent = isActive || isDiscipleshipActive;
                             return (
                               <>
-                                <div className="flex items-center gap-2 min-w-0">
+                                <div className="flex items-center gap-2.5 min-w-0">
                                   <div
-                                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
+                                    className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                                       isCurrent
-                                        ? 'bg-white/20 backdrop-blur-xs text-white'
-                                        : 'bg-[#F1F4F9] text-[#5A6A80] group-hover:bg-[#E4E9F2] group-hover:text-church-navy'
+                                        ? 'bg-[#EBF2F7] text-[#2C4A60]'
+                                        : 'bg-white/60 text-slate-500 group-hover:bg-white group-hover:text-brand-dark shadow-2xs'
                                     }`}
                                   >
                                     <Icon size={15} strokeWidth={2.2} />
@@ -368,7 +368,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                                     size={13}
                                     strokeWidth={isCurrent ? 2.6 : 2.2}
                                     className={`shrink-0 transition-all ${
-                                      isCurrent ? 'text-white' : 'text-[#CBD5E1] opacity-0 group-hover:opacity-100'
+                                      isCurrent ? 'text-[#2C4A60]' : 'text-slate-300 opacity-0 group-hover:opacity-100'
                                     }`}
                                   />
                                 )}
@@ -386,17 +386,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </nav>
 
         {/* Bottom User Profile Section */}
-        <div className="p-4 mx-4 mb-4 bg-gray-50/90 rounded-2xl border border-gray-100 shrink-0">
+        <div className="p-3.5 mx-4 mb-4 bg-white/70 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs shrink-0">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-2xl bg-gradient-coram flex items-center justify-center text-white font-black text-sm shadow-church-glow shrink-0">
               {originalUserProfile?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="ml-3 truncate flex-1 min-w-0">
-              <p className="text-xs font-bold text-church-charcoal truncate">
+              <p className="text-xs font-bold text-brand-dark truncate">
                 {originalUserProfile?.name || 'Leader'}
               </p>
               <div className="inline-flex items-center mt-0.5">
-                <span className="text-[10px] font-bold text-church-amber bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 uppercase tracking-tight truncate">
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/80 uppercase tracking-tight truncate">
                   {primaryRole.replace(/_/g, ' ')}
                 </span>
               </div>

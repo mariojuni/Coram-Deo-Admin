@@ -1,52 +1,151 @@
 @import "tailwindcss";
 
 @theme {
-  --color-church-canvas: #FAFAFC;
-  --color-church-card: #FFFFFF;
-  --color-church-bg: #FAFAFC;
-  --color-church-navy: #111827;
-  --color-church-charcoal: #111827;
-  --color-church-slate: #6B7280;
-  --color-church-muted: #9CA3AF;
-  --color-church-rose: #FF577F;
-  --color-church-rose-light: #FFF0F5;
-  --color-church-rose-hover: #E03E67;
-  --color-church-violet: #B66DFF;
+  /* ==========================================================================
+     CoramDeo Design System Tokens (Aligned with Flutter Mobile Design Tokens)
+     Source: /lib/core/theme/tokens/app_palette.dart & app_colors.dart
+     ========================================================================== */
+
+  /* Tier 1: Canonical Brand Roles */
+  --color-brand-primary: #1E3A8A;
+  --color-brand-steel: #4F748E;
+  --color-brand-sky: #7B9EB2;
+  --color-brand-ice: #EBF2F7;
+  --color-brand-dark: #1E2E3D;
+  --color-brand-slate: #476072;
+
+  /* Surfaces & Backgrounds */
+  --color-surface-canvas: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-glass: rgba(255, 255, 255, 0.78);
+  --color-surface-glass-border: rgba(255, 255, 255, 0.92);
+
+  /* Typography Colors */
+  --color-text-primary: #1E2E3D;
+  --color-text-secondary: #476072;
+  --color-text-muted: #7E97A8;
+
+  /* Status Tokens */
+  --color-status-success: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-error: #EF4444;
+  --color-status-info: #3B82F6;
+
+  /* Legacy Compatibility Aliases (Mapped to Calm Nordic Palette) */
+  --color-church-rose: #2C4A60;
+  --color-church-rose-light: #EBF2F7;
+  --color-church-rose-hover: #1D3547;
+  --color-church-steel: #2C4A60;
+  --color-church-steel-light: #4F748E;
+  --color-church-ice: #EBF2F7;
+  --color-church-charcoal: #1E2E3D;
+  --color-church-slate: #476072;
+  --color-church-canvas: #F8FAFC;
+  --color-church-border: #E2E8F0;
+  --color-church-violet: #4F748E;
   --color-church-amber: #D97706;
-  --color-church-amber-light: #FEF3C7;
-  --color-church-emerald: #10B981;
-  --color-church-emerald-light: #ECFDF5;
-  --color-church-border: #F3F4F6;
+  --color-church-emerald: #059669;
+  --color-church-blue: #2563EB;
   --color-church-green: #10B981;
   --color-church-green-light: #34D399;
 
-  --shadow-church-soft: 0 4px 16px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --shadow-church-elevated: 0 12px 32px -4px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
-  --shadow-church-glow: 0 8px 24px -4px rgba(255, 84, 126, 0.26);
+  /* Elevation Shadows */
+  --shadow-church-soft: 0 4px 20px -2px rgba(71, 108, 133, 0.05), 0 1px 3px rgba(71, 108, 133, 0.02);
+  --shadow-church-elevated: 0 12px 36px -4px rgba(71, 108, 133, 0.08), 0 2px 6px rgba(71, 108, 133, 0.03);
+  --shadow-church-glow: 0 8px 24px -4px rgba(71, 108, 133, 0.16);
+  --shadow-church-nav: 0 4px 14px -2px rgba(71, 108, 133, 0.12);
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--color-church-canvas);
-  color: var(--color-church-charcoal);
+  background: radial-gradient(circle at 50% 0%, #C3DAE7 0%, #DCE8F0 18%, #EDF3F7 45%, #F7FAFC 75%, #FFFFFF 100%) no-repeat fixed;
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-/* CoramDeo Signature Gradients — Vibrant, rich calibration */
+/* ==========================================================================
+   CoramDeo Signature Soft Glass Style (Calm, Airy, Sacred Atmosphere)
+   ========================================================================== */
+
+/* Full-bleed atmospheric background canvas */
+.glass-light-canvas {
+  background: radial-gradient(circle at 50% 0%, #C3DAE7 0%, #DCE8F0 18%, #EDF3F7 45%, #F7FAFC 75%, #FFFFFF 100%) no-repeat fixed;
+}
+
+/* Primary Glass Light Shell (Sidebar, Main Modal Containers) */
+.glass-light-shell {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 40px -6px rgba(44, 74, 96, 0.08), 0 2px 6px rgba(44, 74, 96, 0.02);
+}
+
+/* Glass Light Card (SoftCard, Tables, Panels) */
+.glass-light-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 36px -6px rgba(44, 74, 96, 0.06), 0 2px 8px -2px rgba(44, 74, 96, 0.02);
+}
+
+/* Floating Glass Pill / Badge */
+.glass-light-pill {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 12px -2px rgba(44, 74, 96, 0.05);
+}
+
+/* Signature Header Category Pill Badge (Matches Mobile Screenshots) */
+.glass-pill-badge {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.98);
+  box-shadow: 0 2px 10px -1px rgba(44, 74, 96, 0.06);
+  color: #2C4A60;
+}
+
+/* Active Navigation Pill (Parity with Flutter Floating Glass Nav Active Item) */
+.glass-nav-active {
+  background: #FFFFFF;
+  color: #1E2E3D;
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 6px 20px -3px rgba(71, 108, 133, 0.12);
+}
+
+/* Primary Atmospheric Navy to Steel Blue */
 .bg-gradient-coram {
-  background: linear-gradient(135deg, #FF547E 0%, #B062FF 100%);
+  background: linear-gradient(135deg, #162533 0%, #2C4A60 50%, #4F748E 100%);
 }
 
+/* Deep Obsidian to Royal Indigo Hero */
 .bg-gradient-coram-hero {
-  background: linear-gradient(135deg, #FF547E 0%, #9F58F8 100%);
+  background: linear-gradient(135deg, #162533 0%, #243B4F 55%, #3B5B75 100%);
 }
 
+/* Frosted Ice Canvas Accent */
 .bg-gradient-coram-soft {
-  background: linear-gradient(135deg, #FFF0F5 0%, #F5F3FF 100%);
+  background: linear-gradient(135deg, #F0F5FA 0%, #E8F0F6 100%);
 }
 
+/* Active Navigation Item Pill */
+.bg-gradient-coram-nav {
+  background: linear-gradient(135deg, #162533 0%, #2C4A60 100%);
+}
+
+/* Scripture & Milestone Celebration Accent */
+.bg-gradient-verse {
+  background: linear-gradient(135deg, #4F748E 0%, #7B9EB2 100%);
+}
+
+/* Calm Headline Gradient (Soft Nordic Glacial Blue) */
 .text-gradient-coram {
-  background: linear-gradient(135deg, #FF547E 0%, #B062FF 100%);
+  background: linear-gradient(135deg, #2C4A60 0%, #4F748E 50%, #6892AD 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -54,19 +153,19 @@ body {
   display: inline-block;
 }
 
-/* Glass & Blur Accents */
+/* Glass & Atmospheric Blur Accents */
 .glass-pill {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.92);
 }
 
 /* Stepper Moving Line & Flowing Light Animations */
@@ -79,25 +178,16 @@ body {
   }
 }
 
-@keyframes stepSweep {
-  0% {
-    left: -30%;
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 1;
-  }
-  100% {
-    left: 100%;
-    opacity: 0;
-  }
+.animate-moving-line {
+  background-size: 200% 100%;
+  animation: movingLineFlow 3s linear infinite;
 }
 
-.animate-step-sweep {
-  animation: stepSweep 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.98); }
 }
 
-
+.animate-pulse-subtle {
+  animation: pulseSubtle 4s ease-in-out infinite;
+}

@@ -170,12 +170,13 @@ export default function SetlistsList() {
             <Upload size={15} className="mr-1.5 text-church-violet" />
             Import JSON
           </button>
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Create Setlist
-          </GradientButton>
+            <Plus size={16} />
+            <span>Create Setlist</span>
+          </button>
         </div>
       </div>
 
@@ -188,7 +189,7 @@ export default function SetlistsList() {
             placeholder="Search setlists by name, event title, or date..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
           />
         </div>
       </SoftCard>
@@ -197,23 +198,24 @@ export default function SetlistsList() {
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-10 h-10 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-medium text-church-slate">Loading worship setlists...</p>
           </div>
         </div>
       ) : filteredSetlists.length === 0 ? (
         <SoftCard className="p-12 flex flex-col items-center justify-center text-center flex-1 my-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 border border-slate-200/60 shadow-sm">
             <ListMusic size={30} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No setlists found</h3>
           <p className="text-church-slate text-sm max-w-sm mb-6">Plan an order of worship and link songs to an upcoming church service or gathering.</p>
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Create First Setlist
-          </GradientButton>
+            <Plus size={16} />
+            <span>Create First Setlist</span>
+          </button>
         </SoftCard>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -230,24 +232,24 @@ export default function SetlistsList() {
               >
                 {/* Left Date Column matching CoramDeo Mobile Design */}
                 <div className="flex flex-col items-center justify-center min-w-[50px] shrink-0 text-center">
-                  <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider">
+                  <span className="text-[10px] font-extrabold text-[#2C4A60] uppercase tracking-wider">
                     {month}
                   </span>
                   <span className="text-2xl font-black text-church-charcoal leading-none my-0.5">
                     {day}
                   </span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                     {weekday}
                   </span>
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="h-11 w-[1px] bg-gray-100 mx-3 sm:mx-4 shrink-0" />
+                <div className="h-11 w-[1px] bg-slate-200/60 mx-3 sm:mx-4 shrink-0" />
                 
                 {/* Details */}
                 <div className="flex-1 min-w-0 pr-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors truncate">
+                    <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-[#2C4A60] transition-colors truncate">
                       {setlist.title}
                     </h3>
                   </div>
@@ -277,7 +279,7 @@ export default function SetlistsList() {
                 <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 shrink-0">
                   <button 
                     onClick={(e) => handleSingleExport(e, setlist)}
-                    className="p-2 text-church-slate hover:text-church-rose hover:bg-rose-50 rounded-full transition-colors"
+                    className="p-2 text-church-slate hover:text-[#2C4A60] hover:bg-slate-100 rounded-full transition-colors"
                     title="Export JSON"
                   >
                     <Download size={16} />

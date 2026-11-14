@@ -243,7 +243,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         {/* Compact Header matching MemberProfileModal */}
         <div className="bg-church-navy text-white px-6 py-4 sm:px-7 sm:py-5 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-church-rose/20 text-church-rose flex items-center justify-center font-bold shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center font-bold shrink-0">
               <User size={18} />
             </div>
             <div>
@@ -271,7 +271,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
             
             {/* Personal Details */}
             <div>
-              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
                 <User size={14} /> Personal Details
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,7 +284,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       required 
                       value={formData.firstName} 
                       onChange={handleChange} 
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                     />
                   </div>
                   <div>
@@ -294,7 +294,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       name="middleName" 
                       value={formData.middleName} 
                       onChange={handleChange} 
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                     />
                   </div>
                   <div>
@@ -305,7 +305,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       required 
                       value={formData.lastName} 
                       onChange={handleChange} 
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                     />
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                       name="isAbroad"
                       checked={formData.isAbroad}
                       onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
-                      className="mr-2 w-4 h-4 rounded accent-church-rose text-church-rose focus:ring-church-rose border-gray-300"
+                      className="mr-2 w-4 h-4 rounded accent-[#2C4A60] text-[#2C4A60] focus:ring-[#2C4A60] border-gray-300"
                     />
                     Currently Living / Working Abroad
                   </label>
@@ -348,7 +348,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
             {/* Contact Information */}
             <div>
-              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
                 <Phone size={14} /> Contact Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -359,7 +359,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     name="email" 
                     value={formData.email} 
                     onChange={handleChange} 
-                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                   />
                 </div>
                 
@@ -370,7 +370,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     name="phoneNumber" 
                     value={formData.phoneNumber} 
                     onChange={handleChange} 
-                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                   />
                 </div>
 
@@ -381,7 +381,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     name="address" 
                     value={formData.address} 
                     onChange={handleChange} 
-                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                   />
                 </div>
                 
@@ -392,7 +392,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     name="emergencyContact" 
                     value={formData.emergencyContact} 
                     onChange={handleChange} 
-                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                   />
                 </div>
               </div>
@@ -400,7 +400,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
             {/* Church Information */}
             <div>
-              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
                 <CheckCircle size={14} /> Church Status & Milestones
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -501,7 +501,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                     value={formData.familyGroup} 
                     onChange={handleChange} 
                     placeholder="e.g. Grace Group" 
-                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow" 
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow" 
                   />
                 </div>
               </div>
@@ -509,7 +509,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
 
             {/* Notes */}
             <div>
-              <h3 className="text-xs font-bold text-church-rose uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-gray-100 flex items-center gap-1.5">
                 <HeartHandshake size={14} /> Pastoral & Admin Notes
               </h3>
               <textarea 
@@ -517,7 +517,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
                 rows="3" 
                 value={formData.notes} 
                 onChange={handleChange} 
-                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose focus:border-transparent text-sm transition-shadow resize-none" 
+                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-shadow resize-none" 
                 placeholder="Any additional pastoral or administrative notes..."
               />
             </div>

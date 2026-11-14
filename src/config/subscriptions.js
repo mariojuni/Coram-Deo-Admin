@@ -71,7 +71,7 @@ export const SUBSCRIPTION_TIERS = {
       worshipSetlists: true
     },
     popular: true,
-    badgeColor: 'bg-church-rose/10 text-church-rose border-church-rose/20'
+    badgeColor: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]'
   },
 
   kingdom: {

@@ -6,6 +6,7 @@ import { getDiscipleshipPlans, deleteDiscipleshipPlan, exportDiscipleshipPlanJSO
 import DiscipleshipPlanFormModal from './DiscipleshipPlanFormModal';
 import DiscipleshipImportModal from './DiscipleshipImportModal';
 import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
+import SoftCard from '../../components/ui/SoftCard';
 
 export default function DiscipleshipPlans() {
   const navigate = useNavigate();
@@ -124,55 +125,58 @@ export default function DiscipleshipPlans() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-church-navy">Discipleship Plans</h1>
-          <p className="text-gray-500 mt-1">Manage weekly discipleship study plans</p>
+          <span className="text-[11px] font-bold text-[#2C4A60] tracking-wider uppercase bg-[#EBF2F7] px-3 py-1 rounded-full border border-[#D5E3EC]">
+            CURRICULUM & STUDY
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-church-charcoal tracking-tight mt-2">Discipleship Plans</h1>
+          <p className="text-xs sm:text-sm text-church-slate mt-1">Manage weekly discipleship study plans and curricula</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleBulkExport}
             disabled={isExporting || plans.length === 0}
-            className="flex items-center bg-white border border-gray-300 text-church-navy px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm disabled:opacity-50"
+            className="inline-flex items-center bg-white border border-slate-200 text-church-navy px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors text-xs font-bold shadow-xs disabled:opacity-50"
           >
-            <Download size={18} className="mr-2" />
-            {selectedPlanIds.length > 0 ? `Export Selected (${selectedPlanIds.length})` : 'Export All JSON'}
+            <Download size={14} className="mr-1.5" />
+            {selectedPlanIds.length > 0 ? `Export (${selectedPlanIds.length})` : 'Export All JSON'}
           </button>
           <button
             onClick={handleImportClick}
-            className="flex items-center bg-white border border-gray-300 text-church-navy px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm"
+            className="inline-flex items-center bg-white border border-slate-200 text-church-navy px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors text-xs font-bold shadow-xs"
           >
-            <Upload size={18} className="mr-2" />
+            <Upload size={14} className="mr-1.5" />
             Import JSON
           </button>
           <button
             onClick={handleAddClick}
-            className="flex items-center bg-church-green text-white px-4 py-2 rounded-xl hover:bg-church-green-dark transition-colors font-medium shadow-sm"
+            className="inline-flex items-center gap-1.5 bg-[#162533] hover:bg-[#1E2E3D] text-white px-4 py-2 rounded-xl transition-all text-xs font-bold shadow-sm"
           >
-            <Plus size={18} className="mr-2" />
-            New Plan
+            <Plus size={15} />
+            <span>New Plan</span>
           </button>
         </div>
       </div>
 
       {/* Sub-Navigation & Selection Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => navigate('/admin/discipleship/groups')}
-            className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+            className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-white/80 hover:text-church-navy transition-colors"
           >
             Groups
           </button>
           <button
             onClick={() => navigate('/admin/discipleship/materials')}
-            className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-gray-100"
+            className="px-4 py-2 text-xs font-bold rounded-xl text-church-slate hover:bg-white/80 hover:text-church-navy transition-colors"
           >
             Leader Materials
           </button>
           <button
             onClick={() => navigate('/admin/discipleship/plans')}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-church-green text-white"
+            className="px-4 py-2 text-xs font-bold rounded-xl bg-[#162533] text-white shadow-xs"
           >
             Discipleship Plans
           </button>
@@ -182,12 +186,12 @@ export default function DiscipleshipPlans() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleSelectAll}
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-church-navy px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-church-navy px-3 py-1.5 rounded-xl bg-gray-50/80 hover:bg-gray-100 border border-gray-200/60"
             >
               {selectedPlanIds.length === plans.length ? (
-                <CheckSquare size={16} className="text-church-green" />
+                <CheckSquare size={15} className="text-[#2C4A60]" />
               ) : (
-                <Square size={16} />
+                <Square size={15} />
               )}
               {selectedPlanIds.length === plans.length ? 'Deselect All' : 'Select All for Export'}
             </button>
@@ -196,35 +200,35 @@ export default function DiscipleshipPlans() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-church-green border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <SoftCard className="flex justify-center py-16">
+          <div className="w-8 h-8 border-4 border-[#2C4A60] border-t-transparent rounded-full animate-spin"></div>
+        </SoftCard>
       ) : plans.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-church-soft p-12 text-center border border-gray-100">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={32} className="text-gray-400" />
+        <SoftCard className="p-12 text-center">
+          <div className="w-16 h-16 bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
+            <BookOpen size={30} />
           </div>
           <h3 className="text-xl font-bold text-church-navy mb-2">No Discipleship Plans</h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+          <p className="text-church-slate text-xs mb-6 max-w-md mx-auto">
             Create a new weekly study plan to help members grow in their faith.
           </p>
           <button
             onClick={handleAddClick}
-            className="inline-flex items-center bg-church-green text-white px-6 py-2.5 rounded-xl hover:bg-church-green-dark transition-colors font-medium shadow-sm"
+            className="inline-flex items-center gap-1.5 bg-[#162533] text-white px-5 py-2.5 rounded-xl hover:bg-[#1E2E3D] transition-all text-xs font-bold shadow-sm"
           >
-            <Plus size={18} className="mr-2" />
-            Create First Plan
+            <Plus size={16} />
+            <span>Create First Plan</span>
           </button>
-        </div>
+        </SoftCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isSelected = selectedPlanIds.includes(plan.id);
             return (
-              <div 
+              <SoftCard 
                 key={plan.id} 
-                className={`bg-white rounded-2xl shadow-church-soft overflow-hidden border flex flex-col hover:shadow-lg transition-all ${
-                  isSelected ? 'border-church-green ring-2 ring-church-green/20' : 'border-gray-100'
+                className={`overflow-hidden border flex flex-col p-0 transition-all ${
+                  isSelected ? 'border-[#2C4A60] ring-2 ring-[#2C4A60]/20' : ''
                 }`}
               >
                 <div className="relative">
@@ -233,7 +237,7 @@ export default function DiscipleshipPlans() {
                     className="absolute top-3 left-3 z-10 bg-white/90 p-1.5 rounded-lg cursor-pointer hover:bg-white shadow-sm"
                   >
                     {isSelected ? (
-                      <CheckSquare size={18} className="text-church-green" />
+                      <CheckSquare size={18} className="text-[#2C4A60]" />
                     ) : (
                       <Square size={18} className="text-gray-400" />
                     )}
@@ -314,13 +318,13 @@ export default function DiscipleshipPlans() {
                     </div>
                     <button
                       onClick={() => navigate(`/admin/discipleship/plans/${plan.id}`)}
-                      className="text-sm font-bold text-church-green hover:text-church-green-dark flex items-center gap-1 hover:underline"
+                      className="text-sm font-bold text-[#2C4A60] hover:text-[#1D3547] flex items-center gap-1 hover:underline"
                     >
                       Manage Weeks →
                     </button>
                   </div>
                 </div>
-              </div>
+              </SoftCard>
             );
           })}
         </div>

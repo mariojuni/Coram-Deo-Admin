@@ -275,7 +275,7 @@ const Home = ({ toggleTheme, setActiveTab, members }) => {
         <div className="bento-grid">
           <div className="card stat-card">
             <div className="stat-top">
-              <div className="stat-icon pink-light">
+              <div className="stat-icon blue-light">
                 <BarChart3 size={20} />
               </div>
               <div className="stat-info">
@@ -283,7 +283,7 @@ const Home = ({ toggleTheme, setActiveTab, members }) => {
                 <p>Attendance</p>
               </div>
             </div>
-            <button className="stat-btn pink">Open</button>
+            <button className="stat-btn blue">Open</button>
           </div>
           
           <div className="card stat-card">

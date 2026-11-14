@@ -92,7 +92,7 @@ export default function SetlistDetails() {
     return (
       <div className="flex-1 flex items-center justify-center py-20">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+          <div className="w-10 h-10 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
           <p className="text-sm font-medium text-church-slate">Loading setlist details...</p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function SetlistDetails() {
           <p className="text-xs sm:text-sm text-church-slate mt-0.5 flex items-center gap-1.5 flex-wrap">
             {event && (
               <span className="font-semibold text-church-charcoal flex items-center gap-1">
-                <Calendar size={13} className="text-church-rose" />
+                <Calendar size={13} className="text-[#2C4A60]" />
                 {event.title}
               </span>
             )}
@@ -170,7 +170,7 @@ export default function SetlistDetails() {
           <SoftCard className="overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
               <h2 className="text-sm font-bold text-church-charcoal flex items-center uppercase tracking-wider">
-                <Music size={16} className="mr-2 text-church-rose" />
+                <Music size={16} className="mr-2 text-[#2C4A60]" />
                 Setlist Order
               </h2>
               <span className="text-xs font-bold text-church-slate bg-gray-100 px-2.5 py-0.5 rounded-full">
@@ -180,7 +180,7 @@ export default function SetlistDetails() {
             
             {items.length === 0 ? (
               <div className="p-12 text-center flex flex-col items-center justify-center">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-3 border border-rose-100/50">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-3 border border-slate-200/50">
                   <ListMusic size={26} />
                 </div>
                 <h3 className="text-base font-black text-church-charcoal mb-1">Empty Setlist</h3>
@@ -193,11 +193,11 @@ export default function SetlistDetails() {
                     <div className="cursor-move p-1.5 text-gray-300 hover:text-gray-500 mr-2">
                       <GripVertical size={16} />
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/50 flex items-center justify-center font-black text-xs mr-3.5 shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] border border-slate-200/50 flex items-center justify-center font-black text-xs mr-3.5 shrink-0">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0 pr-3">
-                      <h4 className="text-sm sm:text-base font-bold text-church-charcoal group-hover:text-church-rose transition-colors truncate">
+                      <h4 className="text-sm sm:text-base font-bold text-church-charcoal group-hover:text-[#2C4A60] transition-colors truncate">
                         {item.title || 'Unknown Song'}
                       </h4>
                       <div className="flex items-center text-xs text-church-slate mt-1 space-x-2">
@@ -233,7 +233,7 @@ export default function SetlistDetails() {
         <div className="space-y-6">
           <SoftCard className="p-6">
             <h3 className="text-base font-black text-church-charcoal mb-4 flex items-center gap-2">
-              <Plus size={18} className="text-church-rose" />
+              <Plus size={18} className="text-[#2C4A60]" />
               Add Song to Set
             </h3>
             <div className="space-y-4">
@@ -254,19 +254,18 @@ export default function SetlistDetails() {
                   searchable={availableSongs.length > 8}
                 />
               </div>
-              <GradientButton 
+              <button 
                 onClick={handleAddSong}
                 disabled={!selectedSongId || addingSong}
-                loading={addingSong}
-                icon={Plus}
-                className="w-full"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
               >
-                Add to Setlist
-              </GradientButton>
+                <Plus size={15} />
+                <span>{addingSong ? 'Adding...' : 'Add to Setlist'}</span>
+              </button>
             </div>
             
             {availableSongs.length === 0 && (
-              <div className="mt-4 p-3 bg-rose-50 text-church-rose text-xs rounded-xl flex items-start border border-rose-100">
+              <div className="mt-4 p-3 bg-[#EBF2F7] text-[#2C4A60] text-xs rounded-xl flex items-start border border-[#D5E3EC]">
                 <AlertCircle size={15} className="mr-2 mt-0.5 shrink-0" />
                 <p>No active songs found in your library. Add songs first in Songs & Lyrics.</p>
               </div>

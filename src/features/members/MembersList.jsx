@@ -446,7 +446,7 @@ export default function MembersList() {
       {/* Header aligned to CoramDeo Design System */}
       <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <StatusPill variant="steel" dot className="mb-2">
             Church Community & Roster
           </StatusPill>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Members Directory</h1>
@@ -454,7 +454,7 @@ export default function MembersList() {
             <button 
               className={`pb-2.5 text-sm font-bold transition-all border-b-2 ${
                 activeTab === 'members' 
-                  ? 'text-church-rose border-church-rose' 
+                  ? 'text-[#2C4A60] border-[#2C4A60]' 
                   : 'text-church-slate hover:text-church-charcoal border-transparent'
               }`}
               onClick={() => setActiveTab('members')}
@@ -464,7 +464,7 @@ export default function MembersList() {
             <button 
               className={`pb-2.5 text-sm font-bold transition-all border-b-2 ${
                 activeTab === 'households' 
-                  ? 'text-church-rose border-church-rose' 
+                  ? 'text-[#2C4A60] border-[#2C4A60]' 
                   : 'text-church-slate hover:text-church-charcoal border-transparent'
               }`}
               onClick={() => setActiveTab('households')}
@@ -551,7 +551,7 @@ export default function MembersList() {
                 </div>
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                   placeholder="Search by name, email, or phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -612,7 +612,7 @@ export default function MembersList() {
                   <tr>
                     <td colSpan="5" className="p-16 text-center">
                       <div className="flex flex-col items-center space-y-3">
-                        <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+                        <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
                         <p className="text-sm font-medium text-church-slate">Loading members...</p>
                       </div>
                     </td>
@@ -620,7 +620,7 @@ export default function MembersList() {
                 ) : filteredMembers.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="p-16 text-center">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 mx-auto border border-rose-100/60 shadow-sm">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 mx-auto border border-slate-200/60 shadow-sm">
                         <Users size={30} />
                       </div>
                       <p className="text-church-charcoal font-black text-lg">No members found</p>
@@ -632,11 +632,11 @@ export default function MembersList() {
                     <tr key={member.id} className="hover:bg-gray-50/60 transition-colors group">
                       <td className="p-4 pl-6">
                         <div className="flex items-center cursor-pointer" onClick={() => handleViewProfile(member)}>
-                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-rose-50 to-violet-50 text-church-charcoal border border-rose-100/60 flex items-center justify-center font-black text-base uppercase shrink-0">
+                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] border border-slate-200/60 flex items-center justify-center font-black text-base uppercase shrink-0">
                             {member.displayName?.charAt(0) || 'U'}
                           </div>
                           <div className="ml-3.5">
-                            <p className="text-sm font-bold text-church-charcoal group-hover:text-church-rose transition-colors">{member.displayName}</p>
+                            <p className="text-sm font-bold text-church-charcoal group-hover:text-[#2C4A60] transition-colors">{member.displayName}</p>
                             <p className="text-xs text-church-slate mt-0.5">{member.gender || 'Unknown'} • {member.birthDate || member.birthday ? new Date(member.birthDate || member.birthday).toLocaleDateString() : 'No birth date'} {member.isAbroad && '• Abroad'}</p>
                           </div>
                         </div>

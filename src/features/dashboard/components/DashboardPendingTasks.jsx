@@ -47,7 +47,7 @@ export default function DashboardPendingTasks({ counts, loading, userProfile }) 
       count: counts.pendingPrayers,
       description: 'Member prayer requests needing approval',
       path: '/admin/prayer',
-      badgeColor: 'bg-pink-100 text-church-rose border-pink-200',
+      badgeColor: 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]',
     });
   }
 
@@ -123,20 +123,20 @@ export default function DashboardPendingTasks({ counts, loading, userProfile }) 
             <Link
               key={task.id}
               to={task.path}
-              className="flex items-center justify-between p-3.5 border border-gray-100/90 rounded-2xl hover:bg-gray-50/70 transition-all duration-150 group"
+              className="flex items-center justify-between p-3.5 border border-white/95 rounded-2xl bg-white/80 hover:bg-white hover:border-[#D5E3EC] transition-all duration-150 group shadow-2xs"
             >
               <div className="flex items-center space-x-3 min-w-0 pr-2">
                 <div className={`px-2.5 py-1 rounded-xl text-xs font-black shrink-0 border ${task.badgeColor}`}>
                   {task.count}
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs md:text-sm font-bold text-church-charcoal truncate group-hover:text-church-rose transition-colors">
+                  <h4 className="text-xs md:text-sm font-bold text-church-charcoal truncate group-hover:text-[#2C4A60] transition-colors">
                     {task.title}
                   </h4>
                   <p className="text-[11px] text-church-slate truncate mt-0.5">{task.description}</p>
                 </div>
               </div>
-              <ChevronRight size={16} className="text-church-muted group-hover:text-church-rose group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ChevronRight size={16} className="text-church-muted group-hover:text-[#2C4A60] group-hover:translate-x-0.5 transition-all shrink-0" />
             </Link>
           ))
         )}

@@ -139,7 +139,7 @@ export default function DaySequenceBuilder({ day, onChange }) {
                     </>
                   ) : (
                     <>
-                      <BookOpen size={14} className="mr-1 text-church-green" />
+                      <BookOpen size={14} className="mr-1 text-[#2C4A60]" />
                       Scripture Reading: {item.display || `${item.bookId} ${item.chapter}`}
                     </>
                   )}
@@ -190,7 +190,7 @@ export default function DaySequenceBuilder({ day, onChange }) {
                       value={item.title || ''}
                       onChange={(e) => handleUpdateItem(idx, { title: e.target.value })}
                       placeholder="e.g. The Priority of Love"
-                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green font-medium"
+                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] font-medium bg-white"
                     />
                   </div>
                   <div>
@@ -202,7 +202,7 @@ export default function DaySequenceBuilder({ day, onChange }) {
                       value={item.author || ''}
                       onChange={(e) => handleUpdateItem(idx, { author: e.target.value })}
                       placeholder="e.g. R.C. Sproul"
-                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white"
                     />
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export default function DaySequenceBuilder({ day, onChange }) {
                     value={item.content || ''}
                     onChange={(e) => handleUpdateItem(idx, { content: e.target.value })}
                     placeholder="Enter multi-paragraph devotional reflection..."
-                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green resize-y font-serif leading-relaxed"
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] resize-y font-serif leading-relaxed bg-white"
                   />
                 </div>
               </div>

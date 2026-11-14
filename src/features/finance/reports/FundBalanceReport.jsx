@@ -40,13 +40,13 @@ export default function FundBalanceReport({ data }) {
                 {row.fundName}
               </td>
               <td className="py-4 px-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  row.isActive ? 'bg-church-green/10 text-church-green' : 'bg-gray-100 text-gray-500'
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  row.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
                 }`}>
                   {row.isActive ? 'Active' : 'Archived'}
                 </span>
               </td>
-              <td className="py-4 px-4 font-medium text-church-green text-right">
+              <td className="py-4 px-4 font-medium text-emerald-600 text-right">
                 {formatCurrency(row.totalGiving)}
               </td>
               <td className="py-4 px-4 font-medium text-rose-500 text-right">
@@ -61,7 +61,7 @@ export default function FundBalanceReport({ data }) {
         <tfoot>
           <tr className="border-t-2 border-gray-100 bg-gray-50/50">
             <td className="py-4 px-4 font-extrabold text-church-navy" colSpan={2}>Total</td>
-            <td className="py-4 px-4 font-extrabold text-church-green text-right">{formatCurrency(totalGiving)}</td>
+            <td className="py-4 px-4 font-extrabold text-emerald-600 text-right">{formatCurrency(totalGiving)}</td>
             <td className="py-4 px-4 font-extrabold text-rose-500 text-right">{formatCurrency(totalExpenses)}</td>
             <td className={`py-4 px-4 font-extrabold text-right ${totalBalance >= 0 ? 'text-church-navy' : 'text-amber-500'}`}>
               {formatCurrency(totalBalance)}

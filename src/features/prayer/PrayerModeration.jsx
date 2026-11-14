@@ -211,7 +211,7 @@ export default function PrayerModeration() {
           </div>
           <input
             type="text"
-            className="w-full pl-10 pr-4 py-2 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-church-rose/20 focus:border-church-rose transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-full text-sm text-church-charcoal placeholder-church-muted focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
             placeholder="Search prayer requests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -283,13 +283,13 @@ export default function PrayerModeration() {
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-medium text-church-slate">Loading prayer requests...</p>
           </div>
         </div>
       ) : filteredRequests.length === 0 ? (
         <SoftCard className="p-16 flex flex-col items-center justify-center text-center flex-1 my-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 border border-slate-200/60 shadow-sm">
             <HeartHandshake size={30} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No prayer requests found</h3>

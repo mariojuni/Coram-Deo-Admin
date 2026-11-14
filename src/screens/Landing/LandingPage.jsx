@@ -18,7 +18,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-church-canvas text-church-charcoal flex flex-col selection:bg-pink-100 selection:text-church-rose font-sans">
+    <div className="min-h-screen glass-light-canvas text-brand-dark flex flex-col selection:bg-blue-100 selection:text-brand-primary font-sans">
       <Navbar />
       <main className="flex-1">
         <HeroSection />

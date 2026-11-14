@@ -403,8 +403,8 @@ export default function BibleImportFlow() {
               <button
                 onClick={handleImport}
                 disabled={uploading || versionInfo?.type === 'identical'}
-                className={`flex items-center px-6 py-2.5 rounded-lg font-bold text-white transition-colors ${
-                  uploading || versionInfo?.type === 'identical' ? 'bg-church-navy/40 cursor-not-allowed' : 'bg-church-navy hover:bg-church-navy/90'
+                className={`flex items-center px-6 py-2.5 rounded-xl font-bold text-white transition-all text-xs shadow-sm ${
+                  uploading || versionInfo?.type === 'identical' ? 'bg-[#162533]/40 cursor-not-allowed' : 'bg-[#162533] hover:bg-[#1E2E3D]'
                 }`}
               >
                 {uploading ? (
@@ -439,7 +439,7 @@ function PreviewItem({ label, value }) {
 function StatBox({ label, value }) {
   return (
     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
-      <p className="text-xl font-bold text-church-navy">{value.toLocaleString()}</p>
+      <p className="text-xl font-bold text-[#2C4A60]">{value.toLocaleString()}</p>
       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1">{label}</p>
     </div>
   );

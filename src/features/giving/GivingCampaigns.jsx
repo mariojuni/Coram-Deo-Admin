@@ -115,15 +115,15 @@ export default function GivingCampaigns() {
         </div>
         <button 
           onClick={handleAddClick}
-          className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+          className="flex items-center px-5 py-2.5 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
         >
           <Plus size={18} className="mr-2" />
           Create Campaign
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 flex-1 flex flex-col overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+      <div className="glass-light-card rounded-3xl border border-white/95 shadow-sm flex-1 flex flex-col overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white/50">
           <h2 className="text-lg font-bold text-church-navy">Campaigns</h2>
           <div className="relative w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -134,7 +134,7 @@ export default function GivingCampaigns() {
               placeholder="Search campaigns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent text-sm transition-shadow"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm transition-all bg-white"
             />
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function GivingCampaigns() {
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-church-navy">
                       {formatCurrency(campaign.goalAmount)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-church-green">
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-emerald-600">
                       {formatCurrency(campaign.raisedAmount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

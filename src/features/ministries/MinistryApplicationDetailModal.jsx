@@ -62,13 +62,13 @@ export default function MinistryApplicationDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col my-8 border border-white/95">
         
         {/* Header */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-church-navy/10 flex items-center justify-center text-church-navy">
+            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 flex items-center justify-center text-[#2C4A60]">
               <FileText size={20} />
             </div>
             <div>
@@ -76,7 +76,7 @@ export default function MinistryApplicationDetailModal({
               <p className="text-xs text-church-slate">Submitted on {formatDate(application.submittedAt || application.createdAt)}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
@@ -93,14 +93,14 @@ export default function MinistryApplicationDetailModal({
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-church-navy text-white flex items-center justify-center font-bold text-xl shadow-sm">
+                <div className="w-14 h-14 rounded-full bg-[#162533] text-white flex items-center justify-center font-bold text-xl shadow-sm">
                   {(applicantName || 'U').charAt(0).toUpperCase()}
                 </div>
               )}
               <div>
                 <h3 className="text-lg font-bold text-church-navy">{applicantName}</h3>
                 <div className="flex items-center text-xs text-church-slate mt-1 space-x-2">
-                  <span className="flex items-center"><Shield size={13} className="mr-1 text-church-green" /> {application.ministryName}</span>
+                  <span className="flex items-center"><Shield size={13} className="mr-1 text-[#2C4A60]" /> {application.ministryName}</span>
                 </div>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function MinistryApplicationDetailModal({
                 type="button"
                 onClick={() => onApprove(application)}
                 disabled={processing}
-                className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-md flex items-center"
+                className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm flex items-center"
               >
                 <CheckCircle size={16} className="mr-1.5" />
                 Approve Application

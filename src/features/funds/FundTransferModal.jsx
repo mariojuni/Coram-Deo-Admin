@@ -111,11 +111,11 @@ export default function FundTransferModal({ isOpen, onClose }) {
   const fundOptions = funds.map(f => ({ value: f.id, label: f.name }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg border border-gray-100 flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div className="glass-light-card rounded-3xl shadow-2xl w-full max-w-lg border border-white/95 flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0 bg-gray-50/50 rounded-t-3xl">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-xl bg-church-green/10 flex items-center justify-center text-church-green mr-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 flex items-center justify-center text-[#2C4A60] mr-3">
               <ArrowRightLeft size={20} />
             </div>
             <div>
@@ -178,7 +178,7 @@ export default function FundTransferModal({ isOpen, onClose }) {
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-church-green focus:border-church-green transition-all"
+                  className="w-full pl-9 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                   placeholder="0.00"
                   required
                 />
@@ -191,7 +191,7 @@ export default function FundTransferModal({ isOpen, onClose }) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-church-green focus:border-church-green transition-all"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 required
               />
             </div>
@@ -202,14 +202,14 @@ export default function FundTransferModal({ isOpen, onClose }) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows="3"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-church-green focus:border-church-green transition-all resize-none"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none"
                 placeholder="Reason for transfer..."
               />
             </div>
           </form>
         </div>
 
-        <div className="p-6 border-t border-gray-100 shrink-0 bg-gray-50 rounded-b-3xl flex justify-end space-x-3">
+        <div className="p-6 border-t border-gray-100 shrink-0 bg-gray-50/50 rounded-b-3xl flex justify-end space-x-3">
           <button 
             type="button" 
             onClick={onClose}
@@ -221,7 +221,7 @@ export default function FundTransferModal({ isOpen, onClose }) {
           <button 
             type="submit" 
             form="transferForm"
-            className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             disabled={loading}
           >
             {loading ? (

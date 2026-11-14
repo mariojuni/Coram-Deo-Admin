@@ -79,7 +79,7 @@ export default function DonationAccountsList() {
         </div>
         <button
           onClick={handleAddAccount}
-          className="flex items-center px-4 py-2.5 bg-church-green text-white rounded-full font-bold hover:bg-church-green/90 transition-colors shadow-sm"
+          className="flex items-center px-4 py-2.5 bg-[#162533] text-white rounded-full font-bold hover:bg-[#1E2E3D] transition-all shadow-sm"
         >
           <Plus size={18} className="mr-2" />
           Add Donation Account
@@ -87,7 +87,7 @@ export default function DonationAccountsList() {
       </div>
 
       {accounts.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center shadow-church-soft border border-gray-100">
+        <div className="glass-light-card rounded-3xl p-12 text-center border border-white/95 shadow-sm">
           <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Building size={32} className="text-gray-400" />
           </div>
@@ -97,7 +97,7 @@ export default function DonationAccountsList() {
           </p>
           <button
             onClick={handleAddAccount}
-            className="px-6 py-2.5 bg-church-green text-white rounded-full font-bold hover:bg-church-green/90 transition-colors shadow-sm"
+            className="px-6 py-2.5 bg-[#162533] text-white rounded-full font-bold hover:bg-[#1E2E3D] transition-all shadow-sm"
           >
             Add Donation Account
           </button>
@@ -113,15 +113,15 @@ export default function DonationAccountsList() {
               </div>
             )}
             {accounts.filter(a => a.isPrimary).map(account => (
-              <div key={account.id} className="bg-white rounded-3xl p-6 shadow-church-soft border-2 border-church-green relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-church-green/5 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+              <div key={account.id} className="glass-light-card rounded-3xl p-6 shadow-sm border-2 border-[#2C4A60]/30 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#2C4A60]/5 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-church-navy">{account.bankName}</h3>
                       <p className="text-church-slate font-medium">{account.accountName}</p>
                     </div>
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-church-green/10 text-church-green border border-church-green/20">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-[#2C4A60]/10 text-[#2C4A60] border border-[#2C4A60]/20">
                       Primary
                     </span>
                   </div>

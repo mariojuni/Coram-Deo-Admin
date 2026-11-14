@@ -127,7 +127,7 @@ export default function FinanceLayout() {
                 <Icon size={17} className="mr-2 shrink-0" />
                 <span>{tab.name}</span>
                 {tab.badge && (
-                  <span className="ml-2 px-1.5 py-0.5 rounded-full text-[10px] font-black bg-white text-church-rose shadow-sm">
+                  <span className="ml-2 px-1.5 py-0.5 rounded-full text-[10px] font-black bg-white text-[#2C4A60] shadow-sm">
                     {tab.badge}
                   </span>
                 )}

@@ -122,17 +122,17 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft overflow-visible flex flex-col my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-visible flex flex-col my-8 border border-white/95">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl">
           <h2 className="text-xl font-bold text-church-navy">Assign to {ministry.name}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-28 min-h-[220px]">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
           
           <div>
             <label className="block text-sm font-medium text-church-navy mb-2">Select Church Member</label>
@@ -156,7 +156,7 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
           <button type="button" onClick={onClose} disabled={saving} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors">
             Cancel
           </button>
-          <button type="submit" onClick={handleSubmit} disabled={saving || !selectedMemberId} className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-md">
+          <button type="submit" onClick={handleSubmit} disabled={saving || !selectedMemberId} className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm">
             {saving ? 'Assigning...' : 'Assign Member'}
           </button>
         </div>

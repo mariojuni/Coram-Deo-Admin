@@ -227,7 +227,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden relative">
         {/* Modal Top Header */}
-        <div className="bg-gradient-to-r from-church-rose/10 via-purple-50 to-church-canvas p-6 border-b border-gray-100 relative">
+        <div className="bg-gradient-to-r from-[#EBF2F7] via-slate-50 to-white p-6 border-b border-gray-100 relative">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/80 text-church-slate hover:text-church-charcoal transition-all"
@@ -236,7 +236,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
             <X size={18} />
           </button>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-charcoal text-white text-[10px] font-black uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#162533] text-white text-[10px] font-black uppercase tracking-wider mb-2">
             <ShieldCheck size={12} />
             <span>SuperAdmin Mission Control</span>
           </div>
@@ -415,7 +415,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
                   onClick={() => setSelectedTier(p.id)}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     selectedTier === p.id
-                      ? 'border-church-rose bg-church-rose/5 text-church-rose shadow-sm'
+                      ? 'border-[#2C4A60] bg-[#EBF2F7]/50 text-[#2C4A60] shadow-sm font-bold'
                       : 'border-gray-200 hover:border-gray-300 text-church-charcoal'
                   }`}
                 >
@@ -430,7 +430,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
                 type="button"
                 onClick={handleUpdateTier}
                 disabled={loading}
-                className="mt-3 px-4 py-2 rounded-xl bg-church-rose hover:bg-church-ruby text-white text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
+                className="mt-3 px-4 py-2 rounded-xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
               >
                 {loading ? 'Updating...' : `Apply ${SUBSCRIPTION_TIERS[selectedTier]?.name} Tier`}
               </button>
@@ -522,7 +522,7 @@ export default function SuperAdminSubscriptionModal({ isOpen, onClose, church, o
           {/* Section 2: Quick Trial Extension */}
           <div className="pt-4 border-t border-gray-100">
             <div className="flex items-center gap-2 mb-2 text-xs font-extrabold uppercase tracking-wider text-church-slate">
-              <Clock size={14} className="text-church-rose" />
+              <Clock size={14} className="text-[#2C4A60]" />
               <span>Extend Free Trial Duration</span>
             </div>
             <p className="text-xs text-church-slate mb-3">

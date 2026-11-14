@@ -24,11 +24,11 @@ export default function DeclineApplicationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="text-lg font-bold text-church-navy">Decline Application</h3>
-          <button onClick={onClose} disabled={processing} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div className="glass-light-card rounded-2xl border border-white/95 w-full max-w-lg shadow-xl overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/50">
+          <h3 className="text-lg font-bold text-slate-900">Decline Application</h3>
+          <button onClick={onClose} disabled={processing} className="text-slate-400 hover:text-slate-600 transition-colors bg-white/80 p-2 rounded-full border border-slate-100 shadow-sm">
             <X size={18} />
           </button>
         </div>
@@ -64,7 +64,7 @@ export default function DeclineApplicationModal({
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
               placeholder="Optional notes for admin records..."
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm"
             />
           </div>
 

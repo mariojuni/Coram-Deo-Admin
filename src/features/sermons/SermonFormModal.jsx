@@ -414,7 +414,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
               onClick={() => setActiveEditTab(tab)}
               className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
                 activeEditTab === tab 
-                  ? 'border-church-green text-church-navy' 
+                  ? 'border-[#2C4A60] text-church-navy' 
                   : 'border-transparent text-gray-400 hover:text-church-navy hover:bg-gray-50 rounded-t-lg'
               }`}
             >
@@ -428,12 +428,12 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     return (
       <div className="flex justify-between mb-8 relative">
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10 -translate-y-1/2"></div>
-        <div className="absolute top-1/2 left-0 h-0.5 bg-church-green -z-10 -translate-y-1/2 transition-all" style={{ width: `${(activeStepIndex / (ACTIVE_STEPS.length - 1)) * 100}%` }}></div>
+        <div className="absolute top-1/2 left-0 h-0.5 bg-[#2C4A60] -z-10 -translate-y-1/2 transition-all" style={{ width: `${(activeStepIndex / (ACTIVE_STEPS.length - 1)) * 100}%` }}></div>
         
         {ACTIVE_STEPS.map((step, idx) => (
           <div key={step} className="flex flex-col items-center">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
-              idx <= activeStepIndex ? 'bg-church-green border-church-green text-white' : 'bg-white border-gray-300 text-gray-400'
+              idx <= activeStepIndex ? 'bg-[#2C4A60] border-[#2C4A60] text-white' : 'bg-white border-gray-300 text-gray-400'
             }`}>
               {idx < activeStepIndex ? <CheckCircle2 size={16} /> : idx + 1}
             </div>
@@ -445,8 +445,8 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-4xl shadow-church-soft flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] border border-white/95">
         
         {/* Header */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
@@ -475,11 +475,11 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Sermon Title *</label>
-                  <input type="text" name="title" value={formData.title} onChange={handleTextChange} placeholder="e.g. Faith That Moves Mountains" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" />
+                  <input type="text" name="title" value={formData.title} onChange={handleTextChange} placeholder="e.g. Faith That Moves Mountains" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] focus:outline-none bg-white transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Preacher *</label>
-                  <input type="text" name="preacherName" value={formData.preacherName} onChange={handleTextChange} placeholder="e.g. Pastor Daniel" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" />
+                  <input type="text" name="preacherName" value={formData.preacherName} onChange={handleTextChange} placeholder="e.g. Pastor Daniel" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] focus:outline-none bg-white transition-all" />
                 </div>
               </div>
 
@@ -494,11 +494,11 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Scripture Ref</label>
-                  <input type="text" name="scriptureReference" value={formData.scriptureReference} onChange={handleTextChange} placeholder="e.g. Matthew 17:20" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" />
+                  <input type="text" name="scriptureReference" value={formData.scriptureReference} onChange={handleTextChange} placeholder="e.g. Matthew 17:20" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] focus:outline-none bg-white transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Series</label>
-                  <input type="text" name="seriesTitle" value={formData.seriesTitle} onChange={handleTextChange} placeholder="e.g. The Gospel" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none" />
+                  <input type="text" name="seriesTitle" value={formData.seriesTitle} onChange={handleTextChange} placeholder="e.g. The Gospel" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] focus:outline-none bg-white transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-church-navy mb-1">Visibility</label>
@@ -515,7 +515,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
 
               <div>
                 <label className="block text-sm font-medium text-church-navy mb-1">Description</label>
-                <textarea name="description" rows="3" value={formData.description} onChange={handleTextChange} placeholder="Sermon summary..." className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:outline-none resize-none" />
+                <textarea name="description" rows="3" value={formData.description} onChange={handleTextChange} placeholder="Sermon summary..." className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] focus:outline-none resize-none bg-white transition-all" />
               </div>
             </div>
           )}
@@ -524,7 +524,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
           {activeStep === 'Upload' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center justify-center py-8">
               <div className="w-full max-w-lg border-2 border-dashed border-gray-300 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors relative">
-                <UploadCloud size={48} className="text-church-green mb-4" />
+                <UploadCloud size={48} className="text-[#2C4A60] mb-4" />
                 <h3 className="text-lg font-bold text-church-navy mb-1">Upload Audio or Video</h3>
                 <p className="text-sm text-church-slate mb-2">Select the raw recording file. We will optimize it for you.</p>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-church-slate mb-6">
@@ -616,7 +616,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                     <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-300">
                       <div>
                         <p className="text-xs text-gray-500 font-bold uppercase mb-1">Start Time</p>
-                        <p className="text-lg font-bold text-church-green">{formatDuration(trimStart)}</p>
+                        <p className="text-lg font-bold text-[#2C4A60]">{formatDuration(trimStart)}</p>
                       </div>
                       <div className="h-8 w-px bg-gray-200"></div>
                       <div className="text-right">
@@ -652,7 +652,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                         onChange={e => setThumbnailTime(Number(e.target.value))}
                         onMouseUp={handleGenerateThumbnail}
                         onTouchEnd={handleGenerateThumbnail}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-church-green" 
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#2C4A60]" 
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-2">
                         <span>{formatDuration(trimStart)}</span>
@@ -874,7 +874,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
                   <button 
                     onClick={() => handlePublish('published')}
                     disabled={isPublishing || uploadStatus === 'processing'}
-                    className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold shadow-md hover:bg-church-green/90 disabled:opacity-50"
+                    className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold shadow-sm hover:bg-[#1E2E3D] disabled:opacity-50 transition-all"
                   >
                     {isPublishing ? 'Publishing...' : 'Publish Sermon'}
                   </button>

@@ -776,7 +776,7 @@ export default function ReportsDashboard() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-church-rose">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#2C4A60]">
               Ministry Intelligence
             </span>
             <span className="text-gray-300">•</span>
@@ -913,7 +913,7 @@ export default function ReportsDashboard() {
             <span className="text-xs font-bold uppercase tracking-wider text-church-slate">
               Water Baptism
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 text-church-rose flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] flex items-center justify-center">
               <Sparkles size={18} />
             </div>
           </div>
@@ -1024,7 +1024,7 @@ export default function ReportsDashboard() {
 
           <div className="pt-4 mt-4 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-church-slate">
             <span>Total Attendees: <strong className="text-church-navy">{filteredAttendance.totalAttendees}</strong></span>
-            <span>Total Visitors: <strong className="text-church-rose">{filteredAttendance.totalVisitors}</strong></span>
+            <span>Total Visitors: <strong className="text-[#2C4A60]">{filteredAttendance.totalVisitors}</strong></span>
           </div>
         </SoftCard>
 
@@ -1286,7 +1286,7 @@ export default function ReportsDashboard() {
                 </div>
                 <div className="flex justify-between">
                   <span>First-Time Visitors:</span>
-                  <strong className="text-church-rose">{filteredAttendance.totalVisitors}</strong>
+                  <strong className="text-[#2C4A60]">{filteredAttendance.totalVisitors}</strong>
                 </div>
               </div>
             </div>

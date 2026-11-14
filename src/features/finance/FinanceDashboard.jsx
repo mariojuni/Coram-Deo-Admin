@@ -43,15 +43,16 @@ ChartJS.register(
   ArcElement
 );
 
-// Curated CoramDeo harmonized palette for funds
+// Curated CoramDeo harmonized calm palette for funds
 const FUND_PALETTE = [
+  '#2C4A60', // nordic steel
   '#10B981', // emerald
-  '#FF577F', // rose
+  '#4F748E', // mist steel
   '#8B5CF6', // violet
   '#F59E0B', // amber
   '#3B82F6', // blue
   '#06B6D4', // cyan
-  '#EC4899', // pink
+  '#162533', // obsidian
   '#6366F1', // indigo
   '#14B8A6', // teal
   '#84CC16', // lime
@@ -440,7 +441,7 @@ export default function FinanceDashboard() {
       {/* Header & Date Range Filter */}
       <div className="relative z-30 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <span className="text-[11px] font-extrabold text-church-rose tracking-wider uppercase bg-church-rose-light px-3 py-1 rounded-full border border-pink-100">
+          <span className="text-[11px] font-bold text-[#2C4A60] tracking-wider uppercase bg-[#EBF2F7] px-3 py-1 rounded-full border border-[#D5E3EC]">
             FINANCE & STEWARDSHIP
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-church-charcoal tracking-tight mt-2">
@@ -459,7 +460,7 @@ export default function FinanceDashboard() {
       {loading ? (
         <SoftCard className="p-16 text-center">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-semibold text-church-slate">Loading financial ledger and fund data...</p>
           </div>
         </SoftCard>
@@ -560,7 +561,7 @@ export default function FinanceDashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-gray-100">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <BarChart3 size={18} className="text-church-rose" />
+                    <BarChart3 size={18} className="text-[#2C4A60]" />
                     <h3 className="font-extrabold text-base text-church-charcoal">
                       Income vs Expenses
                     </h3>
@@ -620,7 +621,7 @@ export default function FinanceDashboard() {
             <SoftCard className="p-6 lg:col-span-5 flex flex-col">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <div className="flex items-center space-x-2">
-                  <PieChart size={18} className="text-church-rose" />
+                  <PieChart size={18} className="text-[#2C4A60]" />
                   <h3 className="font-extrabold text-base text-church-charcoal">
                     Fund Distribution
                   </h3>
@@ -707,7 +708,7 @@ export default function FinanceDashboard() {
           <SoftCard className="p-6">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
               <div className="flex items-center space-x-2">
-                <Layers size={18} className="text-church-rose" />
+                <Layers size={18} className="text-[#2C4A60]" />
                 <h3 className="font-extrabold text-base text-church-charcoal">
                   Recent Financial Activity
                 </h3>
@@ -715,7 +716,7 @@ export default function FinanceDashboard() {
               <div className="flex items-center space-x-2">
                 <Link 
                   to="/admin/finance/giving" 
-                  className="text-xs font-bold text-church-rose hover:text-church-rose-dark flex items-center transition-colors"
+                  className="text-xs font-bold text-[#2C4A60] hover:text-[#1D3547] flex items-center transition-colors"
                 >
                   Giving Ledger <ArrowRight size={13} className="ml-1" />
                 </Link>

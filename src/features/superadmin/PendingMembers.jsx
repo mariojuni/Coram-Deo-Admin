@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/fire
 import { db } from '../../firebase';
 import { Users, CheckCircle, Search, Link2Off } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import SoftCard from '../../components/ui/SoftCard';
 
 export default function PendingMembers() {
   const [users, setUsers] = useState([]);
@@ -158,14 +159,14 @@ export default function PendingMembers() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-6">
+      <SoftCard className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           
           {/* Tabs */}
-          <div className="flex space-x-2 bg-gray-50/50 p-1 rounded-2xl border border-gray-100/50">
+          <div className="flex space-x-2 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/50">
             <button
               onClick={() => setActiveTab('pending')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'pending'
                   ? 'bg-white text-church-navy shadow-sm'
                   : 'text-gray-500 hover:text-church-navy hover:bg-white/50'
@@ -175,7 +176,7 @@ export default function PendingMembers() {
             </button>
             <button
               onClick={() => setActiveTab('active')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'active'
                   ? 'bg-white text-church-navy shadow-sm'
                   : 'text-gray-500 hover:text-church-navy hover:bg-white/50'
@@ -198,11 +199,11 @@ export default function PendingMembers() {
               </div>
             )}
             <div className="relative w-full md:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder={`Search ${activeTab} users...`}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-church-green/20"
+                className="w-full pl-11 pr-4 py-2.5 bg-gray-50/70 border border-gray-200/80 rounded-2xl text-xs font-medium text-church-navy focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -212,7 +213,7 @@ export default function PendingMembers() {
 
         {loading ? (
           <div className="py-12 flex justify-center items-center">
-            <div className="w-8 h-8 border-4 border-church-green border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-4 border-[#2C4A60] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : displayedUsers.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-center">
@@ -248,7 +249,7 @@ export default function PendingMembers() {
                     <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full bg-church-green/10 text-church-green flex items-center justify-center font-bold mr-3">
+                          <div className="w-10 h-10 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] flex items-center justify-center font-bold mr-3 shadow-2xs">
                             {userName[0].toUpperCase()}
                           </div>
                           <div>
@@ -322,7 +323,7 @@ export default function PendingMembers() {
             </table>
           </div>
         )}
-      </div>
+      </SoftCard>
     </div>
   );
 }

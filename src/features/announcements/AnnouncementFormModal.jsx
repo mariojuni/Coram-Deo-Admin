@@ -168,16 +168,16 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col my-8">
         
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-church-navy text-white">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#162533] text-white">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-church-rose/20 flex items-center justify-center text-church-rose">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
               <Megaphone size={20} />
             </div>
             <div>
               <h2 className="text-xl font-bold">
                 {announcement ? 'Edit Announcement' : 'Create Announcement'}
               </h2>
-              <p className="text-xs text-church-muted mt-0.5">Broadcast notifications and notices to your congregation</p>
+              <p className="text-xs text-slate-300 mt-0.5">Broadcast notifications and notices to your congregation</p>
             </div>
           </div>
           <button onClick={onClose} className="text-gray-300 hover:text-white transition-colors bg-white/10 p-2 rounded-full">
@@ -194,7 +194,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose text-sm font-medium"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
               placeholder="e.g. Sunday Worship Schedule Update"
             />
           </div>
@@ -204,7 +204,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
             <textarea 
               value={message}
               onChange={e => setMessage(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose h-32 resize-none text-sm font-medium"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] h-32 resize-none text-sm font-medium"
               placeholder="Write your announcement message here..."
             />
           </div>
@@ -216,7 +216,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
               type="url"
               value={imageUrl}
               onChange={e => setImageUrl(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose text-sm"
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm"
               placeholder="https://example.com/banner.jpg"
             />
           </div>
@@ -235,7 +235,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
             {/* Core Member & Leader Groups */}
             <div>
               <p className="text-xs font-semibold text-church-slate mb-2 flex items-center">
-                <Users size={13} className="mr-1 text-church-rose" /> Congregation Groups
+                <Users size={13} className="mr-1 text-[#2C4A60]" /> Congregation Groups
               </p>
               <div className="flex flex-wrap gap-2">
                 {CORE_AUDIENCE_OPTIONS.map(aud => {
@@ -247,7 +247,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
                       onClick={() => toggleAudience(aud)}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
                         isSelected
-                          ? 'bg-church-rose text-white border-church-rose shadow-sm'
+                          ? 'bg-[#2C4A60] text-white border-[#2C4A60] shadow-sm'
                           : 'bg-gray-50 text-church-charcoal border-gray-200 hover:bg-gray-100'
                       }`}
                     >
@@ -302,7 +302,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
                   type="datetime-local"
                   value={publishDate}
                   onChange={e => setPublishDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose text-sm font-medium"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">Set to a future date to schedule</p>
@@ -315,7 +315,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
                   type="datetime-local"
                   value={expiryDate}
                   onChange={e => setExpiryDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-rose text-sm font-medium"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">Hides automatically after this date</p>
@@ -323,7 +323,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
           </div>
 
           {/* Push Notification Controls */}
-          <div className="border border-purple-100 rounded-2xl p-4 bg-purple-50/40 space-y-3">
+          <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
             <div className="flex items-start">
               <div className="flex h-5 items-center">
                 <input
@@ -331,12 +331,12 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
                   type="checkbox"
                   checked={pushNotification}
                   onChange={e => setPushNotification(e.target.checked)}
-                  className="w-4 h-4 text-church-rose bg-white border-gray-300 rounded focus:ring-church-rose focus:ring-2"
+                  className="w-4 h-4 text-[#2C4A60] bg-white border-gray-300 rounded focus:ring-[#2C4A60] focus:ring-2"
                 />
               </div>
               <div className="ml-3 text-sm">
                 <label htmlFor="pushNotification" className="font-bold text-church-navy flex items-center cursor-pointer">
-                  <Smartphone size={16} className="mr-1.5 text-purple-600" /> Send Push Notification
+                  <Smartphone size={16} className="mr-1.5 text-[#2C4A60]" /> Send Push Notification
                 </label>
                 <p className="text-church-slate text-xs mt-0.5">
                   When published, members in the targeted audience will receive an immediate push alert and in-app notification on their iOS/Android devices.
@@ -390,7 +390,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
             type="button" 
             onClick={() => handleSave('Published')} 
             disabled={saving} 
-            className="px-6 py-2.5 bg-church-rose text-white rounded-full text-sm font-bold hover:bg-church-rose/90 transition-colors disabled:opacity-50 shadow-md"
+            className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-md"
           >
             {saving ? 'Saving...' : 'Publish'}
           </button>

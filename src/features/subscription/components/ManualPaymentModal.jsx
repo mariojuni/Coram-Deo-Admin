@@ -169,7 +169,7 @@ export default function ManualPaymentModal({
         {/* Modal Header */}
         <div className="p-6 pb-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-church-rose/10 text-church-rose flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center">
               <Building2 size={20} />
             </div>
             <div>
@@ -198,11 +198,11 @@ export default function ManualPaymentModal({
             onClick={() => setStep(1)}
             className={`pb-3 px-2 border-b-2 transition-all flex items-center gap-1.5 ${
               step === 1 
-                ? 'border-church-rose text-church-rose' 
+                ? 'border-[#2C4A60] text-[#2C4A60]' 
                 : 'border-transparent text-church-slate hover:text-church-navy'
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-church-rose/10 text-church-rose flex items-center justify-center text-[10px]">1</span>
+            <span className="w-5 h-5 rounded-full bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center text-[10px]">1</span>
             <span>Bank Account Details</span>
           </button>
           <ChevronRight size={14} className="text-gray-300" />
@@ -211,11 +211,11 @@ export default function ManualPaymentModal({
             onClick={() => setStep(2)}
             className={`pb-3 px-2 border-b-2 transition-all flex items-center gap-1.5 ${
               step === 2 
-                ? 'border-church-rose text-church-rose' 
+                ? 'border-[#2C4A60] text-[#2C4A60]' 
                 : 'border-transparent text-church-slate hover:text-church-navy'
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-church-rose/10 text-church-rose flex items-center justify-center text-[10px]">2</span>
+            <span className="w-5 h-5 rounded-full bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center text-[10px]">2</span>
             <span>Upload Receipt Proof</span>
           </button>
         </div>
@@ -240,13 +240,13 @@ export default function ManualPaymentModal({
                   onClick={() => setTargetTier('growth')}
                   className={`p-3 rounded-2xl border text-left transition-all ${
                     targetTier === 'growth'
-                      ? 'border-church-rose bg-white shadow-sm ring-2 ring-church-rose/20'
+                      ? 'border-[#2C4A60] bg-white shadow-sm ring-2 ring-[#2C4A60]/20'
                       : 'border-gray-200 bg-gray-50/50 hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-extrabold text-xs text-church-navy">Growth Ministry</span>
-                    <span className="text-[10px] font-bold text-church-rose px-2 py-0.5 rounded-full bg-church-rose/10">Popular</span>
+                    <span className="text-[10px] font-bold text-[#2C4A60] px-2 py-0.5 rounded-full bg-[#EBF2F7]">Popular</span>
                   </div>
                   <div className="text-base font-black text-church-charcoal">₱3,490<span className="text-[10px] font-normal text-church-slate">/mo</span></div>
                   <div className="text-[11px] text-church-slate mt-1">Up to 250 members • 20GB media</div>
@@ -287,7 +287,7 @@ export default function ManualPaymentModal({
                     type="button"
                     onClick={() => setBillingCycle('yearly')}
                     className={`px-3 py-1 rounded-lg font-bold text-[11px] transition-all ${
-                      billingCycle === 'yearly' ? 'bg-white shadow text-church-rose' : 'text-church-slate'
+                      billingCycle === 'yearly' ? 'bg-white shadow text-[#2C4A60]' : 'text-church-slate'
                     }`}
                   >
                     Annual (Save 2 Mo. • ₱{(targetConfig.priceNum * 10)?.toLocaleString()})
@@ -311,7 +311,7 @@ export default function ManualPaymentModal({
                       onClick={() => setSelectedBankId(acc.id)}
                       className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected 
-                          ? 'border-church-rose bg-pink-50/20 shadow-sm ring-1 ring-church-rose' 
+                          ? 'border-[#2C4A60] bg-[#EBF2F7]/40 shadow-sm ring-1 ring-[#2C4A60]' 
                           : 'border-gray-200 bg-white hover:border-gray-300'
                       }`}
                     >
@@ -478,7 +478,7 @@ export default function ManualPaymentModal({
               </div>
               <div className="text-right">
                 <span className="text-church-slate block text-[11px]">Plan & Amount:</span>
-                <strong className="text-church-rose font-black">{targetConfig.name} (₱{Number(amountPaid).toLocaleString()})</strong>
+                <strong className="text-[#2C4A60] font-black">{targetConfig.name} (₱{Number(amountPaid).toLocaleString()})</strong>
               </div>
             </div>
 
@@ -503,7 +503,7 @@ export default function ManualPaymentModal({
                   placeholder="e.g. 10928374652 or BDO-TXN-839"
                   value={bankReferenceNumber}
                   onChange={(e) => setBankReferenceNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose font-mono"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60] font-mono"
                 />
               </div>
 
@@ -516,7 +516,7 @@ export default function ManualPaymentModal({
                   required
                   value={dateTransferred}
                   onChange={(e) => setDateTransferred(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60]"
                 />
               </div>
 
@@ -529,7 +529,7 @@ export default function ManualPaymentModal({
                   placeholder="e.g. Pastor John Doe / Church Board"
                   value={senderAccountName}
                   onChange={(e) => setSenderAccountName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60]"
                 />
               </div>
 
@@ -544,7 +544,7 @@ export default function ManualPaymentModal({
                   step="1"
                   value={amountPaid}
                   onChange={(e) => setAmountPaid(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60] font-bold"
                 />
               </div>
             </div>
@@ -555,7 +555,7 @@ export default function ManualPaymentModal({
                 Upload Transfer Receipt / Screenshot <span className="text-rose-500">*</span>
               </label>
 
-              <div className="border-2 border-dashed border-gray-200 hover:border-church-rose rounded-2xl p-4 transition-all text-center relative bg-gray-50/50">
+              <div className="border-2 border-dashed border-gray-200 hover:border-[#2C4A60] rounded-2xl p-4 transition-all text-center relative bg-gray-50/50">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -579,13 +579,13 @@ export default function ManualPaymentModal({
                   </div>
                 ) : receiptFile ? (
                   <div className="flex flex-col items-center py-2">
-                    <FileText size={32} className="text-church-rose mb-1" />
+                    <FileText size={32} className="text-[#2C4A60] mb-1" />
                     <span className="text-xs font-bold text-church-navy">{receiptFile.name}</span>
                     <span className="text-[10px] text-church-slate mt-0.5">Click to choose another file</span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-3">
-                    <div className="w-10 h-10 rounded-2xl bg-church-rose/10 text-church-rose flex items-center justify-center mb-2">
+                    <div className="w-10 h-10 rounded-2xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center mb-2">
                       <UploadCloud size={20} />
                     </div>
                     <span className="text-xs font-bold text-church-navy">
@@ -609,20 +609,20 @@ export default function ManualPaymentModal({
                 placeholder="Any special notes or references..."
                 value={tenantNotes}
                 onChange={(e) => setTenantNotes(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose text-xs"
+                className="w-full px-3 py-1.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60] text-xs"
               />
             </div>
 
             {/* Upload Progress Bar */}
             {isSubmitting && (
-              <div className="p-3 rounded-2xl bg-pink-50 border border-pink-100 space-y-1.5">
-                <div className="flex justify-between text-xs font-bold text-church-rose">
+              <div className="p-3 rounded-2xl bg-[#EBF2F7] border border-[#D5E3EC] space-y-1.5">
+                <div className="flex justify-between text-xs font-bold text-[#2C4A60]">
                   <span>Uploading receipt & notifying Super Admin...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-pink-200 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div 
-                    className="bg-church-rose h-full transition-all duration-200 rounded-full" 
+                    className="bg-[#2C4A60] h-full transition-all duration-200 rounded-full" 
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>

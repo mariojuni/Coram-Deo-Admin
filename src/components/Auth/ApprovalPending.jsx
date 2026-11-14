@@ -91,22 +91,22 @@ export default function ApprovalPending() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF9F9] via-[#FAF7F2] to-[#F5F8FA] flex flex-col justify-between p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F8FA] via-[#EEF4F8] to-[#E5EDF3] flex flex-col justify-between p-4 sm:p-6 font-sans">
       
       {/* Header */}
       <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-coram flex items-center justify-center text-white font-black text-lg shadow-church-glow group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-xl bg-gradient-coram flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
             C
           </div>
           <span className="text-lg font-black tracking-tight text-church-charcoal">
-            Coram<span className="text-church-rose">Deo</span>
+            Coram<span className="text-[#2C4A60]">Deo</span>
           </span>
         </Link>
 
         <button
           onClick={handleSignOut}
-          className="text-xs font-bold text-church-slate hover:text-church-rose flex items-center gap-1.5 transition-colors"
+          className="text-xs font-bold text-church-slate hover:text-[#2C4A60] flex items-center gap-1.5 transition-colors"
         >
           <LogOut size={14} />
           <span>Sign Out</span>
@@ -115,11 +115,11 @@ export default function ApprovalPending() {
 
       {/* Main Content Card */}
       <main className="max-w-xl mx-auto w-full my-auto py-8">
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 sm:p-10 shadow-church-card border border-white/80 relative overflow-hidden">
+        <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 sm:p-10 shadow-sm border border-white/95 relative overflow-hidden">
           
           {/* Decorative ambient blur */}
-          <div className="absolute -top-16 -right-16 w-44 h-44 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-church-purple/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-44 h-44 bg-[#2C4A60]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-[#4F748E]/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Header Icon & Title */}
           <div className="flex flex-col items-center text-center">
@@ -156,10 +156,10 @@ export default function ApprovalPending() {
           </div>
 
           {/* Ministry Profile Overview */}
-          <div className="mt-6 p-4 rounded-2xl bg-church-sand/40 border border-church-navy/10 space-y-2.5">
+          <div className="mt-6 p-4 rounded-2xl bg-[#F8FAFC]/80 border border-slate-200/60 space-y-2.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-church-slate font-medium flex items-center gap-1.5">
-                <Building2 size={14} className="text-church-navy" />
+                <Building2 size={14} className="text-[#2C4A60]" />
                 Church Organization:
               </span>
               <span className="font-bold text-church-charcoal">{churchName}</span>
@@ -174,12 +174,12 @@ export default function ApprovalPending() {
 
             <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-200/50">
               <span className="text-church-slate font-medium flex items-center gap-1.5">
-                <MailCheck size={14} className="text-church-emerald" />
+                <MailCheck size={14} className="text-emerald-600" />
                 Authorized Founder:
               </span>
               <div className="flex items-center gap-1.5 font-bold text-church-charcoal">
                 <span>{currentUser?.email}</span>
-                <span className="text-[10px] text-church-emerald bg-emerald-50 px-1.5 py-0.5 rounded font-mono">
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">
                   Verified
                 </span>
               </div>
@@ -194,20 +194,20 @@ export default function ApprovalPending() {
             <div className="space-y-2.5">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-church-charcoal font-semibold">
-                  <CheckCircle2 size={16} className="text-church-emerald" />
+                  <CheckCircle2 size={16} className="text-emerald-600" />
                   <span>1. Workspace Provisioning</span>
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-church-emerald">
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">
                   Completed
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-church-charcoal font-semibold">
-                  <CheckCircle2 size={16} className="text-church-emerald" />
+                  <CheckCircle2 size={16} className="text-emerald-600" />
                   <span>2. Email Identity Verification</span>
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-church-emerald">
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">
                   Verified
                 </span>
               </div>
@@ -237,23 +237,20 @@ export default function ApprovalPending() {
           {/* Action & Realtime Notice */}
           <div className="mt-8 space-y-3">
             {approved ? (
-              <GradientButton
+              <button
                 type="button"
                 onClick={() => navigate('/admin', { replace: true })}
-                size="lg"
-                className="w-full cursor-pointer shadow-church-glow"
+                className="w-full py-3.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
               >
-                <span className="flex items-center justify-center gap-2">
-                  <span>Enter Admin Portal</span>
-                  <ArrowRight size={16} />
-                </span>
-              </GradientButton>
+                <span>Enter Admin Portal</span>
+                <ArrowRight size={16} />
+              </button>
             ) : (
               <button
                 type="button"
                 onClick={handleManualRefresh}
                 disabled={refreshing}
-                className="w-full py-3 rounded-full bg-church-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-church-soft flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <RotateCw size={15} className={refreshing ? 'animate-spin' : ''} />
                 <span>{refreshing ? 'Checking Review Status...' : 'Refresh Review Status'}</span>

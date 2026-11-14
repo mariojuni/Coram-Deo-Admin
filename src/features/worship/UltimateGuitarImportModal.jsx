@@ -562,7 +562,7 @@ export default function UltimateGuitarImportModal({
               <button
                 onClick={handleSave}
                 disabled={!formData?.title || saving}
-                className="flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-church-green hover:bg-church-green/90 rounded-xl transition-colors disabled:opacity-50"
+                className="flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all disabled:opacity-50 shadow-sm"
               >
                 {saving ? (
                   <>

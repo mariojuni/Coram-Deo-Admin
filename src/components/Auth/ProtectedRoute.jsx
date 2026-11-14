@@ -9,10 +9,10 @@ export default function ProtectedRoute({ children }) {
   // 1. Auth check in progress — render a neutral loading screen
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-church-bg">
+      <div className="min-h-screen flex items-center justify-center glass-light-canvas">
         <div className="flex flex-col items-center gap-3 text-church-slate">
-          <Loader2 size={28} className="animate-spin text-church-green" />
-          <span className="text-sm">Verifying access…</span>
+          <Loader2 size={28} className="animate-spin text-[#2C4A60]" />
+          <span className="text-sm font-medium">Verifying access…</span>
         </div>
       </div>
     );
@@ -37,10 +37,10 @@ export default function ProtectedRoute({ children }) {
   // 5. Wait for church data to resolve if churchId exists
   if (userProfile?.churchId && churchData === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-church-bg">
+      <div className="min-h-screen flex items-center justify-center glass-light-canvas">
         <div className="flex flex-col items-center gap-3 text-church-slate">
-          <Loader2 size={28} className="animate-spin text-church-green" />
-          <span className="text-sm">Loading church workspace…</span>
+          <Loader2 size={28} className="animate-spin text-[#2C4A60]" />
+          <span className="text-sm font-medium">Loading church workspace…</span>
         </div>
       </div>
     );

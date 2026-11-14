@@ -226,18 +226,18 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-church-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-xl font-bold text-church-navy">{expense ? 'Edit Expense' : 'Log Expense'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
+            <X size={20} />
           </button>
         </div>
         
         <div className="overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>}
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
             
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -250,7 +250,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                   value={formData.amount}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow text-lg font-bold text-church-green" 
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-lg font-bold text-[#2C4A60] bg-white" 
                 />
               </div>
               <div>
@@ -273,7 +273,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                   value={formData.payee}
                   onChange={handleChange}
                   placeholder="e.g. Meralco"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow" 
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
                 />
               </div>
               <div>
@@ -305,7 +305,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="What was this for?"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow resize-none" 
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white" 
               />
             </div>
 
@@ -315,7 +315,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                 <div className="space-y-1 text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400" />
                   <div className="flex text-sm text-gray-600 justify-center">
-                    <label htmlFor="receipt-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-church-green hover:text-church-green/80 focus-within:outline-none">
+                    <label htmlFor="receipt-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-[#2C4A60] hover:text-[#1D3547] focus-within:outline-none">
                       <span>{receiptFile ? receiptFile.name : 'Upload a file'}</span>
                       <input id="receipt-upload" name="receipt-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*,.pdf" />
                     </label>
@@ -325,7 +325,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
               </div>
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                  <div className="bg-church-green h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                  <div className="bg-[#2C4A60] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                 </div>
               )}
             </div>
@@ -342,7 +342,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-medium hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-sm"
+                className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
               >
                 {loading ? 'Saving...' : 'Save Expense'}
               </button>

@@ -47,16 +47,16 @@ export default function ModernDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 py-2 border rounded-2xl text-xs sm:text-sm focus:outline-none flex justify-between items-center transition-all bg-white font-bold ${
           isOpen 
-            ? 'border-church-rose ring-2 ring-church-rose/20 text-church-charcoal shadow-sm' 
-            : 'border-gray-200/80 hover:border-gray-300 text-church-charcoal hover:bg-gray-50/50'
+            ? 'border-brand-primary ring-2 ring-brand-primary/20 text-brand-dark shadow-sm' 
+            : 'border-slate-200/80 hover:border-slate-300 text-brand-dark hover:bg-slate-50/50'
         }`}
       >
-        <span className={`block truncate ${!selectedOption ? 'text-gray-400' : 'text-church-charcoal font-bold'}`}>
+        <span className={`block truncate ${!selectedOption ? 'text-slate-400' : 'text-brand-dark font-bold'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown 
           size={16} 
-          className={`text-church-slate transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
         />
       </button>
 
@@ -96,13 +96,13 @@ export default function ModernDropdown({
                       }}
                       className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between transition-colors
                         ${isSelected 
-                          ? 'bg-rose-50 text-church-rose font-bold' 
-                          : 'text-church-charcoal hover:bg-gray-50 font-medium'
+                          ? 'bg-blue-50 text-brand-primary font-bold' 
+                          : 'text-brand-dark hover:bg-slate-50 font-medium'
                         }
                       `}
                     >
                       <span className="truncate pr-4">{opt.label}</span>
-                      {isSelected && <Check size={15} className="text-church-rose shrink-0 ml-2" />}
+                      {isSelected && <Check size={15} className="text-brand-primary shrink-0 ml-2" />}
                     </button>
                   );
                 })}

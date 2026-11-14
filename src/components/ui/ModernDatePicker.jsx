@@ -134,7 +134,7 @@ export default function ModernDatePicker({
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <div
-        className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-left focus-within:ring-2 focus-within:ring-church-green focus-within:border-transparent transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-church-green/50'}`}
+        className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-left focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-transparent transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand-primary/50'}`}
       >
         <input
           type="text"
@@ -211,8 +211,8 @@ export default function ModernDatePicker({
                   className={`
                     py-2 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-colors
                     ${year === viewDate.getFullYear()
-                      ? 'bg-church-green text-white shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-brand-primary text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-slate-100'
                     }
                   `}
                 >
@@ -224,7 +224,7 @@ export default function ModernDatePicker({
             <>
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                  <div key={day} className="text-center text-xs font-bold text-gray-400 py-1">
+                  <div key={day} className="text-center text-xs font-bold text-slate-400 py-1">
                     {day}
                   </div>
                 ))}
@@ -265,10 +265,10 @@ export default function ModernDatePicker({
                       className={`
                         h-8 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-colors
                         ${isSelected 
-                          ? 'bg-church-green text-white shadow-sm' 
+                          ? 'bg-brand-primary text-white shadow-sm' 
                           : isToday 
-                            ? 'text-church-green bg-church-green/10 hover:bg-church-green/20' 
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? 'text-brand-primary bg-blue-50 hover:bg-blue-100' 
+                            : 'text-slate-700 hover:bg-slate-100'
                         }
                       `}
                     >
@@ -280,7 +280,7 @@ export default function ModernDatePicker({
             </>
           )}
           
-          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between">
             <button 
               type="button" 
               onClick={() => {
@@ -293,7 +293,7 @@ export default function ModernDatePicker({
                 }
                 setIsOpen(false);
               }}
-              className="text-xs font-bold text-church-green hover:text-church-green/80 transition-colors"
+              className="text-xs font-bold text-brand-primary hover:text-brand-primary/80 transition-colors"
             >
               Today
             </button>

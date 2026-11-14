@@ -277,7 +277,7 @@ export default function MinistryDetails() {
           </div>
 
           <div className="flex items-center text-white">
-            <div className="w-16 h-16 bg-church-green rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 bg-[#2C4A60] rounded-2xl flex items-center justify-center shadow-lg">
               <Shield size={32} />
             </div>
             <div className="ml-5">
@@ -291,13 +291,13 @@ export default function MinistryDetails() {
         <div className="px-8 border-b border-gray-100 flex space-x-6 pt-4">
           <button 
             onClick={() => setActiveTab('roster')}
-            className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'roster' ? 'border-church-green text-church-green' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'roster' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
           >
             Team Roster
           </button>
           <button 
             onClick={() => setActiveTab('schedule')}
-            className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'schedule' ? 'border-church-green text-church-green' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            className={`pb-4 text-sm font-bold transition-colors border-b-2 ${activeTab === 'schedule' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
           >
             Schedules
           </button>
@@ -314,7 +314,7 @@ export default function MinistryDetails() {
                 <h3 className="font-bold text-church-navy">Volunteers & Leaders</h3>
                 <button 
                   onClick={() => setIsAssignModalOpen(true)}
-                  className="flex items-center px-4 py-2 bg-church-navy text-white rounded-full shadow-sm text-sm font-bold hover:bg-church-navy/90 transition-opacity"
+                  className="flex items-center px-4 py-2 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
                 >
                   <Plus size={16} className="mr-2" />
                   Assign Member
@@ -341,7 +341,7 @@ export default function MinistryDetails() {
                         <tr key={member.memberId} className="hover:bg-gray-50/50 group">
                           <td className="p-4 pl-6">
                             <div className="flex items-center shrink-0">
-                              <div className="w-8 h-8 rounded-full bg-church-green/10 flex items-center justify-center text-church-green font-bold text-sm uppercase shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-[#2C4A60]/10 flex items-center justify-center text-[#2C4A60] font-bold text-sm uppercase shrink-0">
                                 {member.memberName?.charAt(0) || 'U'}
                               </div>
                               <div className="ml-3 shrink-0">
@@ -422,7 +422,7 @@ export default function MinistryDetails() {
         {/* Right column: Quick Stats / Info */}
         <div className="space-y-6">
           <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-6">
-            <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Ministry Snapshot</h3>
+            <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Ministry Snapshot</h3>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -451,7 +451,7 @@ export default function MinistryDetails() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 p-6">
-            <h3 className="text-sm font-bold text-church-green uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Available Roles</h3>
+            <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Available Roles</h3>
             <div className="flex flex-wrap gap-2">
               {ministry.roles?.map(role => {
                 const customDetails = ministry.roleDetails?.[role];

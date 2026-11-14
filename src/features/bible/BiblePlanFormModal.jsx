@@ -391,20 +391,20 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
   const activeDay = formData.days[activeDayIndex] || { dayNumber: 1, title: 'Day 1', items: [] };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/95">
         {/* Header */}
-        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-church-bg">
+        <div className="p-5 border-b border-slate-200/80 flex justify-between items-center bg-gray-50/50">
           <div>
-            <h2 className="text-xl font-bold text-church-navy">
+            <h2 className="text-xl font-bold text-brand-dark">
               {plan ? 'Edit Spiritual Plan' : 'Create Spiritual Growth & Devotional Plan'}
             </h2>
-            <p className="text-xs text-church-slate mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               System Admin Global Catalog • Managed centrally for all church tenants
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
-            <X size={24} />
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
+            <X size={20} />
           </button>
         </div>
 
@@ -431,7 +431,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
           {/* Section 1: Plan Metadata */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-church-slate flex items-center">
-              <Layers size={14} className="mr-1.5 text-church-green" />
+              <Layers size={14} className="mr-1.5 text-[#2C4A60]" />
               1. Plan Type & Overview
             </h3>
 
@@ -457,7 +457,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                 onClick={() => setFormData(p => ({ ...p, type: 'bible_reading' }))}
                 className={`p-3.5 rounded-2xl border text-left transition-all ${
                   formData.type === 'bible_reading'
-                    ? 'border-church-green bg-emerald-50/50 ring-2 ring-emerald-500/20'
+                    ? 'border-[#2C4A60] bg-[#2C4A60]/5 ring-2 ring-[#2C4A60]/20'
                     : 'border-gray-200 bg-white hover:bg-gray-50'
                 }`}
               >
@@ -478,7 +478,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="e.g. Growing in Holiness"
-                  className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green font-medium"
+                  className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] font-medium bg-white"
                 />
               </div>
 
@@ -490,7 +490,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   value={formData.author}
                   onChange={handleChange}
                   placeholder="e.g. R.C. Sproul, Alistair Begg"
-                  className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                  className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white"
                 />
               </div>
             </div>
@@ -503,7 +503,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Summary or theme of this spiritual reading journey..."
-                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green resize-none"
+                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] resize-none bg-white"
               />
             </div>
 
@@ -516,7 +516,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   name="durationDays"
                   value={formData.durationDays}
                   onChange={handleChange}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green font-bold"
+                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] font-bold bg-white"
                 />
               </div>
 
@@ -526,7 +526,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green bg-white font-medium"
+                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white font-medium"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published (All Tenants)</option>
@@ -559,7 +559,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-church-slate flex items-center">
-                  <BookOpen size={14} className="mr-1.5 text-church-green" />
+                  <BookOpen size={14} className="mr-1.5 text-[#2C4A60]" />
                   2. Daily Content & Scripture Sequencing
                 </h3>
                 <p className="text-[11px] text-gray-500">
@@ -598,14 +598,14 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   onClick={() => setActiveDayIndex(idx)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${
                     activeDayIndex === idx
-                      ? 'bg-church-navy text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-brand-primary text-white shadow-md'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
                   Day {d.dayNumber}
                   {d.items?.length > 0 && (
                     <span className={`ml-1.5 text-[10px] px-1.5 py-0.2 rounded-full ${
-                      activeDayIndex === idx ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
+                      activeDayIndex === idx ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
                     }`}>
                       {d.items.length}
                     </span>
@@ -618,7 +618,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
             <div className="bg-slate-50/50 p-4 rounded-3xl border border-slate-200 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-church-navy">
+                  <span className="text-xs font-bold text-brand-dark">
                     Editing Day {activeDay.dayNumber} of {formData.days.length}
                   </span>
                   <input
@@ -626,7 +626,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                     value={activeDay.title || ''}
                     onChange={(e) => handleDayChange({ ...activeDay, title: e.target.value })}
                     placeholder="Day Title (e.g. The Priority of Love)"
-                    className="px-3 py-1 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green font-semibold"
+                    className="px-3 py-1 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary font-semibold"
                   />
                 </div>
 
@@ -634,7 +634,7 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
                   <button
                     type="button"
                     onClick={() => handleRemoveDay(activeDayIndex)}
-                    className="text-gray-400 hover:text-red-600 text-xs flex items-center p-1"
+                    className="text-slate-400 hover:text-red-600 text-xs flex items-center p-1"
                     title="Remove this Day"
                   >
                     <Trash2 size={14} className="mr-1" /> Remove Day
@@ -651,19 +651,19 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
           </div>
 
           {/* Form Actions */}
-          <div className="pt-4 border-t border-gray-100 flex justify-end space-x-3">
+          <div className="pt-4 border-t border-slate-200/80 flex justify-end space-x-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-xs font-bold text-church-slate hover:bg-gray-50 transition-colors"
+              className="px-5 py-2.5 bg-white border border-slate-300 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-church-green text-white rounded-full text-xs font-bold hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-md"
+              className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-xs font-bold hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-sm"
             >
               {loading ? 'Saving Plan...' : 'Save & Publish Global Plan'}
             </button>

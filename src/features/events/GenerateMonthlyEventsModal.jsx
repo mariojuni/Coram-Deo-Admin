@@ -154,14 +154,14 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
                 <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-2">Select Recurring Templates</label>
                 <div className="grid grid-cols-1 gap-3">
                   {templates.map(template => (
-                    <div key={template.id} className={`p-4 border rounded-2xl transition-all ${template.isSelected ? 'border-church-rose bg-pink-50/25 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'}`}>
+                    <div key={template.id} className={`p-4 border rounded-2xl transition-all ${template.isSelected ? 'border-[#2C4A60] bg-[#EBF2F7]/50 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'}`}>
                       <label className="flex items-start cursor-pointer group">
                         <div className="flex items-center h-5 mt-1">
                           <input 
                             type="checkbox" 
                             checked={template.isSelected}
                             onChange={() => toggleTemplate(template.id)}
-                            className="w-4 h-4 accent-church-rose border-gray-300 rounded cursor-pointer"
+                            className="w-4 h-4 accent-[#2C4A60] border-gray-300 rounded cursor-pointer"
                           />
                         </div>
                         <div className="ml-3.5 flex-1" onClick={e => e.preventDefault()}>
@@ -172,7 +172,7 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
                                 value={template.title}
                                 onChange={(e) => handleTemplateChange(template.id, 'title', e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full text-xs font-bold text-church-charcoal bg-white border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose"
+                                className="w-full text-xs font-bold text-church-charcoal bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
                               />
                               <div className="flex flex-wrap items-center gap-2 text-xs text-church-slate" onClick={(e) => e.stopPropagation()}>
                                 <span className="flex items-center font-medium">Every <span className="capitalize ml-1 font-bold text-church-charcoal">{template.dayOfWeek}</span></span>
@@ -182,14 +182,14 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
                                     type="time" 
                                     value={template.startTime}
                                     onChange={(e) => handleTemplateChange(template.id, 'startTime', e.target.value)}
-                                    className="border border-gray-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-church-rose"
+                                    className="border border-slate-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-[#2C4A60]"
                                   />
                                   <span>-</span>
                                   <input 
                                     type="time" 
                                     value={template.endTime}
                                     onChange={(e) => handleTemplateChange(template.id, 'endTime', e.target.value)}
-                                    className="border border-gray-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-church-rose"
+                                    className="border border-slate-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-[#2C4A60]"
                                   />
                                 </div>
                                 <span>•</span>
@@ -198,7 +198,7 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
                                   value={template.location}
                                   placeholder="Location"
                                   onChange={(e) => handleTemplateChange(template.id, 'location', e.target.value)}
-                                  className="border border-gray-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-church-rose flex-1 min-w-[120px]"
+                                  className="border border-slate-200 rounded-lg px-2 py-0.5 bg-white text-xs font-medium focus:outline-none focus:border-[#2C4A60] flex-1 min-w-[120px]"
                                 />
                               </div>
                             </div>
@@ -225,20 +225,20 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
                   <p className="text-xs text-church-slate mt-0.5">Review generated events before saving to calendar.</p>
                 </div>
                 <div className="flex space-x-3 text-xs">
-                  <button onClick={() => toggleAllEvents(true)} className="text-church-rose hover:underline font-bold">Select All</button>
+                  <button onClick={() => toggleAllEvents(true)} className="text-[#2C4A60] hover:underline font-bold">Select All</button>
                   <button onClick={() => toggleAllEvents(false)} className="text-church-slate hover:underline font-bold">Deselect All</button>
                 </div>
               </div>
               
               <div className="space-y-2">
                 {previewEvents.map((event) => (
-                  <label key={event._previewId} className={`flex items-center p-3.5 border rounded-2xl cursor-pointer transition-all ${event.isDuplicate ? 'bg-amber-50/50 border-amber-200' : (event.selected ? 'bg-white border-church-rose shadow-sm' : 'bg-gray-50/60 border-gray-200')}`}>
+                  <label key={event._previewId} className={`flex items-center p-3.5 border rounded-2xl cursor-pointer transition-all ${event.isDuplicate ? 'bg-amber-50/50 border-amber-200' : (event.selected ? 'bg-white border-[#2C4A60] shadow-sm' : 'bg-gray-50/60 border-gray-200')}`}>
                     <div className="flex items-center h-5 mr-3">
                       <input 
                         type="checkbox" 
                         checked={event.selected}
                         onChange={() => toggleEventSelection(event._previewId)}
-                        className="w-4 h-4 accent-church-rose border-gray-300 rounded cursor-pointer"
+                        className="w-4 h-4 accent-[#2C4A60] border-gray-300 rounded cursor-pointer"
                       />
                     </div>
                     

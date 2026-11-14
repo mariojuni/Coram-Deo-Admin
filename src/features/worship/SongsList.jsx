@@ -201,19 +201,18 @@ export default function SongsList() {
           )}
           <button 
             onClick={() => setIsUGImportModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-full shadow-sm text-xs font-bold hover:opacity-95 transition-opacity"
+            className="flex items-center px-4 py-2 bg-gradient-to-r from-[#2C4A60] to-[#4F748E] text-white rounded-full shadow-sm text-xs font-bold hover:opacity-95 transition-opacity"
           >
             <Guitar size={15} className="mr-1.5" />
             Import from UG
           </button>
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
-            size="md"
-            className="shadow-church-glow"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Add Song
-          </GradientButton>
+            <Plus size={16} />
+            <span>Add Song</span>
+          </button>
         </div>
       </div>
 
@@ -227,7 +226,7 @@ export default function SongsList() {
               placeholder="Search songs, artists, or tags..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose text-xs font-medium bg-white"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] text-xs font-medium bg-white"
             />
           </div>
 
@@ -289,18 +288,18 @@ export default function SongsList() {
         </div>
       ) : filteredSongs.length === 0 ? (
         <SoftCard className="p-12 flex flex-col items-center justify-center flex-1 text-center">
-          <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl flex items-center justify-center mb-4 border border-pink-100 shadow-sm">
+          <div className="w-16 h-16 bg-[#EBF2F7] text-[#2C4A60] rounded-3xl flex items-center justify-center mb-4 border border-[#D5E3EC] shadow-sm">
             <Music size={28} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No songs found</h3>
           <p className="text-church-slate text-sm max-w-sm mb-6">Build your library to easily create setlists for your worship services and publish to the mobile community directory.</p>
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
-            size="sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Add First Song
-          </GradientButton>
+            <Plus size={16} />
+            <span>Add First Song</span>
+          </button>
         </SoftCard>
       ) : (
         <SoftCard className="flex-1 flex flex-col overflow-hidden min-h-[350px]">
@@ -311,7 +310,7 @@ export default function SongsList() {
                   <th className="px-4 py-3.5 text-left bg-gray-50/95">
                     <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded">
                       {selectedSongIds.length === filteredSongs.length && filteredSongs.length > 0 ? (
-                        <CheckSquare size={16} className="text-church-rose" />
+                        <CheckSquare size={16} className="text-[#2C4A60]" />
                       ) : (
                         <Square size={16} className="text-gray-400" />
                       )}
@@ -333,11 +332,11 @@ export default function SongsList() {
                   const isSelected = selectedSongIds.includes(song.id);
 
                   return (
-                    <tr key={song.id} className={`hover:bg-gray-50/60 transition-colors ${isSelected ? 'bg-pink-50/20' : ''}`}>
+                    <tr key={song.id} className={`hover:bg-gray-50/60 transition-colors ${isSelected ? 'bg-sky-50/40' : ''}`}>
                       <td className="px-4 py-4">
                         <button onClick={() => toggleSelectSong(song.id)} className="p-1 hover:bg-gray-200 rounded">
                           {isSelected ? (
-                            <CheckSquare size={16} className="text-church-rose" />
+                            <CheckSquare size={16} className="text-[#2C4A60]" />
                           ) : (
                             <Square size={16} className="text-gray-400" />
                           )}
@@ -345,7 +344,7 @@ export default function SongsList() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-church-rose-light border border-pink-100 flex items-center justify-center text-church-rose">
+                          <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-[#EBF2F7] border border-[#D5E3EC] flex items-center justify-center text-[#2C4A60]">
                             <Music size={18} />
                           </div>
                           <div className="ml-3.5">

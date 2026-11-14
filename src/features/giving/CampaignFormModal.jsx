@@ -334,7 +334,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
             <textarea
               value={pauseReason}
               onChange={(e) => setPauseReason(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green min-h-[100px]"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all min-h-[100px]"
               placeholder="e.g. Temporarily halted while we review funds."
             />
           </div>
@@ -494,7 +494,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
             required
             value={formData.title}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green"
+            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
             placeholder="e.g., New Building Project"
           />
         </div>
@@ -506,7 +506,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
             required
             value={formData.description}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green min-h-[100px]"
+            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all min-h-[100px] bg-white resize-none"
             placeholder="Describe the purpose of this campaign..."
           />
         </div>
@@ -545,7 +545,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
           )}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="mt-3 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-church-green transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+              <div className="h-full bg-[#2C4A60] transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
             </div>
           )}
         </div>
@@ -560,7 +560,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
               min="1"
               value={formData.goalAmount}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green"
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
               placeholder="0.00"
             />
           </div>
@@ -627,7 +627,7 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center px-5 py-2.5 bg-church-green text-white font-bold rounded-xl shadow-md hover:bg-church-green/90 transition-opacity disabled:opacity-50"
+                className="flex items-center px-5 py-2.5 bg-[#162533] text-white font-bold rounded-xl shadow-sm hover:bg-[#1E2E3D] transition-all disabled:opacity-50"
               >
                 <Save size={18} className="mr-2" />
                 {loading ? 'Saving...' : (!campaign || campaign.status === 'draft' ? 'Save Draft' : 'Save Changes')}
@@ -652,8 +652,8 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-church-navy/40 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-white/95">
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <h2 className="text-xl font-bold text-church-navy">
             {getTitle()}

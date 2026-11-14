@@ -1,38 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Sun, Moon, CloudSun, BookOpen, Building } from 'lucide-react';
-import StatusPill from '../../../components/ui/StatusPill';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Sun, Moon, CloudSun, BookOpen, Building, Play } from 'lucide-react';
+import { CathedralLogo } from '../../../components/ui/icons';
+
+const ROLE_TITLE_MAP = {
+  super_admin: 'Super Administrator',
+  church_admin: 'Church Administrator',
+  pastor: 'Pastor / Overseer',
+  secretary: 'Executive Secretary',
+  finance_admin: 'Finance Administrator',
+  ministry_leader: 'Ministry Leader',
+  member: 'Leader',
+};
+
+function getGreetingInfo() {
+  const hour = new Date().getHours();
+  if (hour < 12) return { text: 'Good morning', Icon: CloudSun };
+  if (hour < 18) return { text: 'Good afternoon', Icon: Sun };
+  return { text: 'Good evening', Icon: Moon };
+}
 
 export default function DashboardHeader({ userProfile, activeChurchName }) {
-  const [greeting, setGreeting] = useState('Welcome back');
-  const [GreetingIcon, setGreetingIcon] = useState(Sun);
+  const { text: greeting, Icon: GreetingIcon } = getGreetingInfo();
   
   const name = userProfile?.name?.split(' ')[0] || 'Leader';
   const roles = Array.isArray(userProfile?.systemRoles) ? userProfile.systemRoles : [];
   const primaryRole = userProfile?.primaryRole || roles[0] || 'member';
 
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) {
-      setGreeting('Good morning');
-      setGreetingIcon(() => CloudSun);
-    } else if (hour < 18) {
-      setGreeting('Good afternoon');
-      setGreetingIcon(() => Sun);
-    } else {
-      setGreeting('Good evening');
-      setGreetingIcon(() => Moon);
-    }
-  }, []);
-
-  const roleTitleMap = {
-    super_admin: 'Super Administrator',
-    church_admin: 'Church Administrator',
-    pastor: 'Pastor / Overseer',
-    secretary: 'Executive Secretary',
-    finance_admin: 'Finance Administrator',
-    ministry_leader: 'Ministry Leader',
-    member: 'Leader',
-  };
+  const roleTitleMap = ROLE_TITLE_MAP;
 
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -46,9 +41,12 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           {/* Mobile-aligned Date Eyebrow Pill */}
-          <StatusPill variant="rose" dot className="mb-2">
-            {currentDateFormatted}
-          </StatusPill>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill-badge mb-2 shadow-2xs">
+            <CathedralLogo size={14} />
+            <span className="text-[11px] font-bold text-[#2C4A60] tracking-wide">
+              {currentDateFormatted}
+            </span>
+          </div>
 
           <p className="text-church-slate text-sm font-medium">
             {greeting},
@@ -61,8 +59,8 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
 
         {/* Church & Role Pill Badge */}
         <div className="flex items-center gap-2">
-          <div className="bg-white px-4 py-2.5 rounded-2xl border border-gray-100/90 shadow-church-soft flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-pink-50 text-church-rose flex items-center justify-center">
+          <div className="glass-light-shell px-4 py-2.5 rounded-2xl border border-white/95 shadow-church-soft flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center border border-[#D5E3EC]">
               <Building size={16} />
             </div>
             <div>
@@ -77,47 +75,54 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
         </div>
       </div>
 
-      {/* ── CoramDeo Signature Verse of the Day Card (Directly adopting CoramDeo Mobile System Design) ── */}
-      <div className="relative overflow-hidden rounded-3xl p-6 md:p-7 text-white shadow-[0_10px_25px_-5px_rgba(224,64,160,0.22)] bg-gradient-to-r from-[#FC709D] via-[#BD6DF2] to-[#B069F5] border border-white/20 group transition-all duration-300">
-        {/* Top hairline shine bar */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-white/35 via-white/10 to-transparent" />
-
-        {/* Ambient atmospheric luminous orbs */}
-        <div className="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-white/[0.08] blur-xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-6 w-36 h-36 rounded-full bg-white/[0.06] blur-lg pointer-events-none" />
-
-        {/* Top-right dot matrix grid */}
-        <div className="absolute top-5 right-6 grid grid-cols-5 gap-2 opacity-20 pointer-events-none">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <div key={i} className="w-1 h-1 rounded-full bg-white" />
-          ))}
-        </div>
-
-        {/* Subtle decorative watermark open-quote (matching mobile's decorativeQuote) */}
-        <div className="absolute -top-6 right-6 text-[130px] font-serif font-black text-white/[0.07] select-none pointer-events-none leading-none">
+      {/* ── CoramDeo Signature Verse of the Day Card (Aligned with Mobile App Frosted Glass Card) ── */}
+      <div className="glass-light-card rounded-3xl p-6 md:p-7 border border-white/95 shadow-[0_12px_36px_-6px_rgba(44,74,96,0.06)] relative overflow-hidden group transition-all duration-300">
+        {/* Subtle background quote watermark */}
+        <div className="absolute -top-6 right-6 text-[120px] font-serif font-black text-[#2C4A60]/5 select-none pointer-events-none leading-none">
           &ldquo;
         </div>
 
-        <div className="relative z-10 max-w-3xl space-y-3.5">
-          {/* Eyebrow badge */}
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/18 border border-white/30 backdrop-blur-sm text-[9.5px] font-bold tracking-[1.4px] uppercase text-white/95">
-            <span>VERSE OF THE DAY</span>
+        <div className="relative z-10 space-y-3.5">
+          {/* Top category row matching mobile screenshot 2 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-[#5A7385] uppercase tracking-wider">
+                Today&apos;s focus &bull; <strong className="text-[#2C4A60]">VERSE OF THE DAY</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-[#4F748E] px-2.5 py-0.5 rounded-full bg-[#EBF2F7] border border-[#D5E3EC]">
+                ESV
+              </span>
+              <div className="w-7 h-7 rounded-full glass-light-pill flex items-center justify-center text-[#4F748E]">
+                <BookOpen size={14} />
+              </div>
+            </div>
           </div>
 
-          {/* Scripture verse text */}
-          <blockquote className="font-serif text-base md:text-lg lg:text-xl font-normal leading-relaxed text-white/95 tracking-wide">
-            &ldquo;10The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.&rdquo;
+          {/* Scripture Reference Title */}
+          <h2 className="text-2xl md:text-3xl font-black text-[#1E2E3D] tracking-tight">
+            1 Chronicles 16:24
+          </h2>
+
+          {/* Scripture Verse Quotation */}
+          <blockquote className="text-base md:text-lg text-[#334E68] font-normal leading-relaxed italic max-w-4xl">
+            &ldquo;Declare his glory among the nations, his marvelous works among all the peoples!&rdquo;
           </blockquote>
 
-          {/* Divider */}
-          <div className="h-px bg-white/15 my-3" />
+          {/* Bottom Action Row */}
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/50">
+            <Link
+              to="/admin/bible"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#162533] hover:bg-[#243746] text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+            >
+              <Play size={12} className="fill-white" />
+              <span>Read chapter</span>
+            </Link>
 
-          {/* Bottom row: Scripture Reference */}
-          <div className="pt-0.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/18 border border-white/30 text-xs font-bold text-white tracking-wide">
-              <BookOpen size={12} className="text-white/90" />
-              <span>John 10:10</span>
-            </div>
+            <span className="text-xs font-semibold text-[#5A7385] hidden sm:inline">
+              Daily Walk in His Presence &bull; Coram Deo Rhythms
+            </span>
           </div>
         </div>
       </div>

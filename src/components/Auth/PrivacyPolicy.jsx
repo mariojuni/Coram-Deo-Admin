@@ -25,7 +25,7 @@ import {
   HeartHandshake,
   Baby
 } from 'lucide-react';
-import logo from '../../assets/logo.svg';
+import { CathedralLogo } from '../ui/icons';
 import SoftCard from '../ui/SoftCard';
 import StatusPill from '../ui/StatusPill';
 
@@ -409,7 +409,7 @@ const SECTIONS = [
           </div>
         </div>
         <p className="text-xs text-church-slate">
-          <strong>How to Exercise Your Rights:</strong> As Coram Deo is a processor, congregation members should first direct privacy requests to their local church administrator. If you require assistance contacting your church controller or have an escalated inquiry, contact our Data Protection Officer at <a href="mailto:support@coramdeo.online" className="text-church-rose font-medium hover:underline">support@coramdeo.online</a>.
+          <strong>How to Exercise Your Rights:</strong> As Coram Deo is a processor, congregation members should first direct privacy requests to their local church administrator. If you require assistance contacting your church controller or have an escalated inquiry, contact our Data Protection Officer at <a href="mailto:support@coramdeo.online" className="text-[#2C4A60] font-medium hover:underline">support@coramdeo.online</a>.
         </p>
       </div>
     ),
@@ -506,7 +506,7 @@ const SECTIONS = [
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/80 space-y-1.5">
             <span className="font-bold text-church-navy text-sm block">Data Protection & Privacy</span>
             <p className="text-church-slate">General privacy inquiries, DPA requests, and user rights:</p>
-            <a href="mailto:support@coramdeo.online?subject=Coram%20Deo%20Privacy%20Inquiry" className="text-church-rose font-semibold hover:underline inline-flex items-center gap-1 mt-1">
+            <a href="mailto:support@coramdeo.online?subject=Coram%20Deo%20Privacy%20Inquiry" className="text-[#2C4A60] font-semibold hover:underline inline-flex items-center gap-1 mt-1">
               support@coramdeo.online <ExternalLink size={12} />
             </a>
           </div>
@@ -578,7 +578,7 @@ export default function PrivacyPolicy() {
   };
 
   return (
-    <div className="min-h-screen bg-church-canvas text-church-charcoal flex flex-col antialiased selection:bg-church-rose/20 selection:text-church-rose">
+    <div className="min-h-screen bg-church-canvas text-church-charcoal flex flex-col antialiased selection:bg-[#4F748E]/20 selection:text-[#2C4A60]">
       {/* ----------------------------------------------------------------- */}
       {/* Header Bar */}
       {/* ----------------------------------------------------------------- */}
@@ -586,15 +586,15 @@ export default function PrivacyPolicy() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Logo & App Name */}
           <Link to="/login" className="flex items-center gap-3 group focus:outline-none">
-            <div className="w-10 h-10 rounded-xl bg-gradient-coram flex items-center justify-center p-2 shadow-church-glow group-hover:scale-105 transition-transform duration-200">
-              <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain brightness-0 invert" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-1 shadow-church-soft group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+              <CathedralLogo size={32} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg tracking-tight text-church-navy group-hover:text-church-rose transition-colors">
+                <span className="font-extrabold text-lg tracking-tight text-church-navy group-hover:text-[#2C4A60] transition-colors">
                   Coram Deo
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-purple-50 text-purple-700 border border-purple-100">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-sky-50 text-[#2C4A60] border border-sky-100">
                   Admin Portal
                 </span>
               </div>
@@ -632,14 +632,14 @@ export default function PrivacyPolicy() {
       {/* ----------------------------------------------------------------- */}
       <section className="relative overflow-hidden bg-white border-b border-gray-100/80 pt-10 pb-12 px-4 sm:px-6 lg:px-8">
         {/* Ambient background glow matching Coram Deo brand */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-10 left-10 w-80 h-80 bg-rose-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-10 left-10 w-80 h-80 bg-slate-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-5xl mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-2">
-            <StatusPill variant="rose" dot>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]">
               Official Legal &amp; Security Policy
-            </StatusPill>
+            </span>
             <span className="text-xs text-church-muted font-medium hidden sm:inline">
               • Version 2026.1
             </span>
@@ -670,7 +670,7 @@ export default function PrivacyPolicy() {
           {/* Quick Pillars Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 max-w-4xl mx-auto text-left">
             <div className="p-3.5 rounded-xl border border-gray-100 bg-white/80 shadow-church-soft">
-              <div className="w-7 h-7 rounded-lg bg-rose-50 text-church-rose flex items-center justify-center mb-2">
+              <div className="w-7 h-7 rounded-lg bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center mb-2">
                 <Lock size={15} />
               </div>
               <p className="font-bold text-xs text-church-navy">TLS 1.3 &amp; AES-256</p>
@@ -720,7 +720,7 @@ export default function PrivacyPolicy() {
                   placeholder="Filter clauses (e.g. child, giving, delete)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200/70 focus:outline-none focus:border-church-rose focus:ring-2 focus:ring-church-rose/20 transition-all placeholder:text-gray-400"
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200/70 focus:outline-none focus:border-[#2C4A60] focus:ring-2 focus:ring-[#4F748E]/20 transition-all placeholder:text-gray-400"
                 />
                 {searchQuery && (
                   <button
@@ -746,21 +746,21 @@ export default function PrivacyPolicy() {
                       onClick={() => scrollToSection(sec.id)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-xl text-xs font-medium transition-all group ${
                         isActive
-                          ? 'bg-rose-50/80 text-church-rose font-bold border border-rose-100 shadow-xs'
+                          ? 'bg-[#EBF2F7] text-[#2C4A60] font-bold border border-[#D5E3EC] shadow-xs'
                           : 'text-church-slate hover:bg-gray-50 hover:text-church-navy'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <Icon
                           size={14}
-                          className={isActive ? 'text-church-rose shrink-0' : 'text-church-muted group-hover:text-church-navy shrink-0'}
+                          className={isActive ? 'text-[#2C4A60] shrink-0' : 'text-church-muted group-hover:text-church-navy shrink-0'}
                         />
                         <span className="truncate">{sec.shortTitle}</span>
                       </div>
                       <ChevronRight
                         size={12}
                         className={`shrink-0 transition-transform ${
-                          isActive ? 'text-church-rose translate-x-0.5' : 'text-gray-300 opacity-0 group-hover:opacity-100'
+                          isActive ? 'text-[#2C4A60] translate-x-0.5' : 'text-gray-300 opacity-0 group-hover:opacity-100'
                         }`}
                       />
                     </button>
@@ -771,7 +771,7 @@ export default function PrivacyPolicy() {
               {/* Quick Contact Box */}
               <div className="pt-3 border-t border-gray-100 text-xs text-church-slate space-y-2">
                 <div className="flex items-center gap-2 font-semibold text-church-navy">
-                  <Mail size={13} className="text-church-rose" />
+                  <Mail size={13} className="text-[#2C4A60]" />
                   <span>Privacy Inquiries</span>
                 </div>
                 <p className="text-[11px] text-church-muted leading-relaxed">
@@ -808,7 +808,7 @@ export default function PrivacyPolicy() {
                     onClick={() => scrollToSection(sec.id)}
                     className={`whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                       activeSection === sec.id
-                        ? 'bg-church-rose text-white font-bold'
+                        ? 'bg-[#2C4A60] text-white font-bold'
                         : 'bg-gray-100 text-church-slate hover:bg-gray-200'
                     }`}
                   >
@@ -830,7 +830,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="px-4 py-2 text-xs font-semibold text-church-rose bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-[#2C4A60] bg-[#EBF2F7] rounded-lg hover:bg-[#D5E3EC] transition-colors"
                 >
                   Clear search filter
                 </button>
@@ -886,7 +886,7 @@ export default function PrivacyPolicy() {
 
             {/* Bottom Disclaimer & Download Card */}
             <div className="p-6 rounded-2xl bg-gradient-coram-soft border border-purple-100/70 text-center space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-white text-church-rose mx-auto flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-white text-[#2C4A60] mx-auto flex items-center justify-center shadow-xs">
                 <FileText size={20} />
               </div>
               <h3 className="font-bold text-base text-church-navy">
@@ -920,8 +920,8 @@ export default function PrivacyPolicy() {
       {/* ----------------------------------------------------------------- */}
       <footer className="mt-auto bg-white border-t border-gray-100 py-8 px-4 sm:px-6 lg:px-8 text-center text-xs text-church-muted space-y-3 print:hidden">
         <div className="flex items-center justify-center gap-3">
-          <div className="w-6 h-6 rounded-md bg-gradient-coram flex items-center justify-center p-1">
-            <img src={logo} alt="Coram Deo Logo" className="w-full h-full object-contain brightness-0 invert" />
+          <div className="w-7 h-7 rounded-lg bg-white border border-gray-100 flex items-center justify-center p-0.5 shadow-church-soft overflow-hidden">
+            <CathedralLogo size={22} />
           </div>
           <span className="font-bold text-church-navy text-sm">Coram Deo Admin</span>
         </div>
@@ -929,20 +929,20 @@ export default function PrivacyPolicy() {
           &copy; {new Date().getFullYear()} Coram Deo Church Management. Built with faithful stewardship and privacy excellence.
         </p>
         <div className="flex items-center justify-center gap-4 text-xs font-medium text-church-slate">
-          <Link to="/login" className="hover:text-church-rose transition-colors">
+          <Link to="/login" className="hover:text-[#2C4A60] transition-colors">
             Admin Login
           </Link>
           <span>•</span>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="hover:text-church-rose transition-colors"
+            className="hover:text-[#2C4A60] transition-colors"
           >
             Back to Top
           </button>
           <span>•</span>
           <a
             href="mailto:support@coramdeo.online"
-            className="hover:text-church-rose transition-colors"
+            className="hover:text-[#2C4A60] transition-colors"
           >
             Contact Support
           </a>

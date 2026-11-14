@@ -10,7 +10,7 @@ export default function AdminLayout() {
   const { logout, userProfile } = useAuth();
 
   return (
-    <div className="h-screen overflow-hidden flex text-church-charcoal font-sans bg-church-canvas p-2 lg:p-4 gap-4">
+    <div className="h-screen overflow-hidden flex text-brand-dark font-sans bg-transparent p-2 lg:p-4 gap-4">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       <div className="flex-1 flex flex-col min-w-0">
@@ -18,7 +18,7 @@ export default function AdminLayout() {
         <header className="h-16 bg-transparent flex items-center justify-between px-2 lg:px-6 sticky top-0 z-10 mb-2">
           <div className="flex items-center gap-3">
             <button 
-              className="p-2.5 text-church-charcoal bg-white rounded-xl lg:hidden shadow-church-soft border border-gray-100 hover:bg-gray-50 transition-colors"
+              className="p-2.5 text-brand-dark glass-light-pill rounded-2xl lg:hidden hover:bg-white transition-all shadow-xs"
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Open sidebar menu"
             >
@@ -29,16 +29,16 @@ export default function AdminLayout() {
           <div className="flex items-center space-x-3">
             {/* Notification Bell Button (matches mobile circular top button) */}
             <button 
-              className="w-10 h-10 rounded-full bg-white shadow-church-soft border border-gray-100 flex items-center justify-center text-church-charcoal hover:bg-gray-50 transition-all hover:scale-105 active:scale-95"
+              className="w-10 h-10 rounded-full glass-light-pill flex items-center justify-center text-[#2C4A60] hover:bg-white transition-all hover:scale-105 active:scale-95 shadow-xs"
               aria-label="Notifications"
             >
-              <Bell size={18} className="text-church-slate" />
+              <Bell size={18} className="text-[#2C4A60]" />
             </button>
 
             {/* Logout pill button */}
             <button 
               onClick={logout}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100/70 border border-red-100 px-3.5 py-2 rounded-full transition-all duration-150"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 glass-light-pill border border-red-200/60 px-3.5 py-2 rounded-full transition-all duration-150"
             >
               <LogOut size={13} />
               <span>Logout</span>

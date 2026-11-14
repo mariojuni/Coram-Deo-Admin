@@ -194,7 +194,7 @@ export default function SubscriptionBanner() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => navigate('/admin/settings/billing')}
-            className="px-3 py-1.5 rounded-xl font-bold bg-church-charcoal hover:bg-black text-white flex items-center gap-1.5 shadow-sm text-xs"
+            className="px-3.5 py-1.5 rounded-xl font-bold bg-[#162533] hover:bg-[#1E2E3D] text-white flex items-center gap-1.5 shadow-sm text-xs transition-colors"
           >
             <span>View Plans</span>
             <ArrowRight size={13} />

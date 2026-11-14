@@ -232,11 +232,11 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft overflow-hidden flex flex-col my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col my-8 border border-white/95">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-xl font-bold text-church-navy">{ministry ? 'Edit Ministry' : 'Create Ministry'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
@@ -244,32 +244,32 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
         <div className="flex border-b border-gray-100 px-6 pt-2 bg-gray-50/50">
           <button
             onClick={() => setActiveTab('general')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'general' ? 'border-church-green text-church-green' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'general' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             General
           </button>
           <button
             onClick={() => setActiveTab('features')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'features' ? 'border-church-green text-church-green' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'features' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Features
           </button>
           <button
             onClick={() => setActiveTab('roles')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'roles' ? 'border-church-green text-church-green' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'roles' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Roles
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 overflow-y-auto">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
           
           <div className={activeTab === 'general' ? 'block' : 'hidden'}>
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-church-navy mb-1">Ministry Name *</label>
-                <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="e.g. Praise and Worship" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green" />
+                <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="e.g. Praise and Worship" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" />
               </div>
 
               <div>
@@ -292,7 +292,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
 
               <div>
                 <label className="block text-sm font-medium text-church-navy mb-1">Description</label>
-                <textarea name="description" rows="3" value={formData.description} onChange={handleChange} placeholder="What is the purpose of this ministry?" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green resize-none"></textarea>
+                <textarea name="description" rows="3" value={formData.description} onChange={handleChange} placeholder="What is the purpose of this ministry?" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white"></textarea>
               </div>
 
               <div>
@@ -319,7 +319,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
                     type="checkbox"
                     checked={formData.features?.songListEnabled || false}
                     onChange={() => handleFeatureChange('songListEnabled')}
-                    className="mt-1 w-4 h-4 text-church-green border-gray-300 rounded focus:ring-church-green"
+                    className="mt-1 w-4 h-4 text-[#2C4A60] accent-[#2C4A60] border-gray-300 rounded focus:ring-[#2C4A60]"
                   />
                   <div>
                     <span className="block text-sm font-bold text-church-navy">Enable Song List Access</span>
@@ -372,7 +372,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
                   value={newRole} 
                   onChange={(e) => setNewRole(e.target.value)} 
                   placeholder="New Role Name" 
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-church-green"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white transition-all"
                   onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddRole(e); } }}
                 />
               </div>
@@ -411,7 +411,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
               </div>
 
               <div className="flex justify-end pt-1">
-                <button type="button" onClick={handleAddRole} className="px-4 py-2 bg-church-navy text-white rounded-lg text-sm font-bold shadow-sm hover:bg-church-navy/90">
+                <button type="button" onClick={handleAddRole} className="px-4 py-2 bg-[#162533] text-white rounded-lg text-sm font-bold shadow-sm hover:bg-[#1E2E3D] transition-all">
                   Add Role
                 </button>
               </div>
@@ -423,7 +423,7 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
           <button type="button" onClick={onClose} disabled={loading} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors">
             Cancel
           </button>
-          <button type="submit" onClick={handleSubmit} disabled={loading} className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-md">
+          <button type="submit" onClick={handleSubmit} disabled={loading} className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm">
             {loading ? 'Saving...' : 'Save Ministry'}
           </button>
         </div>

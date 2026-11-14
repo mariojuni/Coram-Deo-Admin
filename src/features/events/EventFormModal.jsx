@@ -172,7 +172,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Sunday Service"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white" 
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
               />
             </div>
             
@@ -184,7 +184,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Event details..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white resize-none" 
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white resize-none" 
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="e.g. Main Sanctuary"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white" 
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
               />
             </div>
             <div>
@@ -236,7 +236,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
                 value={formData.imageUrl}
                 onChange={handleChange}
                 placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-church-rose/25 focus:border-church-rose transition-all bg-white" 
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
               />
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5 flex items-center gap-1.5">
-                <Bell size={13} className="text-church-rose" />
+                <Bell size={13} className="text-[#2C4A60]" />
                 Push Reminder
               </label>
               <ModernDropdown
@@ -281,28 +281,28 @@ export default function EventFormModal({ isOpen, onClose, event = null }) {
               <label className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative flex items-center">
                   <input type="checkbox" name="enableRSVP" checked={formData.enableRSVP} onChange={handleChange} className="peer sr-only" />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-lg peer-checked:bg-church-rose peer-checked:border-church-rose transition-colors"></div>
+                  <div className="w-5 h-5 border-2 border-slate-300 rounded-lg peer-checked:bg-[#2C4A60] peer-checked:border-[#2C4A60] transition-colors"></div>
                   <svg className="absolute w-3.5 h-3.5 left-0.5 top-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <span className="text-xs font-bold text-church-charcoal group-hover:text-church-rose transition-colors">Enable RSVP</span>
+                <span className="text-xs font-bold text-church-charcoal group-hover:text-[#2C4A60] transition-colors">Enable RSVP</span>
               </label>
 
               <label className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative flex items-center">
                   <input type="checkbox" name="enableVolunteer" checked={formData.enableVolunteer} onChange={handleChange} className="peer sr-only" />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-lg peer-checked:bg-church-rose peer-checked:border-church-rose transition-colors"></div>
+                  <div className="w-5 h-5 border-2 border-slate-300 rounded-lg peer-checked:bg-[#2C4A60] peer-checked:border-[#2C4A60] transition-colors"></div>
                   <svg className="absolute w-3.5 h-3.5 left-0.5 top-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <span className="text-xs font-bold text-church-charcoal group-hover:text-church-rose transition-colors">Volunteer Signup</span>
+                <span className="text-xs font-bold text-church-charcoal group-hover:text-[#2C4A60] transition-colors">Volunteer Signup</span>
               </label>
 
               <label className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative flex items-center">
                   <input type="checkbox" name="enableAttendance" checked={formData.enableAttendance} onChange={handleChange} className="peer sr-only" />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-lg peer-checked:bg-church-rose peer-checked:border-church-rose transition-colors"></div>
+                  <div className="w-5 h-5 border-2 border-slate-300 rounded-lg peer-checked:bg-[#2C4A60] peer-checked:border-[#2C4A60] transition-colors"></div>
                   <svg className="absolute w-3.5 h-3.5 left-0.5 top-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-                <span className="text-xs font-bold text-church-charcoal group-hover:text-church-rose transition-colors">Track Attendance</span>
+                <span className="text-xs font-bold text-church-charcoal group-hover:text-[#2C4A60] transition-colors">Track Attendance</span>
               </label>
             </div>
           </div>

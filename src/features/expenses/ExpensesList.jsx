@@ -163,12 +163,13 @@ export default function ExpensesList() {
         </div>
 
         <div className="flex items-center space-x-3 shrink-0">
-          <GradientButton 
+          <button 
             onClick={handleAddClick}
-            icon={Plus}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
           >
-            Log Expense
-          </GradientButton>
+            <Plus size={16} />
+            <span>Log Expense</span>
+          </button>
         </div>
       </div>
 
@@ -223,20 +224,24 @@ export default function ExpensesList() {
       {loading ? (
         <SoftCard className="p-16 text-center">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-9 h-9 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-9 h-9 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-semibold text-church-slate">Loading expenses...</p>
           </div>
         </SoftCard>
       ) : expenses.length === 0 ? (
         <SoftCard className="p-16 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 border border-slate-200/60 shadow-sm">
             <Receipt size={30} />
           </div>
           <h3 className="text-lg font-black text-church-charcoal mb-1">No expenses logged</h3>
           <p className="text-church-slate text-sm max-w-sm mb-6">Record your first church expense to start tracking outflows.</p>
-          <GradientButton onClick={handleAddClick} icon={Plus}>
-            Log Expense
-          </GradientButton>
+          <button 
+            onClick={handleAddClick}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-sm"
+          >
+            <Plus size={16} />
+            <span>Log Expense</span>
+          </button>
         </SoftCard>
       ) : (
         <SoftCard className="flex-1 flex flex-col overflow-hidden">
@@ -289,7 +294,7 @@ export default function ExpensesList() {
                           href={expense.receiptUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center p-2 bg-rose-50 text-church-rose rounded-xl hover:bg-rose-100 transition-colors"
+                          className="inline-flex items-center justify-center p-2 bg-[#EBF2F7] text-[#2C4A60] rounded-xl hover:bg-[#D5E3EC] transition-colors"
                           title="View Receipt"
                         >
                           <Receipt size={16} />

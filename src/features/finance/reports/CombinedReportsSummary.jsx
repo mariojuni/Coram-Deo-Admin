@@ -14,11 +14,11 @@ export default function CombinedReportsSummary({ data }) {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Giving */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-church-green/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-church-green/5 rounded-bl-full pointer-events-none" />
+        <div className="glass-light-card rounded-3xl p-6 border border-white/95 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/50 rounded-bl-full pointer-events-none" />
           <div className="flex items-center justify-between mb-4 relative z-10">
             <h3 className="text-gray-500 font-bold text-sm tracking-wider uppercase">Total Giving</h3>
-            <div className="w-10 h-10 rounded-2xl bg-church-green/10 text-church-green flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <DollarSign size={20} strokeWidth={2.5} />
             </div>
           </div>
@@ -31,8 +31,8 @@ export default function CombinedReportsSummary({ data }) {
         </div>
 
         {/* Total Expenses */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-rose-100 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-full pointer-events-none" />
+        <div className="glass-light-card rounded-3xl p-6 border border-white/95 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50/50 rounded-bl-full pointer-events-none" />
           <div className="flex items-center justify-between mb-4 relative z-10">
             <h3 className="text-gray-500 font-bold text-sm tracking-wider uppercase">Total Expenses</h3>
             <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">

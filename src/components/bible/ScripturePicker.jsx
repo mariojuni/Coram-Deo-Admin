@@ -92,7 +92,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs font-semibold text-slate-700 flex items-center">
-            <Sparkles size={14} className="mr-1 text-church-green" />
+            <Sparkles size={14} className="mr-1 text-[#2C4A60]" />
             Quick Auto-Fill (Paste text like "Genesis 7-9; Romans 3")
           </label>
         </div>
@@ -103,12 +103,12 @@ export default function ScripturePicker({ passages = [], onChange }) {
             onChange={(e) => setQuickInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleQuickParse())}
             placeholder="e.g. Genesis 7–9; Romans 3 or Galacia 5:22-23"
-            className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+            className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
           />
           <button
             type="button"
             onClick={handleQuickParse}
-            className="px-3 py-1.5 bg-church-navy text-white text-xs font-medium rounded-xl hover:bg-church-navy/90 shrink-0"
+            className="px-3 py-1.5 bg-[#162533] text-white text-xs font-medium rounded-xl hover:bg-[#1E2E3D] shrink-0 transition-colors"
           >
             Auto-Fill
           </button>
@@ -134,7 +134,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
             >
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-church-slate flex items-center">
-                  <BookOpen size={14} className="mr-1.5 text-church-green" />
+                  <BookOpen size={14} className="mr-1.5 text-[#2C4A60]" />
                   Scripture Reading #{idx + 1}:
                   <span className="ml-2 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-mono text-xs">
                     {passage.display}
@@ -157,7 +157,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                   <select
                     value={passage.bookId}
                     onChange={(e) => handleUpdatePassage(idx, { bookId: e.target.value })}
-                    className="w-full text-xs px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green font-medium"
+                    className="w-full text-xs px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] font-medium"
                   >
                     <optgroup label="Old Testament">
                       {BIBLE_BOOKS.filter(b => b.testament === 'OT').map(b => (
@@ -188,7 +188,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                         chapter: parseInt(e.target.value, 10),
                         endChapter: Math.max(parseInt(e.target.value, 10), passage.endChapter)
                       })}
-                      className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                      className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
                     >
                       {Array.from({ length: book.chapters }, (_, i) => i + 1).map(ch => (
                         <option key={ch} value={ch}>Ch {ch}</option>
@@ -198,7 +198,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                     <select
                       value={passage.endChapter || passage.chapter}
                       onChange={(e) => handleUpdatePassage(idx, { endChapter: parseInt(e.target.value, 10) })}
-                      className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                      className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
                     >
                       {Array.from({ length: book.chapters - passage.chapter + 1 }, (_, i) => passage.chapter + i).map(ch => (
                         <option key={ch} value={ch}>Ch {ch}</option>
@@ -220,7 +220,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                           handleUpdatePassage(idx, { startVerse: 1, endVerse: 1 });
                         }
                       }}
-                      className="text-[10px] text-church-green font-bold hover:underline"
+                      className="text-[10px] text-[#2C4A60] font-bold hover:underline"
                     >
                       {hasVerses ? 'Entire Chapter' : 'Specific Verses?'}
                     </button>
@@ -233,7 +233,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                         placeholder="Start"
                         value={passage.startVerse || ''}
                         onChange={(e) => handleUpdatePassage(idx, { startVerse: parseInt(e.target.value, 10) || 1 })}
-                        className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                        className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
                       />
                       <span className="text-gray-400 text-xs">-</span>
                       <input
@@ -242,7 +242,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
                         placeholder="End"
                         value={passage.endVerse || ''}
                         onChange={(e) => handleUpdatePassage(idx, { endVerse: parseInt(e.target.value, 10) || passage.startVerse })}
-                        className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+                        className="w-full text-xs px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60]"
                       />
                     </div>
                   ) : (
@@ -263,7 +263,7 @@ export default function ScripturePicker({ passages = [], onChange }) {
         onClick={handleAddPassage}
         className="w-full py-2 px-3 border border-dashed border-gray-300 rounded-2xl text-xs font-bold text-church-navy hover:bg-gray-50 flex items-center justify-center transition-colors"
       >
-        <Plus size={14} className="mr-1.5 text-church-green" />
+        <Plus size={14} className="mr-1.5 text-[#2C4A60]" />
         Add Scripture Reading / Split Book
       </button>
     </div>

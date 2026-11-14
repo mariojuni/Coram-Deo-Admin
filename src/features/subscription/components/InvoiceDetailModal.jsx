@@ -63,20 +63,20 @@ export default function InvoiceDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-gray-100 overflow-hidden relative flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="glass-light-shell rounded-3xl max-w-2xl w-full shadow-2xl border border-white/95 overflow-hidden relative flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-church-navy via-slate-900 to-church-charcoal text-white p-6 relative">
+        <div className="bg-[#162533] text-white p-6 relative border-b border-[#243746]">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-all"
+            className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-all"
             aria-label="Close"
           >
             <X size={18} />
           </button>
 
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-church-rose text-white">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 text-sky-200 border border-white/15">
               Official Tax Invoice
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
@@ -92,18 +92,18 @@ export default function InvoiceDetailModal({
                 <button
                   type="button"
                   onClick={handleCopyNumber}
-                  className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                   title="Copy Invoice Number"
                 >
                   {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                 </button>
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-slate-300 mt-0.5">
                 Issued on {formatDate(issueDate)} • Church Operating System
               </p>
             </div>
             <div className="text-left sm:text-right">
-              <span className="text-[11px] text-gray-400 uppercase tracking-wider block font-bold">Total Paid</span>
+              <span className="text-[11px] text-slate-300 uppercase tracking-wider block font-bold">Total Paid</span>
               <span className="text-2xl font-black text-white">
                 ₱{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -116,53 +116,53 @@ export default function InvoiceDetailModal({
           {/* Billed To & Payment Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Billed To */}
-            <div className="p-4 rounded-2xl bg-church-canvas border border-gray-100 flex flex-col justify-between">
+            <div className="p-4 rounded-2xl bg-white/70 border border-slate-200/50 shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-church-rose mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#4F748E] mb-2">
                   <Building2 size={13} />
                   <span>Billed To (Church Workspace)</span>
                 </div>
-                <div className="font-bold text-sm text-church-navy">
+                <div className="font-bold text-sm text-[#1E2E3D]">
                   {church?.name || church?.churchName || 'Church Workspace'}
                 </div>
-                <p className="text-xs text-church-slate mt-0.5">
+                <p className="text-xs text-[#5A7385] mt-0.5">
                   Attn: {church?.seniorPastor || 'Church Administrator'}
                 </p>
-                <p className="text-xs text-church-slate">
+                <p className="text-xs text-[#5A7385]">
                   {church?.city || church?.address || 'Philippines'}
                 </p>
-                <p className="text-xs text-church-slate">
+                <p className="text-xs text-[#5A7385]">
                   Email: {church?.contact?.email || 'N/A'}
                 </p>
               </div>
-              <div className="mt-3 pt-2 border-t border-gray-200/60 font-mono text-[10px] text-church-slate">
+              <div className="mt-3 pt-2 border-t border-slate-200/50 font-mono text-[10px] text-[#7E97A8]">
                 Workspace ID: {church?.id || 'N/A'}
               </div>
             </div>
 
             {/* Payment & Clearing Info */}
-            <div className="p-4 rounded-2xl bg-church-canvas border border-gray-100 flex flex-col justify-between">
+            <div className="p-4 rounded-2xl bg-white/70 border border-slate-200/50 shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-church-rose mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-brand-steel mb-2">
                   <CreditCard size={13} />
                   <span>Payment & Clearing Details</span>
                 </div>
-                <div className="font-bold text-sm text-church-navy">
+                <div className="font-bold text-sm text-brand-dark">
                   {invoice.paymentMethod || 'Manual Bank Transfer / GCash'}
                 </div>
-                <p className="text-xs text-church-slate mt-0.5">
-                  Deposit Account: <strong className="text-church-charcoal">{invoice.bankName || 'Direct Deposit'}</strong>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Deposit Account: <strong className="text-brand-dark">{invoice.bankName || 'Direct Deposit'}</strong>
                 </p>
-                <p className="text-xs text-church-slate">
-                  Reference #: <code className="font-mono text-[11px] font-bold text-church-charcoal">{invoice.bankReferenceNumber || 'Verified by Admin'}</code>
+                <p className="text-xs text-slate-500">
+                  Reference #: <code className="font-mono text-[11px] font-bold text-brand-dark">{invoice.bankReferenceNumber || 'Verified by Admin'}</code>
                 </p>
-                <div className="flex items-center gap-1 text-xs text-church-slate mt-1">
-                  <Calendar size={12} className="shrink-0 text-church-slate" />
+                <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                  <Calendar size={12} className="shrink-0 text-slate-500" />
                   <span>Coverage: {formatDate(periodStart)} – {formatDate(periodEnd)}</span>
                 </div>
               </div>
-              <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px]">
-                <span className="text-church-slate font-medium">Platform Ledger Status:</span>
+              <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                <span className="text-slate-500 font-medium">Platform Ledger Status:</span>
                 <span className="text-emerald-700 font-bold flex items-center gap-1">
                   <ShieldCheck size={12} />
                   <span>Verified & Cleared</span>
@@ -225,9 +225,9 @@ export default function InvoiceDetailModal({
                   <span>Value Added Tax (0% VAT Non-VAT Church Exempt):</span>
                   <span>₱0.00</span>
                 </div>
-                <div className="pt-2 border-t border-gray-200 flex justify-between font-black text-sm text-church-navy">
+                <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-brand-dark">
                   <span>Total Amount Paid:</span>
-                  <span className="text-church-rose font-black">
+                  <span className="text-brand-primary font-black">
                     ₱{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -255,29 +255,29 @@ export default function InvoiceDetailModal({
           )}
 
           {/* Governance Notice */}
-          <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200/80 text-[11px] text-church-slate leading-relaxed">
-            <strong className="block font-bold text-church-navy mb-0.5">Auditable Board Record</strong>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-500 leading-relaxed">
+            <strong className="block font-bold text-brand-dark mb-0.5">Auditable Board Record</strong>
             This is an authorized computer-generated tax invoice issued by Coram Deo. It is recognized for church board administration, financial reporting, and annual audits.
           </div>
         </div>
 
         {/* Modal Actions Footer */}
-        <div className="p-4 sm:p-5 bg-church-canvas border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
+        <div className="p-4 sm:p-5 bg-white/70 backdrop-blur-md border-t border-slate-200/60 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full font-bold text-xs text-church-slate hover:bg-gray-200/70 transition-colors"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-full font-bold text-xs text-[#5A7385] hover:bg-slate-100 transition-colors"
           >
             Close
           </button>
-          <GradientButton
+          <button
+            type="button"
             onClick={handleDownloadPdf}
-            icon={Download}
-            size="md"
-            className="w-full sm:w-auto justify-center text-xs px-5 rounded-full"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-[#162533] hover:bg-[#203447] text-white font-bold text-xs shadow-sm transition-all"
           >
-            Download Official PDF
-          </GradientButton>
+            <Download size={14} />
+            <span>Download Official PDF</span>
+          </button>
         </div>
       </div>
     </div>

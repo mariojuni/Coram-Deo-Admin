@@ -9,10 +9,8 @@ export default function SoftCard({ children, className = '', hover = false, onCl
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-2xl md:rounded-[20px] 
-        border border-gray-100/80 
-        shadow-church-soft 
-        ${hover ? 'transition-all duration-200 hover:shadow-church-elevated hover:border-gray-200/80 cursor-pointer' : ''}
+        glass-light-card rounded-2xl md:rounded-[24px]
+        ${hover ? 'transition-all duration-200 hover:shadow-[0_16px_36px_-4px_rgba(44,74,96,0.10)] hover:border-white cursor-pointer' : ''}
         ${className}
       `}
       {...rest}

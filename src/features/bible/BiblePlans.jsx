@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Plus, BookOpen, Edit, Trash2, Calendar, Clock, MoreVertical, Upload, Download, CheckSquare, Square, FileText, Globe } from 'lucide-react';
+import { BibleIcon } from '../../components/ui/icons';
 import BiblePlanFormModal from './BiblePlanFormModal';
 import BiblePlanImportModal from './BiblePlanImportModal';
 import { downloadJSONFile, buildJSONExportEnvelope } from '../../utils/jsonImportExport';
@@ -223,16 +224,16 @@ export default function BiblePlans() {
       {/* Header aligned to CoramDeo Design System */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <StatusPill variant="glass" dot className="mb-2">
             Scripture & Devotionals
           </StatusPill>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Spiritual Growth & Devotional Plans</h1>
-            <span className="bg-church-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center">
+            <h1 className="text-3xl font-black text-brand-dark tracking-tight">Spiritual Growth & Devotional Plans</h1>
+            <span className="bg-brand-dark text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center">
               <Globe size={11} className="mr-1" /> Global Catalog
             </span>
           </div>
-          <p className="text-sm text-church-slate mt-1">Manage guided scripture reading journeys, reading tracks, and devotions across church tenants.</p>
+          <p className="text-sm text-slate-500 mt-1">Manage guided scripture reading journeys, reading tracks, and devotions across church tenants.</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <button 
@@ -266,7 +267,7 @@ export default function BiblePlans() {
             className="flex items-center gap-2 text-xs font-bold text-church-slate hover:text-church-charcoal px-3.5 py-1.5 rounded-full bg-white border border-gray-200/80 shadow-sm transition-all"
           >
             {selectedPlanIds.length === plans.length ? (
-              <CheckSquare size={15} className="text-church-rose" />
+              <CheckSquare size={15} className="text-[#2C4A60]" />
             ) : (
               <Square size={15} className="text-gray-400" />
             )}
@@ -285,17 +286,17 @@ export default function BiblePlans() {
       ) : loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-10 h-10 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-medium text-church-slate">Loading spiritual plans catalog...</p>
           </div>
         </div>
       ) : plans.length === 0 ? (
         <SoftCard className="p-12 flex flex-col items-center justify-center text-center flex-1 my-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
-            <BookOpen size={30} />
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-brand-primary flex items-center justify-center mb-4 border border-blue-100/60 shadow-sm">
+            <BibleIcon size={32} />
           </div>
-          <h3 className="text-xl font-black text-church-charcoal mb-1">No spiritual plans published</h3>
-          <p className="text-church-slate text-sm max-w-sm mb-6">Create a global Devotional or Bible reading plan to share scripture and devotions with your congregation.</p>
+          <h3 className="text-xl font-black text-brand-dark mb-1">No spiritual plans published</h3>
+          <p className="text-slate-500 text-sm max-w-sm mb-6">Create a global Devotional or Bible reading plan to share scripture and devotions with your congregation.</p>
           <GradientButton 
             onClick={handleAddClick}
             icon={Plus}
@@ -314,34 +315,34 @@ export default function BiblePlans() {
                 key={plan.id} 
                 hover
                 className={`overflow-hidden flex flex-col relative group ${
-                  isSelected ? 'ring-2 ring-church-rose border-church-rose/40' : ''
+                  isSelected ? 'ring-2 ring-brand-primary border-brand-primary/40' : ''
                 }`}
               >
                 {/* Header Banner */}
-                <div className={`h-28 relative border-b border-gray-100 flex items-center justify-center ${
-                  isDevotional ? 'bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white' : 'bg-gradient-to-br from-rose-50/70 via-violet-50/40 to-white'
+                <div className={`h-28 relative border-b border-slate-100 flex items-center justify-center ${
+                  isDevotional ? 'bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white' : 'bg-gradient-to-br from-blue-50/70 via-slate-50/40 to-white'
                 }`}>
                   <div 
                     onClick={() => toggleSelectPlan(plan.id)}
-                    className="absolute top-3 left-3 bg-white/90 p-1.5 rounded-full cursor-pointer hover:bg-white shadow-sm border border-gray-100 transition-colors z-10"
+                    className="absolute top-3 left-3 bg-white/90 p-1.5 rounded-full cursor-pointer hover:bg-white shadow-sm border border-slate-200/80 transition-colors z-10"
                   >
                     {isSelected ? (
-                      <CheckSquare size={16} className="text-church-rose" />
+                      <CheckSquare size={16} className="text-brand-primary" />
                     ) : (
-                      <Square size={16} className="text-gray-400" />
+                      <Square size={16} className="text-slate-400" />
                     )}
                   </div>
 
                   {isDevotional ? (
                     <FileText size={42} className="text-amber-500/30" />
                   ) : (
-                    <BookOpen size={42} className="text-church-rose/25" />
+                    <BibleIcon size={42} className="text-brand-primary/25" />
                   )}
 
                   {/* Type Badge */}
                   <div className="absolute bottom-2 left-4">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                      isDevotional ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                      isDevotional ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-brand-primary'
                     }`}>
                       {isDevotional ? '✍️ Devotional' : '📖 Bible Reading'}
                     </span>
@@ -389,7 +390,7 @@ export default function BiblePlans() {
                 <div className="p-5 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <div>
-                      <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors line-clamp-1 leading-snug">
+                      <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-[#2C4A60] transition-colors line-clamp-1 leading-snug">
                         {plan.title}
                       </h3>
                       {plan.author && (
@@ -408,7 +409,7 @@ export default function BiblePlans() {
                   <div className="flex flex-col space-y-2.5 p-3.5 bg-gray-50/70 rounded-2xl border border-gray-100/80 mt-auto">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center text-xs font-bold text-church-charcoal">
-                        <Clock size={14} className="text-church-rose mr-1.5" />
+                        <Clock size={14} className="text-[#2C4A60] mr-1.5" />
                         {plan.durationDays || plan.daysSummary?.length || 0} Days Total
                       </div>
                       

@@ -114,7 +114,7 @@ export default function EventDetails() {
               <span className={`inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                 event.notificationSent 
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                  : 'bg-rose-50 text-church-rose border-rose-100'
+                  : 'bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]'
               }`}>
                 <Bell size={11} className="mr-1" />
                 {event.notificationSent 
@@ -144,7 +144,7 @@ export default function EventDetails() {
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3.5 text-xs font-bold capitalize transition-all border-b-2 whitespace-nowrap ${
                   isActive 
-                    ? 'border-church-rose text-church-rose' 
+                    ? 'border-[#2C4A60] text-[#2C4A60]' 
                     : 'border-transparent text-church-slate hover:text-church-charcoal'
                 }`}
               >
@@ -163,7 +163,7 @@ export default function EventDetails() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <div className="p-4 bg-white/70 rounded-2xl border border-white/95 shadow-2xs">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5">Status</h4>
                   {isPublished ? (
                     <StatusPill variant="emerald">Published</StatusPill>
@@ -172,19 +172,19 @@ export default function EventDetails() {
                   )}
                 </div>
 
-                <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <div className="p-4 bg-white/70 rounded-2xl border border-white/95 shadow-2xs">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5">Category</h4>
                   <p className="text-church-charcoal text-sm font-bold">{event.category || 'General Gathering'}</p>
                 </div>
 
-                <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <div className="p-4 bg-white/70 rounded-2xl border border-white/95 shadow-2xs">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5">Assigned Volunteers</h4>
                   <p className="text-church-charcoal text-sm font-bold">{assignments.length} Volunteers</p>
                 </div>
 
-                <div className="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                <div className="p-4 bg-white/70 rounded-2xl border border-white/95 shadow-2xs">
                   <h4 className="font-bold text-church-slate text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <Bell size={12} className="text-church-rose" /> Push Reminder
+                    <Bell size={12} className="text-[#2C4A60]" /> Push Reminder
                   </h4>
                   <p className="text-church-charcoal text-sm font-bold">
                     {event.reminderMinutesBefore === 0 || event.reminderMinutesBefore === null
@@ -206,7 +206,7 @@ export default function EventDetails() {
                 </div>
                 <button 
                   onClick={() => navigate('/admin/schedules')} 
-                  className="text-xs text-church-rose font-bold hover:underline"
+                  className="text-xs text-[#2C4A60] font-bold hover:underline"
                 >
                   Manage in Scheduling &rarr;
                 </button>
@@ -236,7 +236,7 @@ export default function EventDetails() {
 
           {activeTab === 'attendance' && (
             <div className="text-center py-12 text-church-slate space-y-3">
-              <div className="w-14 h-14 bg-pink-50 text-church-rose rounded-3xl mx-auto flex items-center justify-center border border-pink-100 shadow-sm">
+              <div className="w-14 h-14 bg-[#EBF2F7] text-[#2C4A60] rounded-3xl mx-auto flex items-center justify-center border border-[#D5E3EC] shadow-sm">
                 <Users size={24} />
               </div>
               <h3 className="text-base font-bold text-church-charcoal">Service Attendance Check-in</h3>
@@ -260,7 +260,7 @@ export default function EventDetails() {
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="font-black text-church-charcoal text-lg flex items-center">
-                    <Music size={18} className="mr-2 text-church-rose" /> Worship Setlist
+                    <Music size={18} className="mr-2 text-[#2C4A60]" /> Worship Setlist
                   </h3>
                   <p className="text-xs text-church-slate">Song lyrics, chord charts, and team setlist</p>
                 </div>

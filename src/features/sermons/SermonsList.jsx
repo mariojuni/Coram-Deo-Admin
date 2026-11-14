@@ -155,13 +155,13 @@ export default function SermonsList() {
       ) : loading ? (
         <div className="flex-1 flex items-center justify-center py-20">
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-10 h-10 border-3 border-church-rose/20 border-t-church-rose rounded-full animate-spin" />
+            <div className="w-10 h-10 border-3 border-[#2C4A60]/20 border-t-[#2C4A60] rounded-full animate-spin" />
             <p className="text-sm font-medium text-church-slate">Loading sermons...</p>
           </div>
         </div>
       ) : sermons.length === 0 ? (
         <SoftCard className="p-12 flex flex-col items-center justify-center text-center flex-1 my-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-violet-50 text-church-rose flex items-center justify-center mb-4 border border-rose-100/60 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-sky-50 text-[#2C4A60] flex items-center justify-center mb-4 border border-slate-200/60 shadow-sm">
             <BookOpen size={30} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No sermons yet</h3>
@@ -190,7 +190,7 @@ export default function SermonsList() {
               >
                 {/* Fallback Icon if no thumbnail */}
                 {!sermon.thumbnailUrl && (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 via-rose-50/20 to-violet-50/30 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 via-sky-50/30 to-slate-100 flex items-center justify-center">
                     <BookOpen size={44} className="text-gray-300" />
                   </div>
                 )}
@@ -266,7 +266,7 @@ export default function SermonsList() {
               {/* Content */}
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center text-xs font-bold text-church-rose uppercase tracking-wider">
+                  <div className="flex items-center text-xs font-extrabold text-[#2C4A60] uppercase tracking-wider">
                     <Calendar size={13} className="mr-1.5 shrink-0" />
                     {formatDate(sermon.sermonDate)}
                   </div>
@@ -275,7 +275,7 @@ export default function SermonsList() {
                   </div>
                 </div>
                 
-                <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-church-rose transition-colors mb-1.5 line-clamp-2 leading-snug">
+                <h3 className="text-base sm:text-lg font-black text-church-charcoal group-hover:text-[#2C4A60] transition-colors mb-1.5 line-clamp-2 leading-snug">
                   {sermon.title}
                 </h3>
                 

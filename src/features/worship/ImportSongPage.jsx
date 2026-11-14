@@ -248,8 +248,8 @@ export default function ImportSongPage() {
           onDrop={handleFileDrop}
           onClick={() => document.getElementById('pdf-upload').click()}
         >
-          <div className="w-20 h-20 bg-church-green/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <UploadCloud size={32} className="text-church-green" />
+          <div className="w-20 h-20 bg-[#2C4A60]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <UploadCloud size={32} className="text-[#2C4A60]" />
           </div>
           <h3 className="text-xl font-bold text-church-navy mb-2">Drag & Drop PDF Here</h3>
           <p className="text-church-slate text-sm mb-6">or click to browse from your computer (SongSelect PDF format recommended)</p>
@@ -260,24 +260,24 @@ export default function ImportSongPage() {
             className="hidden" 
             onChange={handleFileDrop}
           />
-          <button className="px-6 py-3 bg-church-green text-white font-bold rounded-full shadow-md hover:bg-church-green/90">
+          <button className="px-6 py-3 bg-[#162533] text-white font-bold rounded-full shadow-sm hover:bg-[#1E2E3D] transition-all">
             Select PDF File
           </button>
         </div>
       )}
 
       {status === 'parsing' && (
-        <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-church-green mb-4"></div>
+        <div className="glass-light-card rounded-3xl p-12 text-center border border-white/95 shadow-sm flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2C4A60] mb-4"></div>
           <h3 className="text-xl font-bold text-church-navy">Analyzing PDF...</h3>
           <p className="text-sm text-church-slate mt-2">Extracting chords and positioning lyrics via A.I.</p>
         </div>
       )}
 
       {status === 'success' && (
-        <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={32} className="text-green-600" />
+        <div className="glass-light-card rounded-3xl p-12 text-center border border-white/95 shadow-sm">
+          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={32} className="text-emerald-600" />
           </div>
           <h3 className="text-2xl font-bold text-church-navy mb-2">Song Imported Successfully!</h3>
           <p className="text-church-slate mb-8">The song has been saved to your library.</p>
@@ -290,7 +290,7 @@ export default function ImportSongPage() {
             </button>
             <button 
               onClick={() => navigate('/admin/worship/songs')}
-              className="px-6 py-3 bg-church-green text-white font-bold rounded-full hover:bg-church-green/90 shadow-md"
+              className="px-6 py-3 bg-[#162533] text-white font-bold rounded-full hover:bg-[#1E2E3D] shadow-sm transition-all"
             >
               Back to Library
             </button>

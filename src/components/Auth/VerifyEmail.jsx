@@ -155,22 +155,22 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF9F9] via-[#FAF7F2] to-[#F5F8FA] flex flex-col justify-between p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F8FA] via-[#EEF4F8] to-[#E5EDF3] flex flex-col justify-between p-4 sm:p-6 font-sans">
       
       {/* Header */}
       <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-coram flex items-center justify-center text-white font-black text-lg shadow-church-glow group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-xl bg-gradient-coram flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
             C
           </div>
           <span className="text-lg font-black tracking-tight text-church-charcoal">
-            Coram<span className="text-church-rose">Deo</span>
+            Coram<span className="text-[#2C4A60]">Deo</span>
           </span>
         </Link>
 
         <button
           onClick={handleSignOut}
-          className="text-xs font-bold text-church-slate hover:text-church-rose flex items-center gap-1.5 transition-colors"
+          className="text-xs font-bold text-church-slate hover:text-[#2C4A60] flex items-center gap-1.5 transition-colors"
         >
           <LogOut size={14} />
           <span>Sign Out</span>
@@ -179,24 +179,24 @@ export default function VerifyEmail() {
 
       {/* Main Card */}
       <main className="max-w-lg mx-auto w-full my-auto py-8">
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 sm:p-10 shadow-church-card border border-white/80 relative overflow-hidden">
+        <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 sm:p-10 shadow-sm border border-white/95 relative overflow-hidden">
           
           {/* Decorative background glow */}
-          <div className="absolute -top-16 -right-16 w-44 h-44 bg-church-rose/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-church-purple/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-44 h-44 bg-[#2C4A60]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-[#4F748E]/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Icon Header */}
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-church-rose/15 to-church-purple/20 text-church-rose flex items-center justify-center shadow-church-soft">
-                <Mail size={32} className="text-church-rose" />
+              <div className="w-16 h-16 rounded-2xl bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] flex items-center justify-center shadow-xs">
+                <Mail size={32} className="text-[#2C4A60]" />
               </div>
-              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-church-emerald text-white flex items-center justify-center shadow-md">
+              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md">
                 <Clock size={13} />
               </span>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-rose/10 text-church-rose text-[11px] font-bold tracking-wide uppercase mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] text-[11px] font-bold tracking-wide uppercase mb-3">
               <ShieldCheck size={13} />
               <span>Identity Verification Required</span>
             </div>
@@ -210,20 +210,20 @@ export default function VerifyEmail() {
           </div>
 
           {/* Registered Identity Card */}
-          <div className="mt-6 p-4 rounded-2xl bg-church-sand/40 border border-church-navy/10 space-y-2">
+          <div className="mt-6 p-4 rounded-2xl bg-[#F8FAFC]/80 border border-slate-200/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-church-slate font-medium flex items-center gap-1.5">
-                <Building2 size={14} className="text-church-navy" />
+                <Building2 size={14} className="text-[#2C4A60]" />
                 Church Workspace:
               </span>
               <span className="font-bold text-church-charcoal">{registeredChurchName}</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-200/50">
               <span className="text-church-slate font-medium flex items-center gap-1.5">
-                <Mail size={14} className="text-church-rose" />
+                <Mail size={14} className="text-[#2C4A60]" />
                 Verification Sent To:
               </span>
-              <span className="font-bold text-church-rose font-mono text-[11px] truncate max-w-[200px]">
+              <span className="font-bold text-[#2C4A60] font-mono text-[11px] truncate max-w-[200px]">
                 {registeredEmail}
               </span>
             </div>
@@ -246,10 +246,10 @@ export default function VerifyEmail() {
               </div>
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-church-charcoal font-semibold">
-                  <div className="w-4 h-4 rounded-full border-2 border-church-rose border-t-transparent animate-spin" />
+                  <div className="w-4 h-4 rounded-full border-2 border-[#2C4A60] border-t-transparent animate-spin" />
                   <span>2. Confirm Email Address</span>
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-rose-50 text-church-rose">
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]">
                   Awaiting Confirmation
                 </span>
               </div>
@@ -282,25 +282,22 @@ export default function VerifyEmail() {
 
           {/* Action Buttons */}
           <div className="mt-8 space-y-3">
-            <GradientButton
+            <button
               type="button"
               onClick={handleCheckStatus}
-              loading={checking}
-              size="lg"
-              className="w-full cursor-pointer shadow-church-glow"
+              disabled={checking}
+              className="w-full py-3.5 rounded-2xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <span className="flex items-center justify-center gap-2">
-                <RotateCw size={16} className={checking ? 'animate-spin' : ''} />
-                <span>I've Verified My Email — Continue</span>
-                <ArrowRight size={16} />
-              </span>
-            </GradientButton>
+              <RotateCw size={16} className={checking ? 'animate-spin' : ''} />
+              <span>I've Verified My Email — Continue</span>
+              <ArrowRight size={16} />
+            </button>
 
             <button
               type="button"
               onClick={handleResend}
               disabled={resending || cooldown > 0}
-              className="w-full py-2.5 rounded-full border border-gray-200 text-xs font-bold text-church-charcoal hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-3 rounded-2xl border border-slate-200 text-xs font-bold text-church-charcoal hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5"
             >
               <Mail size={14} />
               <span>

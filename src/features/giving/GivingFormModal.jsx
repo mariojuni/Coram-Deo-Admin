@@ -299,55 +299,55 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-church-soft overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-church-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-xl bg-church-green/10 flex items-center justify-center mr-3">
-              <DollarSign size={20} className="text-church-green" />
+            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 flex items-center justify-center mr-3 text-[#2C4A60]">
+              <DollarSign size={20} />
             </div>
             <h2 className="text-xl font-bold text-church-navy">{activeRecord ? 'Edit Contribution' : 'Add Contribution'}</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
+            <X size={20} />
           </button>
         </div>
         
         <div className="overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>}
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
             
             <div className="flex space-x-4 mb-4">
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer">
                 <input 
                   type="radio" 
                   name="giverEntityType" 
                   value="individual" 
                   checked={formData.giverEntityType === 'individual'} 
                   onChange={handleChange} 
-                  className="mr-2 text-church-green focus:ring-church-green"
+                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
                 />
                 <span className="text-sm font-medium text-church-navy">Individual</span>
               </label>
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer">
                 <input 
                   type="radio" 
                   name="giverEntityType" 
                   value="household" 
                   checked={formData.giverEntityType === 'household'} 
                   onChange={handleChange} 
-                  className="mr-2 text-church-green focus:ring-church-green"
+                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
                 />
                 <span className="text-sm font-medium text-church-navy">Household</span>
               </label>
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer">
                 <input 
                   type="radio" 
                   name="giverEntityType" 
                   value="anonymous" 
                   checked={formData.giverEntityType === 'anonymous'} 
                   onChange={handleChange} 
-                  className="mr-2 text-church-green focus:ring-church-green"
+                  className="mr-2 text-[#2C4A60] accent-[#2C4A60] focus:ring-[#2C4A60]"
                 />
                 <span className="text-sm font-medium text-church-navy">Loose Offering</span>
               </label>
@@ -421,7 +421,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
                     value={formData.amount}
                     onChange={handleChange}
                     placeholder="0.00"
-                    className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow font-medium text-church-navy" 
+                    className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-medium text-church-navy bg-white" 
                   />
                 </div>
               </div>
@@ -481,7 +481,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
                 value={formData.notes}
                 onChange={handleChange}
                 placeholder="Check number, specific designation, etc."
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-shadow resize-none" 
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white" 
               />
             </div>
 
@@ -497,7 +497,7 @@ export default function GivingFormModal({ isOpen, onClose, record = null, editin
               <button 
                 type="submit" 
                 disabled={loading}
-                className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-medium hover:bg-church-green/90 transition-colors disabled:opacity-50 shadow-sm"
+                className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
               >
                 {loading ? 'Saving...' : 'Save Record'}
               </button>

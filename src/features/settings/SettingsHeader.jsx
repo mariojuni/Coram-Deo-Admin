@@ -23,7 +23,7 @@ export default function SettingsHeader({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-church-rose">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2C4A60]">
               Administration
             </span>
             <span className="text-gray-300">•</span>
@@ -71,7 +71,7 @@ export default function SettingsHeader({
             <span>Users & Access Control</span>
             {usersCount !== null && usersCount !== undefined && (
               <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                activeTab === 'roles' ? 'bg-white text-church-rose' : 'bg-gray-100 text-church-slate'
+                activeTab === 'roles' ? 'bg-white text-[#2C4A60]' : 'bg-gray-100 text-church-slate'
               }`}>
                 {usersCount}
               </span>

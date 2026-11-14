@@ -25,7 +25,7 @@ export default function UpgradeModal({ isOpen, onClose, title, message, targetTi
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden relative">
         {/* Top Header */}
-        <div className="bg-gradient-to-r from-church-rose/10 via-purple-50 to-church-canvas p-6 border-b border-gray-100 relative">
+        <div className="bg-gradient-to-r from-[#EBF2F7] via-slate-50 to-white p-6 border-b border-gray-100 relative">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 p-2 rounded-full hover:bg-white/80 text-church-slate hover:text-church-charcoal transition-all"
@@ -34,7 +34,7 @@ export default function UpgradeModal({ isOpen, onClose, title, message, targetTi
             <X size={18} />
           </button>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-church-rose/15 text-church-rose text-xs font-black uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC] text-xs font-black uppercase tracking-wider mb-2">
             <Zap size={13} />
             <span>Plan Limit Reached</span>
           </div>
@@ -48,12 +48,12 @@ export default function UpgradeModal({ isOpen, onClose, title, message, targetTi
 
         {/* Modal Body: Target Plan Preview */}
         <div className="p-6 space-y-5">
-          <div className="p-5 rounded-2xl bg-church-canvas border-2 border-church-rose/30 relative">
+          <div className="p-5 rounded-2xl bg-[#F8FAFC]/80 border-2 border-[#2C4A60]/30 relative">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-black uppercase tracking-wider text-church-rose">
+              <span className="text-xs font-black uppercase tracking-wider text-[#2C4A60]">
                 Recommended Upgrade
               </span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-church-rose text-white">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#162533] text-white">
                 Most Popular
               </span>
             </div>
@@ -96,13 +96,14 @@ export default function UpgradeModal({ isOpen, onClose, title, message, targetTi
           >
             Stay on {sub.tierConfig.name}
           </button>
-          <GradientButton
+          <button
+            type="button"
             onClick={handleGoToBilling}
-            icon={ArrowRight}
-            size="md"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold shadow-sm transition-all"
           >
-            Go to Billing & Upgrade
-          </GradientButton>
+            <span>Go to Billing & Upgrade</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
       </div>
     </div>

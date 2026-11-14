@@ -164,18 +164,18 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-church-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-xl font-bold text-church-navy">{account ? 'Edit Donation Account' : 'Add Donation Account'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
+            <X size={20} />
           </button>
         </div>
         
         <div className="overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">{error}</div>}
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">{error}</div>}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -187,7 +187,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   value={formData.displayName}
                   onChange={handleChange}
                   placeholder="e.g. Main Church Bank"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
                 />
               </div>
               <div>
@@ -199,7 +199,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   value={formData.bankName}
                   onChange={handleChange}
                   placeholder="e.g. Producers Savings Bank"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
                 />
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   value={formData.accountName}
                   onChange={handleChange}
                   placeholder="e.g. Church of the Nazarene"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
                 />
               </div>
               <div>
@@ -226,7 +226,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   value={formData.accountNumber}
                   onChange={handleChange}
                   placeholder="e.g. 1234567890"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all font-mono" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-mono" 
                 />
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   value={formData.branchName}
                   onChange={handleChange}
                   placeholder="e.g. Main Branch"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
                 />
               </div>
               <div>
@@ -250,7 +250,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   name="displayOrder"
                   value={formData.displayOrder}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
                 />
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                 value={formData.instructions}
                 onChange={handleChange}
                 placeholder="Any specific instructions for members transferring to this account..."
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-green focus:border-transparent transition-all resize-none" 
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none" 
               />
             </div>
 
@@ -272,7 +272,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
               <label className="flex items-center cursor-pointer">
                 <div className="relative">
                   <input type="checkbox" name="isActive" className="sr-only" checked={formData.isActive} onChange={handleChange} />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isActive ? 'bg-church-green' : 'bg-gray-300'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isActive ? 'bg-[#2C4A60]' : 'bg-gray-300'}`}></div>
                   <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isActive ? 'transform translate-x-4' : ''}`}></div>
                 </div>
                 <div className="ml-3 text-sm font-bold text-church-navy">
@@ -284,7 +284,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
               <label className="flex items-center cursor-pointer">
                 <div className="relative">
                   <input type="checkbox" name="isPrimary" className="sr-only" checked={formData.isPrimary} onChange={handleChange} />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isPrimary ? 'bg-church-green' : 'bg-gray-300'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isPrimary ? 'bg-[#2C4A60]' : 'bg-gray-300'}`}></div>
                   <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isPrimary ? 'transform translate-x-4' : ''}`}></div>
                 </div>
                 <div className="ml-3 text-sm font-bold text-church-navy">
@@ -299,14 +299,14 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
               <label className="block text-sm font-bold text-church-navy mb-1.5">Official Receiving QR (Optional)</label>
               
               {!qrPreview ? (
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-2xl hover:bg-gray-50 hover:border-church-green/50 transition-colors cursor-pointer group relative">
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-2xl hover:bg-gray-50 hover:border-[#2C4A60]/50 transition-colors cursor-pointer group relative">
                   <input id="qr-upload" name="qr-upload" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileChange} accept="image/*" />
                   <div className="space-y-1 text-center">
                     <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                      <Upload className="h-6 w-6 text-church-green" />
+                      <Upload className="h-6 w-6 text-[#2C4A60]" />
                     </div>
                     <div className="flex text-sm text-gray-600 justify-center">
-                      <span className="font-bold text-church-green">Click to upload</span>
+                      <span className="font-bold text-[#2C4A60]">Click to upload</span>
                       <span className="pl-1">or drag and drop</span>
                     </div>
                     <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
@@ -329,7 +329,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
               
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
-                  <div className="bg-church-green h-full rounded-full transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
+                  <div className="bg-[#2C4A60] h-full rounded-full transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
                     <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
               <button 
                 type="submit" 
                 disabled={loading}
-                className="px-8 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 transition-all shadow-sm hover:shadow disabled:opacity-50 flex items-center"
+                className="px-8 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all shadow-sm hover:shadow disabled:opacity-50 flex items-center"
               >
                 {loading ? (
                   <>

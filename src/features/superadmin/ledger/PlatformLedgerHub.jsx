@@ -393,7 +393,7 @@ export default function PlatformLedgerHub() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-church-rose bg-pink-100 px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2C4A60] bg-[#EBF2F7] px-2.5 py-0.5 rounded-full border border-[#D5E3EC]">
               Super Admin Financial Center
             </span>
             <span className="text-xs text-church-slate font-medium">• Multi-Tenant Ledger</span>
@@ -566,7 +566,7 @@ export default function PlatformLedgerHub() {
           onClick={() => setActiveTab('pending')}
           className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-2 ${
             activeTab === 'pending'
-              ? 'border-church-rose text-church-rose font-black'
+              ? 'border-[#2C4A60] text-[#2C4A60] font-black'
               : 'border-transparent text-church-slate hover:text-church-navy'
           }`}
         >
@@ -583,7 +583,7 @@ export default function PlatformLedgerHub() {
           onClick={() => setActiveTab('ledger')}
           className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-2 ${
             activeTab === 'ledger'
-              ? 'border-church-rose text-church-rose font-black'
+              ? 'border-[#2C4A60] text-[#2C4A60] font-black'
               : 'border-transparent text-church-slate hover:text-church-navy'
           }`}
         >
@@ -598,7 +598,7 @@ export default function PlatformLedgerHub() {
           onClick={() => setActiveTab('banks')}
           className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-2 ${
             activeTab === 'banks'
-              ? 'border-church-rose text-church-rose font-black'
+              ? 'border-[#2C4A60] text-[#2C4A60] font-black'
               : 'border-transparent text-church-slate hover:text-church-navy'
           }`}
         >
@@ -649,7 +649,7 @@ export default function PlatformLedgerHub() {
                         <button
                           type="button"
                           onClick={() => handleOpenChurchSubscriptionModal(sub.churchId)}
-                          className="text-left font-bold text-church-navy hover:text-church-rose hover:underline text-xs block"
+                          className="text-left font-bold text-church-navy hover:text-[#2C4A60] hover:underline text-xs block"
                           title="Open SuperAdmin Mission Control for this church"
                         >
                           {sub.churchName}
@@ -728,7 +728,7 @@ export default function PlatformLedgerHub() {
                   placeholder="Search church, ledger #, ref..."
                   value={ledgerSearch}
                   onChange={(e) => setLedgerSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-church-rose"
+                  className="pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#2C4A60]"
                 />
               </div>
 
@@ -783,7 +783,7 @@ export default function PlatformLedgerHub() {
                         <button
                           type="button"
                           onClick={() => handleOpenChurchSubscriptionModal(entry.churchId)}
-                          className="text-left font-bold text-church-navy hover:text-church-rose hover:underline text-xs block"
+                          className="text-left font-bold text-church-navy hover:text-[#2C4A60] hover:underline text-xs block"
                           title="Open SuperAdmin Mission Control for this church"
                         >
                           {entry.churchName}
@@ -842,7 +842,7 @@ export default function PlatformLedgerHub() {
                             <button
                               type="button"
                               onClick={() => window.open(entry.receiptUrl, '_blank')}
-                              className="inline-flex items-center gap-1 text-church-rose hover:text-church-ruby font-bold text-xs"
+                              className="inline-flex items-center gap-1 text-[#2C4A60] hover:text-[#1D3547] font-bold text-xs"
                             >
                               <Eye size={12} />
                               <span>Proof</span>
@@ -900,7 +900,7 @@ export default function PlatformLedgerHub() {
                     setActionFeedback({ text: 'Default Philippine accounts seeded successfully.', type: 'success' });
                     setTimeout(() => setActionFeedback({ text: '', type: '' }), 4000);
                   }}
-                  className="mt-4 px-4 py-2 rounded-xl bg-church-rose text-white text-xs font-bold hover:bg-rose-600 transition-colors"
+                  className="mt-4 px-4 py-2 rounded-xl bg-[#162533] text-white text-xs font-bold hover:bg-[#1E2E3D] transition-colors shadow-sm"
                 >
                   Seed Default Philippine Accounts
                 </button>
@@ -1006,7 +1006,7 @@ export default function PlatformLedgerHub() {
                         });
                         setIsBankModalOpen(true);
                       }}
-                      className="text-xs font-bold text-church-navy hover:text-church-rose bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors"
+                      className="text-xs font-bold text-church-navy hover:text-[#2C4A60] bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors"
                     >
                       Edit
                     </button>
@@ -1025,7 +1025,7 @@ export default function PlatformLedgerHub() {
             {/* Modal Header */}
             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-church-canvas">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-church-rose/10 text-church-rose flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-[#EBF2F7] text-[#2C4A60] flex items-center justify-center font-bold">
                   <Eye size={18} />
                 </div>
                 <div>
@@ -1068,7 +1068,7 @@ export default function PlatformLedgerHub() {
                       href={inspectingSub.receiptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-church-rose hover:underline flex items-center gap-1 font-bold text-[11px]"
+                      className="text-[#2C4A60] hover:underline flex items-center gap-1 font-bold text-[11px]"
                     >
                       <span>Open Full Size</span>
                       <ExternalLink size={12} />
@@ -1103,7 +1103,7 @@ export default function PlatformLedgerHub() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-church-slate">Declared Amount:</span>
-                      <strong className="text-church-rose font-black text-sm">₱{Number(inspectingSub.amount).toLocaleString()}</strong>
+                      <strong className="text-[#2C4A60] font-black text-sm">₱{Number(inspectingSub.amount).toLocaleString()}</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-church-slate">Receiving Account:</span>
@@ -1331,7 +1331,7 @@ export default function PlatformLedgerHub() {
                   placeholder="e.g. Banco de Oro (BDO) or GCash"
                   value={bankForm.bankName}
                   onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60]"
                 />
               </div>
 
@@ -1343,7 +1343,7 @@ export default function PlatformLedgerHub() {
                   placeholder="e.g. Coram Deo Technologies Corp."
                   value={bankForm.accountName}
                   onChange={(e) => setBankForm({ ...bankForm, accountName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60]"
                 />
               </div>
 
@@ -1355,7 +1355,7 @@ export default function PlatformLedgerHub() {
                   placeholder="e.g. 0012-3456-7890 or 0917-xxx-xxxx"
                   value={bankForm.accountNumber}
                   onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-church-rose font-mono font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#2C4A60] font-mono font-bold"
                 />
               </div>
 
@@ -1402,7 +1402,7 @@ export default function PlatformLedgerHub() {
                   <button
                     type="button"
                     onClick={() => setShowManualQrUrl(!showManualQrUrl)}
-                    className="text-[10px] text-church-rose font-bold hover:underline"
+                    className="text-[10px] text-[#2C4A60] font-bold hover:underline"
                   >
                     {showManualQrUrl ? 'Hide URL input' : 'or enter URL directly'}
                   </button>
@@ -1523,7 +1523,7 @@ export default function PlatformLedgerHub() {
                   id="isActiveToggle"
                   checked={bankForm.isActive}
                   onChange={(e) => setBankForm({ ...bankForm, isActive: e.target.checked })}
-                  className="rounded text-church-rose"
+                  className="rounded text-[#2C4A60] focus:ring-[#2C4A60]"
                 />
                 <label htmlFor="isActiveToggle" className="font-bold text-church-navy cursor-pointer">
                   Account is active and available for payments

@@ -115,11 +115,11 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-church-navy/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="glass-light-card rounded-3xl max-w-xl w-full p-6 shadow-2xl relative border border-white/95 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-church-green/10 text-church-green flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 text-[#2C4A60] flex items-center justify-center">
               <UploadCloud size={20} />
             </div>
             <div>
@@ -127,7 +127,7 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
               <p className="text-xs text-gray-500">{group ? group.name : 'Church General Materials'}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
@@ -208,11 +208,11 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
               Select Document / File *
             </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-xl hover:border-church-green transition-colors">
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-2xl hover:border-[#2C4A60] transition-colors">
               <div className="space-y-1 text-center">
                 <FileText className="mx-auto h-8 w-8 text-gray-400" />
-                <div className="flex text-xs text-gray-600">
-                  <label className="relative cursor-pointer bg-white rounded-md font-bold text-church-green hover:text-church-green/80">
+                <div className="flex text-xs text-gray-600 justify-center">
+                  <label className="relative cursor-pointer bg-white rounded-md font-bold text-[#2C4A60] hover:text-[#1D3547]">
                     <span>Choose a file</span>
                     <input type="file" onChange={handleFileChange} className="sr-only" />
                   </label>
@@ -222,7 +222,7 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
                   PDF, DOCX, PNG, JPG up to 25MB
                 </p>
                 {file && (
-                  <p className="text-xs font-bold text-church-navy bg-church-green/10 py-1 px-3 rounded-full mt-2 inline-block">
+                  <p className="text-xs font-bold text-church-navy bg-[#2C4A60]/10 py-1 px-3 rounded-full mt-2 inline-block">
                     Selected: {file.name}
                   </p>
                 )}
@@ -231,13 +231,13 @@ export default function GroupMaterialUploadModal({ isOpen, onClose, group = null
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-gray-600">
+            <button type="button" onClick={onClose} className="px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading}
-              className="px-5 py-2 bg-church-green text-white text-xs font-bold rounded-xl shadow-lg shadow-church-green/20 hover:bg-church-green/90"
+              className="px-6 py-2.5 bg-[#162533] text-white text-xs font-bold rounded-full shadow-sm hover:bg-[#1E2E3D] transition-all"
             >
               {uploading ? 'Uploading...' : 'Upload Material'}
             </button>

@@ -217,7 +217,7 @@ export default function ChurchesDashboard() {
             to="/super-admin/ledger"
             className="flex items-center px-4 py-2.5 bg-white border border-gray-200 text-church-navy rounded-full shadow-sm text-xs font-bold hover:bg-gray-50 transition-colors"
           >
-            <CreditCard size={15} className="mr-1.5 text-church-rose" />
+            <CreditCard size={15} className="mr-1.5 text-[#2C4A60]" />
             <span>Billing & Financial Ledger</span>
           </Link>
           <button 

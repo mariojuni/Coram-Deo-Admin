@@ -40,12 +40,12 @@ export default function HouseholdsList() {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
+    <div className="glass-light-card rounded-3xl border border-white/95 shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white/50">
         <h2 className="font-bold text-church-navy">Households</h2>
         <button 
           onClick={handleAddClick}
-          className="flex items-center px-4 py-2 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90"
+          className="flex items-center px-4 py-2 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] shadow-sm transition-all"
         >
           <Plus size={16} className="mr-2" /> Add Household
         </button>

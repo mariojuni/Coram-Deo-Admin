@@ -207,11 +207,11 @@ export default function DiscipleshipGroupDetailPage() {
       </div>
 
       {/* Hero Card */}
-      <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+      <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-church-green/10 text-church-green rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-[#2C4A60]/10 text-[#2C4A60] rounded-full">
                 {(group.groupType || 'small_group').replace('_', ' ')}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -228,7 +228,7 @@ export default function DiscipleshipGroupDetailPage() {
             {canManage && (
               <button
                 onClick={() => setIsAssignModalOpen(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-church-navy text-white text-xs font-bold rounded-xl hover:bg-church-navy/90"
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-church-navy text-xs font-bold rounded-xl transition-all"
               >
                 <Users size={14} />
                 <span>Manage Members</span>
@@ -237,7 +237,7 @@ export default function DiscipleshipGroupDetailPage() {
             {canUpload && (
               <button
                 onClick={() => setIsUploadModalOpen(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-church-green text-white text-xs font-bold rounded-xl hover:bg-church-green/90 shadow-md shadow-church-green/20"
+                className="flex items-center space-x-2 px-4 py-2 bg-[#162533] text-white text-xs font-bold rounded-xl hover:bg-[#1E2E3D] shadow-sm transition-all"
               >
                 <FileText size={14} />
                 <span>Upload Material</span>
@@ -281,7 +281,7 @@ export default function DiscipleshipGroupDetailPage() {
             onClick={() => setActiveTab(t.id)}
             className={`py-3 px-1 text-xs font-bold border-b-2 transition-colors ${
               activeTab === t.id
-                ? 'border-church-green text-church-green'
+                ? 'border-[#2C4A60] text-[#2C4A60]'
                 : 'border-transparent text-gray-400 hover:text-church-navy'
             }`}
           >
@@ -297,10 +297,10 @@ export default function DiscipleshipGroupDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             {/* Attached Discipleship Plan Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+            <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-church-navy flex items-center space-x-2">
-                  <BookOpen size={18} className="text-church-green" />
+                  <BookOpen size={18} className="text-[#2C4A60]" />
                   <span>Current Discipleship Plan</span>
                 </h3>
                 {canManage && (
@@ -325,7 +325,7 @@ export default function DiscipleshipGroupDetailPage() {
                     ) : (
                       <button
                         onClick={() => setIsAttachPlanOpen(true)}
-                        className="px-3 py-1.5 bg-church-green text-white text-xs font-bold rounded-lg flex items-center space-x-1 shadow-md shadow-church-green/20"
+                        className="px-3 py-1.5 bg-[#162533] text-white text-xs font-bold rounded-lg flex items-center space-x-1 hover:bg-[#1E2E3D] shadow-sm transition-all"
                       >
                         <Plus size={12} />
                         <span>Attach Plan</span>
@@ -339,7 +339,7 @@ export default function DiscipleshipGroupDetailPage() {
                 <div className="space-y-4">
                   <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-church-green">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#2C4A60]">
                         Week {group.currentWeekNumber || 1} of {plan.totalWeeks || 0}
                       </span>
                       <h4 className="text-base font-bold text-church-navy mt-0.5">{plan.title}</h4>
@@ -369,10 +369,10 @@ export default function DiscipleshipGroupDetailPage() {
                       <button
                         onClick={handleAdvanceWeek}
                         disabled={(group.currentWeekNumber || 1) >= (plan.totalWeeks || planWeeks.length)}
-                        className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center space-x-1.5 ${
+                        className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all ${
                           (group.currentWeekNumber || 1) >= (plan.totalWeeks || planWeeks.length)
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-church-navy text-white hover:bg-church-navy/90'
+                            : 'bg-[#162533] text-white hover:bg-[#1E2E3D] shadow-sm'
                         }`}
                       >
                         <span>Advance to Next Week</span>
@@ -389,13 +389,13 @@ export default function DiscipleshipGroupDetailPage() {
             </div>
 
             {/* Upcoming Meeting Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+            <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm">
               <h3 className="text-sm font-bold text-church-navy mb-4 flex items-center justify-between">
                 <span>Next Upcoming Meeting</span>
                 {canManage && (
                   <button
                     onClick={() => setIsGenerateModalOpen(true)}
-                    className="text-xs font-bold text-church-green hover:underline flex items-center space-x-1"
+                    className="text-xs font-bold text-[#2C4A60] hover:underline flex items-center space-x-1"
                   >
                     <Plus size={12} />
                     <span>Generate Meetings</span>
@@ -407,7 +407,7 @@ export default function DiscipleshipGroupDetailPage() {
                   No upcoming meetings generated yet.
                 </div>
               ) : (
-                <div className="p-4 bg-church-green/5 border border-church-green/20 rounded-xl flex items-center justify-between">
+                <div className="p-4 bg-[#2C4A60]/5 border border-[#2C4A60]/20 rounded-xl flex items-center justify-between">
                   <div>
                     <h4 className="text-sm font-bold text-church-navy">{upcomingEvents[0].title}</h4>
                     <p className="text-xs text-gray-500 mt-1">
@@ -416,7 +416,7 @@ export default function DiscipleshipGroupDetailPage() {
                   </div>
                   <button
                     onClick={() => navigate(`/admin/events/${upcomingEvents[0].id}`)}
-                    className="px-3 py-1.5 bg-church-green text-white text-xs font-bold rounded-lg"
+                    className="px-3 py-1.5 bg-[#162533] text-white text-xs font-bold rounded-lg hover:bg-[#1E2E3D] transition-all"
                   >
                     View Event
                   </button>
@@ -425,16 +425,16 @@ export default function DiscipleshipGroupDetailPage() {
             </div>
 
             {/* Leader Materials Highlight */}
-            <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+            <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-church-navy flex items-center space-x-2">
-                  <Lock size={16} className="text-church-green" />
+                  <Lock size={16} className="text-[#2C4A60]" />
                   <span>Leader-Only Materials</span>
                 </h3>
                 {canUpload && (
                   <button
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="text-xs font-bold text-church-green hover:underline"
+                    className="text-xs font-bold text-[#2C4A60] hover:underline"
                   >
                     Upload Material
                   </button>
@@ -447,7 +447,7 @@ export default function DiscipleshipGroupDetailPage() {
                   {materials.slice(0, 3).map((m) => (
                     <div key={m.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs">
                       <div className="flex items-center space-x-3">
-                        <FileText size={16} className="text-church-green" />
+                        <FileText size={16} className="text-[#2C4A60]" />
                         <div>
                           <p className="font-bold text-church-navy">{m.title}</p>
                           <p className="text-[10px] text-gray-400">{m.materialType} | Audience: {m.audience}</p>
@@ -473,7 +473,7 @@ export default function DiscipleshipGroupDetailPage() {
 
           {/* Sidebar Info */}
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100">
+            <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm">
               <h3 className="text-sm font-bold text-church-navy mb-3">Group Roster Summary</h3>
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between items-center py-2 border-b border-gray-50">
@@ -486,7 +486,7 @@ export default function DiscipleshipGroupDetailPage() {
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-500">Total Roster</span>
-                  <span className="font-bold text-church-green">
+                  <span className="font-bold text-[#2C4A60]">
                     {(group.memberIds?.length || 0) + (group.leaderMemberIds?.length || 0)}
                   </span>
                 </div>
@@ -506,13 +506,13 @@ export default function DiscipleshipGroupDetailPage() {
 
       {/* MEMBERS TAB */}
       {activeTab === 'members' && (
-        <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100 space-y-6">
+        <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-church-navy">Assigned Group Leaders & Members</h3>
             {canManage && (
               <button
                 onClick={() => setIsAssignModalOpen(true)}
-                className="px-4 py-2 bg-church-green text-white text-xs font-bold rounded-xl"
+                className="px-4 py-2 bg-[#162533] text-white text-xs font-bold rounded-xl hover:bg-[#1E2E3D] shadow-sm transition-all"
               >
                 Assign / Remove Members
               </button>
@@ -521,7 +521,7 @@ export default function DiscipleshipGroupDetailPage() {
 
           <div>
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center space-x-1">
-              <Shield size={14} className="text-church-green" />
+              <Shield size={14} className="text-[#2C4A60]" />
               <span>Leaders ({group.leaderMemberIds?.length || 0})</span>
             </h4>
             {!group.leaderMemberIds || group.leaderMemberIds.length === 0 ? (
@@ -534,13 +534,13 @@ export default function DiscipleshipGroupDetailPage() {
                   const initial = formattedName.charAt(0).toUpperCase();
 
                   return (
-                    <div key={memId} className="p-3 bg-church-green/5 border border-church-green/20 rounded-xl flex items-center space-x-3 text-xs">
-                      <div className="w-8 h-8 rounded-full bg-church-green text-white font-bold flex items-center justify-center text-xs shrink-0">
+                    <div key={memId} className="p-3 bg-[#2C4A60]/5 border border-[#2C4A60]/20 rounded-xl flex items-center space-x-3 text-xs">
+                      <div className="w-8 h-8 rounded-full bg-[#162533] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
                         {initial}
                       </div>
                       <div className="truncate">
                         <p className="font-bold text-church-navy truncate">{formattedName}</p>
-                        <span className="text-[10px] text-church-green font-bold">Group Leader</span>
+                        <span className="text-[10px] text-[#2C4A60] font-bold">Group Leader</span>
                       </div>
                     </div>
                   );
@@ -583,13 +583,13 @@ export default function DiscipleshipGroupDetailPage() {
 
       {/* MEETINGS TAB */}
       {activeTab === 'meetings' && (
-        <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100 space-y-6">
+        <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-church-navy">Weekly Group Meetings</h3>
             {canManage && (
               <button
                 onClick={() => setIsGenerateModalOpen(true)}
-                className="px-4 py-2 bg-church-green text-white text-xs font-bold rounded-xl flex items-center space-x-1"
+                className="px-4 py-2 bg-[#162533] text-white text-xs font-bold rounded-xl flex items-center space-x-1 hover:bg-[#1E2E3D] shadow-sm transition-all"
               >
                 <Plus size={14} />
                 <span>Generate Weekly Meetings</span>
@@ -626,7 +626,7 @@ export default function DiscipleshipGroupDetailPage() {
 
       {/* MATERIALS TAB */}
       {activeTab === 'materials' && (
-        <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100 space-y-6">
+        <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-church-navy">Leader & Group Materials</h3>
@@ -635,7 +635,7 @@ export default function DiscipleshipGroupDetailPage() {
             {canUpload && (
               <button
                 onClick={() => setIsUploadModalOpen(true)}
-                className="px-4 py-2 bg-church-green text-white text-xs font-bold rounded-xl flex items-center space-x-1"
+                className="px-4 py-2 bg-[#162533] text-white text-xs font-bold rounded-xl flex items-center space-x-1 hover:bg-[#1E2E3D] shadow-sm transition-all"
               >
                 <Plus size={14} />
                 <span>Upload Material</span>
@@ -652,7 +652,7 @@ export default function DiscipleshipGroupDetailPage() {
               {materials.map((m) => (
                 <div key={m.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-xs">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-xl bg-church-green/10 text-church-green flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#2C4A60]/10 text-[#2C4A60] flex items-center justify-center">
                       <FileText size={20} />
                     </div>
                     <div>
@@ -699,7 +699,7 @@ export default function DiscipleshipGroupDetailPage() {
 
       {/* ATTENDANCE TAB */}
       {activeTab === 'attendance' && (
-        <div className="bg-white p-6 rounded-2xl shadow-church-soft border border-gray-100 space-y-6">
+        <div className="glass-light-card p-6 rounded-2xl border border-white/95 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-church-navy">Group Meeting Attendance Alignment</h3>
             <p className="text-xs text-gray-400">Reuses existing events and attendance records</p>
@@ -719,7 +719,7 @@ export default function DiscipleshipGroupDetailPage() {
                   </div>
                   <button
                     onClick={() => navigate(`/admin/attendance/${e.id}`)}
-                    className="px-3 py-1.5 bg-church-green text-white text-xs font-bold rounded-lg flex items-center space-x-1"
+                    className="px-3 py-1.5 bg-[#162533] text-white text-xs font-bold rounded-lg flex items-center space-x-1 hover:bg-[#1E2E3D] shadow-sm transition-all"
                   >
                     <BarChart2 size={14} />
                     <span>Take / View Attendance</span>

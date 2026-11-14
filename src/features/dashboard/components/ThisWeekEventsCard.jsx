@@ -3,28 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, MapPin, ChevronRight } from 'lucide-react';
 import SoftCard from '../../../components/ui/SoftCard';
 
+function formatEventDate(dateStr, startDateTime) {
+  const d = startDateTime ? new Date(startDateTime) : (dateStr ? new Date(dateStr + 'T00:00:00') : new Date());
+  return {
+    month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+    day: d.getDate(),
+    weekday: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+    time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+  };
+}
+
 export default function ThisWeekEventsCard({ events, loading }) {
   const navigate = useNavigate();
-
-  const formatDate = (dateStr, startDateTime) => {
-    const d = startDateTime ? new Date(startDateTime) : (dateStr ? new Date(dateStr + 'T00:00:00') : new Date());
-    return {
-      month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-      day: d.getDate(),
-      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-      time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-    };
-  };
 
   return (
     <SoftCard className="p-6 flex flex-col h-full">
       {/* ── Header matching Mobile App Screenshot 2 ── */}
       <div className="flex justify-between items-center mb-4">
         <div>
-          <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider block mb-0.5">
+          <span className="inline-flex items-center text-[10px] font-extrabold text-[#2C4A60] bg-[#EBF2F7] px-2.5 py-0.5 rounded-full border border-[#D5E3EC] uppercase tracking-wider mb-1">
             WHAT'S NEXT
           </span>
-          <h2 className="text-lg font-black text-church-charcoal tracking-tight">Upcoming Events</h2>
+          <h2 className="text-base md:text-lg font-black text-church-charcoal tracking-tight">Upcoming Events</h2>
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export default function ThisWeekEventsCard({ events, loading }) {
           </div>
         ) : (
           events.map((event) => {
-            const dateInfo = formatDate(event.date, event.startDateTime);
+            const dateInfo = formatEventDate(event.date, event.startDateTime);
             const timeDisplay = (event.startTime || event.time)
               ? (event.endTime ? `${(event.startTime || event.time)} – ${event.endTime}` : (event.startTime || event.time))
               : dateInfo.time;
@@ -52,38 +52,38 @@ export default function ThisWeekEventsCard({ events, loading }) {
               <div
                 key={event.id}
                 onClick={() => navigate(`/admin/events/${event.id}`)}
-                className="flex items-center p-3.5 border border-gray-100 rounded-2xl hover:border-gray-200 hover:shadow-xs transition-all duration-150 group cursor-pointer bg-white"
+                className="flex items-center p-3.5 border border-white/95 rounded-2xl hover:border-[#D5E3EC] hover:shadow-xs transition-all duration-150 group cursor-pointer bg-white/80 hover:bg-white"
               >
                 {/* Date Column matching Mobile App */}
                 <div className="flex flex-col items-center justify-center w-11 shrink-0 text-center">
-                  <span className="text-[10px] font-bold text-church-rose uppercase tracking-wider">{dateInfo.month}</span>
-                  <span className="text-xl font-black text-church-charcoal leading-none my-0.5">{dateInfo.day}</span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{dateInfo.weekday}</span>
+                  <span className="text-[10px] font-extrabold text-[#2C4A60] uppercase tracking-wider">{dateInfo.month}</span>
+                  <span className="text-xl font-black text-[#1E2E3D] leading-none my-0.5">{dateInfo.day}</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{dateInfo.weekday}</span>
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="h-10 w-[1px] bg-gray-100 mx-3 shrink-0" />
+                <div className="h-10 w-[1px] bg-slate-200/60 mx-3 shrink-0" />
 
                 <div className="flex-1 min-w-0 pr-2">
-                  <h4 className="text-sm font-black text-church-charcoal truncate tracking-tight group-hover:text-church-rose transition-colors">
+                  <h4 className="text-sm font-bold text-[#1E2E3D] truncate tracking-tight group-hover:text-[#2C4A60] transition-colors">
                     {event.title}
                   </h4>
                   
                   <div className="flex flex-wrap items-center gap-1.5 mt-1">
                     {/* Time Pill matching Mobile App */}
-                    <div className="inline-flex items-center px-2.5 py-0.5 bg-gray-50 border border-gray-100 text-gray-500 rounded-full text-[11px] font-medium">
-                      <Clock size={11} className="mr-1 text-gray-400 shrink-0" />
+                    <div className="inline-flex items-center px-2.5 py-0.5 bg-[#EBF2F7]/70 border border-[#D5E3EC]/70 text-[#2C4A60] rounded-full text-[11px] font-semibold">
+                      <Clock size={11} className="mr-1 text-[#4F748E] shrink-0" />
                       <span>{timeDisplay}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center text-[11px] text-gray-400 mt-1 font-medium truncate">
-                    <MapPin size={11} className="mr-1 text-gray-400 shrink-0" />
+                  <div className="flex items-center text-[11px] text-slate-400 mt-1 font-medium truncate">
+                    <MapPin size={11} className="mr-1 text-slate-400 shrink-0" />
                     <span className="truncate">{event.location || 'Church Sanctuary'}</span>
                   </div>
                 </div>
 
-                <div className="ml-2 shrink-0 text-gray-300 group-hover:text-church-rose group-hover:translate-x-0.5 transition-all">
+                <div className="ml-2 shrink-0 text-slate-300 group-hover:text-[#2C4A60] group-hover:translate-x-0.5 transition-all">
                   <ChevronRight size={16} />
                 </div>
               </div>
@@ -93,10 +93,10 @@ export default function ThisWeekEventsCard({ events, loading }) {
       </div>
 
       {/* Footer Link matching Mobile App */}
-      <div className="pt-3 border-t border-gray-100 text-center mt-2">
+      <div className="pt-3 border-t border-slate-100/80 text-center mt-2">
         <Link 
           to="/admin/events" 
-          className="text-xs font-bold text-church-rose hover:text-church-rose-hover hover:underline inline-flex items-center gap-1 transition-colors"
+          className="text-xs font-bold text-[#2C4A60] hover:text-[#1D3547] hover:underline inline-flex items-center gap-1 transition-colors"
         >
           <span>See all events</span>
           <span>&gt;</span>

@@ -12,6 +12,11 @@ import SoftCard from '../../components/ui/SoftCard';
 import GradientButton from '../../components/ui/GradientButton';
 import StatusPill from '../../components/ui/StatusPill';
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 export default function EventsList() {
   const { userProfile, activeChurchId } = useAuth();
   const CHURCH_ID = activeChurchId || userProfile?.churchId;
@@ -28,11 +33,6 @@ export default function EventsList() {
   const [filterMonth, setFilterMonth] = useState('all');
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
   const canManage = canManageEvents(userProfile);
-
-  const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
   
   // Action menu state
   const [activeMenuId, setActiveMenuId] = useState(null);
@@ -185,7 +185,7 @@ export default function EventsList() {
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <StatusPill variant="rose" dot className="mb-2">
+          <StatusPill variant="steel" dot className="mb-2">
             Church Gatherings & Services
           </StatusPill>
           <h1 className="text-3xl font-black text-church-charcoal tracking-tight">Events</h1>
@@ -214,7 +214,7 @@ export default function EventsList() {
                 </button>
                 <button 
                   onClick={toggleSelectionMode}
-                  className="flex items-center px-4 py-2 bg-white border border-gray-200 text-church-charcoal rounded-full text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm"
+                  className="flex items-center px-4 py-2 glass-light-pill text-church-charcoal rounded-full text-xs font-bold hover:bg-white transition-colors shadow-2xs"
                 >
                   Cancel
                 </button>
@@ -224,22 +224,22 @@ export default function EventsList() {
                 {events.length > 0 && (
                   <button 
                     onClick={toggleSelectionMode}
-                    className="flex items-center px-4 py-2 bg-white border border-gray-200 hover:border-gray-300 text-church-charcoal rounded-full text-xs font-bold shadow-sm transition-all hover:bg-gray-50"
+                    className="flex items-center px-4 py-2 glass-light-pill text-church-charcoal rounded-full text-xs font-bold hover:bg-white transition-all shadow-2xs"
                   >
                     Select
                   </button>
                 )}
                 <button 
                   onClick={() => setIsGeneratorOpen(true)}
-                  className="flex items-center px-4 py-2 bg-white border border-gray-200 hover:border-church-rose/40 hover:bg-pink-50/30 text-church-charcoal rounded-full text-xs font-bold shadow-sm transition-all hidden sm:flex"
+                  className="flex items-center px-4 py-2 glass-light-pill text-[#2C4A60] hover:bg-white rounded-full text-xs font-bold shadow-2xs transition-all hidden sm:flex"
                 >
-                  <CalendarIcon size={14} className="mr-1.5 text-church-rose" />
+                  <CalendarIcon size={14} className="mr-1.5 text-[#2C4A60]" />
                   Generate
                 </button>
                 <button 
                   onClick={handleAddClick}
                   title="Create New Event"
-                  className="w-10 h-10 rounded-2xl bg-white border border-pink-100 shadow-sm flex items-center justify-center text-church-rose hover:bg-pink-50 transition-colors"
+                  className="w-10 h-10 rounded-2xl glass-light-pill flex items-center justify-center text-[#2C4A60] hover:bg-white transition-colors shadow-2xs"
                 >
                   <CalendarPlus size={20} />
                 </button>
@@ -262,20 +262,20 @@ export default function EventsList() {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all shadow-sm ${
+            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
               activeTab === 'upcoming'
-                ? 'bg-church-rose text-white'
-                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+                ? 'bg-[#162533] text-white shadow-xs'
+                : 'glass-light-pill text-[#476072] hover:bg-white hover:text-[#1E2E3D]'
             }`}
           >
             Upcoming ({upcomingCount})
           </button>
           <button
             onClick={() => setActiveTab('completed')}
-            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all shadow-sm ${
+            className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
               activeTab === 'completed'
-                ? 'bg-church-rose text-white'
-                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+                ? 'bg-[#162533] text-white shadow-xs'
+                : 'glass-light-pill text-[#476072] hover:bg-white hover:text-[#1E2E3D]'
             }`}
           >
             Completed ({completedCount})
@@ -284,8 +284,8 @@ export default function EventsList() {
             onClick={() => setActiveTab('all')}
             className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
               activeTab === 'all'
-                ? 'bg-church-rose text-white shadow-sm'
-                : 'bg-white border border-gray-200 text-church-slate hover:bg-gray-50'
+                ? 'bg-[#162533] text-white shadow-xs'
+                : 'glass-light-pill text-[#476072] hover:bg-white hover:text-[#1E2E3D]'
             }`}
           >
             All ({events.length})
@@ -326,7 +326,7 @@ export default function EventsList() {
         </div>
       ) : filteredEvents.length === 0 ? (
         <SoftCard className="p-12 flex flex-col items-center justify-center flex-1 text-center">
-          <div className="w-16 h-16 bg-pink-50 text-church-rose rounded-3xl flex items-center justify-center mb-4 shadow-sm border border-pink-100">
+          <div className="w-16 h-16 bg-[#EBF2F7] text-[#2C4A60] rounded-3xl flex items-center justify-center mb-4 shadow-sm border border-[#D5E3EC]">
             <CalendarIcon size={28} />
           </div>
           <h3 className="text-xl font-black text-church-charcoal mb-1">No events found</h3>
@@ -356,15 +356,15 @@ export default function EventsList() {
               <div 
                 key={event.id} 
                 onClick={(e) => isSelectionMode ? toggleEventSelect(e, event.id) : navigate(`/admin/events/${event.id}`)}
-                className={`bg-white rounded-3xl p-5 border border-gray-100/90 shadow-church-soft hover:shadow-church-elevated hover:border-gray-200 transition-all flex items-center relative cursor-pointer group ${
-                  selectedEvents.includes(event.id) ? 'ring-2 ring-church-rose bg-pink-50/20' : ''
+                className={`glass-light-card rounded-2xl md:rounded-[24px] p-5 border border-white/95 shadow-2xs hover:shadow-md hover:border-[#D5E3EC] transition-all flex items-center relative cursor-pointer group bg-white/80 hover:bg-white ${
+                  selectedEvents.includes(event.id) ? 'ring-2 ring-[#2C4A60] bg-[#EBF2F7]/50' : ''
                 }`}
               >
                 {/* Selection Checkbox */}
                 {isSelectionMode && (
                   <div className="mr-3.5 shrink-0">
                     <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
-                      selectedEvents.includes(event.id) ? 'bg-church-rose border-church-rose text-white' : 'border-gray-300 bg-white'
+                      selectedEvents.includes(event.id) ? 'bg-[#2C4A60] border-[#2C4A60] text-white' : 'border-slate-300 bg-white'
                     }`}>
                       {selectedEvents.includes(event.id) && <CheckCircle2 size={14} className="text-white" />}
                     </div>
@@ -373,13 +373,13 @@ export default function EventsList() {
                 
                 {/* Mobile-aligned Date Column */}
                 <div className="flex flex-col items-center justify-center w-12 sm:w-14 shrink-0 text-center">
-                  <span className="text-[11px] font-bold text-church-rose uppercase tracking-wider">{monthStr}</span>
+                  <span className="text-[11px] font-extrabold text-[#2C4A60] uppercase tracking-wider">{monthStr}</span>
                   <span className="text-2xl font-black text-church-charcoal leading-none my-0.5">{dayStr}</span>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{dayOfWeekStr}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{dayOfWeekStr}</span>
                 </div>
 
                 {/* Clean Vertical Divider matching Mobile Screenshot */}
-                <div className="h-11 w-[1px] bg-gray-100 mx-3 sm:mx-4 shrink-0" />
+                <div className="h-11 w-[1px] bg-slate-200/60 mx-3 sm:mx-4 shrink-0" />
                 
                 {/* Content Column */}
                 <div className="flex-1 min-w-0 pr-2">
@@ -413,7 +413,7 @@ export default function EventsList() {
                       <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                         event.notificationSent
                           ? 'bg-emerald-50 text-emerald-600'
-                          : 'bg-rose-50 text-church-rose'
+                          : 'bg-[#EBF2F7] text-[#2C4A60]'
                       }`}>
                         <Bell size={9} className="mr-0.5" />
                         {event.notificationSent ? 'Sent' : `${event.reminderMinutesBefore !== undefined ? event.reminderMinutesBefore : 30}m`}
@@ -421,7 +421,7 @@ export default function EventsList() {
                     )}
                   </div>
 
-                  <h3 className={`text-base font-black text-church-charcoal tracking-tight truncate group-hover:text-church-rose transition-colors ${
+                  <h3 className={`text-base font-black text-church-charcoal tracking-tight truncate group-hover:text-[#2C4A60] transition-colors ${
                     isCancelled ? 'line-through text-gray-400' : ''
                   }`}>
                     {event.title}

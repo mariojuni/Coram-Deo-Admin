@@ -91,7 +91,7 @@ export default function ExpenseCategoriesList() {
         {canManageFinanceSettings(userProfile) && (
           <button 
             onClick={handleAddClick}
-            className="flex items-center px-5 py-2.5 bg-church-green text-white rounded-full shadow-md text-sm font-medium hover:bg-church-green/90 transition-opacity"
+            className="flex items-center px-5 py-2.5 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
           >
             <Plus size={18} className="mr-2" />
             Add Category
@@ -99,7 +99,7 @@ export default function ExpenseCategoriesList() {
         )}
       </div>
 
-      <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 flex-1 flex flex-col overflow-hidden">
+      <div className="glass-light-card rounded-3xl border border-white/95 shadow-sm flex-1 flex flex-col overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-white">
           <h2 className="text-lg font-bold text-church-navy">
             All Categories

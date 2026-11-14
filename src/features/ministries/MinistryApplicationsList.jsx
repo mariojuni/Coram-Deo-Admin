@@ -365,12 +365,12 @@ export default function MinistryApplicationsList() {
         <div
           className={`fixed top-5 right-5 z-50 px-6 py-3.5 rounded-2xl shadow-xl border flex items-center space-x-3 text-sm font-bold transition-all ${
             toastMessage.type === 'success'
-              ? 'bg-church-navy text-white border-church-green'
+              ? 'bg-[#162533] text-white border-emerald-500'
               : 'bg-red-600 text-white border-red-700'
           }`}
         >
           {toastMessage.type === 'success' ? (
-            <CheckCircle size={18} className="text-church-green" />
+            <CheckCircle size={18} className="text-emerald-400" />
           ) : (
             <AlertCircle size={18} className="text-white" />
           )}
@@ -389,7 +389,7 @@ export default function MinistryApplicationsList() {
               placeholder="Search applicant or ministry..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-church-green/20"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
             />
           </div>
 
@@ -555,7 +555,7 @@ export default function MinistryApplicationsList() {
                             <button
                               onClick={() => handleApprove(app)}
                               disabled={processing}
-                              className="px-3 py-1.5 bg-church-green/10 hover:bg-church-green/20 text-church-green rounded-full text-xs font-bold transition-colors inline-flex items-center"
+                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold transition-colors inline-flex items-center"
                             >
                               Approve
                             </button>

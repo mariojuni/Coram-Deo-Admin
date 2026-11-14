@@ -17,7 +17,7 @@ import {
   Coins,
   ShieldCheck
 } from 'lucide-react';
-import logo from '../../assets/logo.svg';
+import { CathedralLogo } from '../ui/icons';
 import GradientButton from '../ui/GradientButton';
 import StatusPill from '../ui/StatusPill';
 import { registerChurchAndAdmin } from '../../services/churchRegistrationService';
@@ -247,25 +247,25 @@ export default function Register() {
       <header className="border-b border-gray-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-coram rounded-2xl flex items-center justify-center shadow-church-glow p-2 group-hover:scale-105 transition-transform duration-200">
-              <img src={logo} alt="Coram Deo" className="w-full h-full object-contain filter brightness-0 invert" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/30 flex items-center justify-center shadow-church-soft p-0.5 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+              <CathedralLogo size={36} />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black text-church-charcoal tracking-tight">CoramDeo</span>
-                <span className="text-[10px] font-bold text-church-rose bg-church-rose-light px-2 py-0.5 rounded-full border border-pink-100">
+                <span className="text-xl font-black text-[#1E2E3D] tracking-tight">CoramDeo</span>
+                <span className="text-[10px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2.5 py-0.5 rounded-full border border-[#D5E3EC]">
                   Church Platform
                 </span>
               </div>
-              <span className="text-[10px] font-medium text-church-slate -mt-0.5">Faithful Stewardship & Ministry</span>
+              <span className="text-[10px] font-medium text-[#7E97A8] -mt-0.5">Faithful Stewardship & Ministry</span>
             </div>
           </Link>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-xs font-semibold text-church-slate">Already an admin?</span>
+            <span className="hidden sm:inline text-xs font-semibold text-[#5A7385]">Already an admin?</span>
             <Link 
               to="/login"
-              className="text-xs font-bold text-church-charcoal hover:text-church-rose px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-church-rose/40 bg-white transition-all shadow-church-soft"
+              className="text-xs font-bold text-[#1E2E3D] hover:text-[#2C4A60] px-3.5 py-1.5 rounded-full border border-gray-200 hover:border-slate-300 bg-white transition-all shadow-church-soft"
             >
               Sign In
             </Link>
@@ -310,7 +310,7 @@ export default function Register() {
                       ${isPassed 
                         ? 'bg-church-emerald text-white shadow-church-soft ring-4 ring-white' 
                         : isCurrent 
-                          ? 'bg-gradient-coram text-white shadow-church-glow scale-110 ring-4 ring-pink-50' 
+                          ? 'bg-gradient-coram text-white shadow-church-glow scale-110 ring-4 ring-[#EBF2F7]' 
                           : 'bg-white text-church-slate border-2 border-gray-200'}
                     `}
                   >
@@ -388,7 +388,7 @@ export default function Register() {
                       value={churchName}
                       onChange={(e) => setChurchName(e.target.value)}
                       placeholder="e.g. Church of the Nazarene"
-                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                     />
                   </div>
                 </div>
@@ -406,7 +406,7 @@ export default function Register() {
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="e.g. Manila"
-                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                       />
                     </div>
                   </div>
@@ -420,7 +420,7 @@ export default function Register() {
                       value={denomination}
                       onChange={(e) => setDenomination(e.target.value)}
                       placeholder="e.g. Evangelical, Baptist, Nazarene"
-                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                     />
                   </div>
                 </div>
@@ -434,7 +434,7 @@ export default function Register() {
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all appearance-none cursor-pointer"
+                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all appearance-none cursor-pointer"
                     >
                       {CURRENCIES.map(c => (
                         <option key={c.code} value={c.code}>
@@ -467,7 +467,7 @@ export default function Register() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="e.g. David"
-                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                       />
                     </div>
                   </div>
@@ -481,7 +481,7 @@ export default function Register() {
                       value={middleName}
                       onChange={(e) => setMiddleName(e.target.value)}
                       placeholder="e.g. Santos (Optional)"
-                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                     />
                   </div>
 
@@ -495,7 +495,7 @@ export default function Register() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="e.g. Reyes"
-                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                      className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                     />
                   </div>
                 </div>
@@ -508,7 +508,7 @@ export default function Register() {
                   <select
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all cursor-pointer"
+                    className="w-full px-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all cursor-pointer"
                   >
                     {LEADERSHIP_TITLES.map(t => (
                       <option key={t.value} value={t.value}>
@@ -533,7 +533,7 @@ export default function Register() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. pastor@nazarene.ph"
-                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                     />
                   </div>
                   <span className="text-xs text-church-slate mt-1 block">
@@ -554,7 +554,7 @@ export default function Register() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="At least 6 characters"
-                        className="w-full pl-11 pr-11 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                        className="w-full pl-11 pr-11 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                       />
                       <button
                         type="button"
@@ -579,7 +579,7 @@ export default function Register() {
                         value={passwordConfirm}
                         onChange={(e) => setPasswordConfirm(e.target.value)}
                         placeholder="Re-enter password"
-                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-church-rose/40 focus:border-church-rose transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-church-canvas border border-gray-200 rounded-2xl text-sm font-semibold text-church-charcoal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4F748E]/25 focus:border-[#2C4A60] transition-all"
                       />
                     </div>
                   </div>
@@ -609,7 +609,7 @@ export default function Register() {
                     </div>
                     <div className="self-start sm:self-auto flex items-center gap-2">
                       <StatusPill variant="default" size="sm">{title}</StatusPill>
-                      <StatusPill variant="rose" size="sm">Church Admin</StatusPill>
+                      <StatusPill variant="glass" size="sm">Church Admin</StatusPill>
                     </div>
                   </div>
 
@@ -666,7 +666,7 @@ export default function Register() {
                         to="/privacy-policy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-church-rose hover:underline font-bold"
+                        className="text-[#2C4A60] hover:underline font-bold"
                       >
                         Privacy Policy
                       </Link>{' '}

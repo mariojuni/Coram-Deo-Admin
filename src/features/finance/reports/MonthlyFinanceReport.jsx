@@ -51,7 +51,7 @@ export default function MonthlyFinanceReport({ data }) {
               <td className="py-4 px-4 font-medium text-gray-500 text-right">
                 {row.transactionCount}
               </td>
-              <td className="py-4 px-4 font-medium text-church-green text-right">
+              <td className="py-4 px-4 font-medium text-emerald-600 text-right">
                 {formatCurrency(row.giving)}
               </td>
               <td className="py-4 px-4 font-medium text-rose-500 text-right">
@@ -67,7 +67,7 @@ export default function MonthlyFinanceReport({ data }) {
           <tr className="border-t-2 border-gray-100 bg-gray-50/50">
             <td className="py-4 px-4 font-extrabold text-church-navy">Total</td>
             <td className="py-4 px-4 font-extrabold text-gray-500 text-right">{totalTransactions}</td>
-            <td className="py-4 px-4 font-extrabold text-church-green text-right">{formatCurrency(totalGiving)}</td>
+            <td className="py-4 px-4 font-extrabold text-emerald-600 text-right">{formatCurrency(totalGiving)}</td>
             <td className="py-4 px-4 font-extrabold text-rose-500 text-right">{formatCurrency(totalExpenses)}</td>
             <td className={`py-4 px-4 font-extrabold text-right ${totalNet >= 0 ? 'text-church-navy' : 'text-amber-500'}`}>
               {formatCurrency(totalNet)}

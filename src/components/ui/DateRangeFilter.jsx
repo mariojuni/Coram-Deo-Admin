@@ -91,7 +91,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
       </div>
       
       {filterType === 'custom' && (
-        <div className="flex items-center space-x-2 bg-gray-50/80 p-1 rounded-2xl border border-gray-200">
+        <div className="flex items-center space-x-2 bg-slate-50/80 p-1 rounded-2xl border border-slate-200">
           <div className="w-36">
             <ModernDatePicker
               value={customStart}
@@ -99,7 +99,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
               placeholder="Start Date"
             />
           </div>
-          <span className="text-gray-400 font-bold">-</span>
+          <span className="text-slate-400 font-bold">-</span>
           <div className="w-36">
             <ModernDatePicker
               value={customEnd}
@@ -110,7 +110,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
           <button
             onClick={handleApplyCustom}
             disabled={!customStart || !customEnd}
-            className="px-3.5 py-1.5 bg-church-charcoal text-white text-xs font-bold rounded-xl hover:bg-black disabled:opacity-50 transition-colors shadow-sm"
+            className="px-3.5 py-1.5 bg-brand-primary text-white text-xs font-bold rounded-xl hover:bg-brand-primary/90 disabled:opacity-50 transition-colors shadow-sm"
           >
             Apply
           </button>
@@ -120,7 +120,7 @@ export default function DateRangeFilter({ onChange, defaultFilter = 'thisMonth' 
       {filterType !== defaultFilter && (
         <button
           onClick={handleClear}
-          className="text-xs font-bold text-church-slate hover:text-church-rose transition-colors underline"
+          className="text-xs font-bold text-slate-500 hover:text-brand-primary transition-colors underline"
         >
           Clear Filter
         </button>

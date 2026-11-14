@@ -107,7 +107,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
             </div>
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white transition-all"
               placeholder="Search members..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -130,7 +130,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
                       className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                     >
                       <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-church-green/10 flex items-center justify-center text-church-green font-bold text-xs uppercase shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[#2C4A60]/10 flex items-center justify-center text-[#2C4A60] font-bold text-xs uppercase shrink-0">
                           {member.name?.charAt(0) || 'U'}
                         </div>
                         <div className="ml-3">
@@ -139,7 +139,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
                         </div>
                       </div>
                       <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${
-                        isSelected ? 'bg-church-green border-church-green' : 'border-gray-300 bg-white'
+                        isSelected ? 'bg-[#2C4A60] border-[#2C4A60]' : 'border-gray-300 bg-white'
                       }`}>
                         {isSelected && <Check size={14} className="text-white" />}
                       </div>
@@ -166,7 +166,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
               <button 
                 onClick={handleSubmit}
                 disabled={saving}
-                className="px-5 py-2.5 bg-church-green text-white rounded-full text-sm font-medium hover:bg-church-green/90 transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
               >
                 {saving ? 'Saving...' : 'Save Team'}
               </button>

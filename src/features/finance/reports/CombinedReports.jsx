@@ -196,12 +196,12 @@ export default function CombinedReports() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl shadow-church-soft border border-gray-100">
-          <div className="w-12 h-12 border-4 border-church-green border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div className="flex flex-col items-center justify-center p-12 glass-light-card rounded-3xl border border-white/95 shadow-sm">
+          <div className="w-12 h-12 border-4 border-[#2C4A60] border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-gray-500 font-medium">Loading reports...</p>
         </div>
       ) : !hasData ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] p-6 bg-white rounded-3xl shadow-church-soft border border-gray-100 text-center relative overflow-hidden">
+        <div className="flex flex-col items-center justify-center min-h-[40vh] p-6 glass-light-card rounded-3xl border border-white/95 shadow-sm text-center relative overflow-hidden">
           <div className="relative z-10">
             <div className="mx-auto w-20 h-20 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-6 border border-gray-100">
               <Activity size={40} strokeWidth={1.5} />

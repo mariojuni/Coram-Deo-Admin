@@ -51,7 +51,7 @@ export default function StorageQuotaModal({ isOpen, onClose, fileSizeFormatted =
           <div className="p-4 rounded-2xl bg-church-canvas border border-gray-100">
             <div className="flex items-center justify-between text-xs font-bold mb-2">
               <span className="flex items-center gap-1.5 text-church-navy">
-                <HardDrive size={14} className="text-church-rose" />
+                <HardDrive size={14} className="text-[#2C4A60]" />
                 <span>Current Plan Allocation</span>
               </span>
               <span className="text-church-charcoal">
@@ -71,7 +71,7 @@ export default function StorageQuotaModal({ isOpen, onClose, fileSizeFormatted =
           </div>
 
           {/* Upgrade Proposal Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-sky-50 border border-slate-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-extrabold uppercase tracking-wider text-purple-700">
                 Recommended Solution
@@ -106,13 +106,14 @@ export default function StorageQuotaModal({ isOpen, onClose, fileSizeFormatted =
           >
             Cancel
           </button>
-          <GradientButton
+          <button
+            type="button"
             onClick={handleGoToBilling}
-            icon={ArrowRight}
-            size="sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#162533] hover:bg-[#1E2E3D] text-white text-xs font-bold shadow-sm transition-all"
           >
-            Upgrade to {targetPlan.name}
-          </GradientButton>
+            <span>Upgrade to {targetPlan.name}</span>
+            <ArrowRight size={13} />
+          </button>
         </div>
       </div>
     </div>

@@ -109,14 +109,14 @@ export default function DiscipleshipWeekFormModal({ isOpen, onClose, planId, wee
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-church-navy/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="relative glass-light-card rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] border border-white/95 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-church-green/10 rounded-full flex items-center justify-center mr-3">
-              <BookOpen size={20} className="text-church-green" />
+            <div className="w-10 h-10 bg-[#2C4A60]/10 rounded-2xl flex items-center justify-center mr-3 text-[#2C4A60]">
+              <BookOpen size={20} />
             </div>
             <div>
               <h2 className="text-xl font-bold text-church-navy">
@@ -312,9 +312,9 @@ export default function DiscipleshipWeekFormModal({ isOpen, onClose, planId, wee
           </form>
         </div>
 
-        <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
-          <button onClick={onClose} className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl">Cancel</button>
-          <button type="submit" form="week-form" disabled={loading} className="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-church-green hover:bg-church-green-dark rounded-xl">
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-3xl flex justify-end gap-3">
+          <button onClick={onClose} className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-full transition-colors">Cancel</button>
+          <button type="submit" form="week-form" disabled={loading} className="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-full transition-all shadow-sm">
             {loading ? 'Saving...' : 'Save Week'}
           </button>
         </div>
