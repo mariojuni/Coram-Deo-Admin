@@ -2,10 +2,7 @@ import React, { useMemo } from 'react';
 import { 
   TrendingUp, 
   Users, 
-  Calendar, 
-  PieChart as PieChartIcon, 
-  Award,
-  ArrowUpRight
+  Award 
 } from 'lucide-react';
 import SoftCard from '../../components/ui/SoftCard';
 import StatusPill from '../../components/ui/StatusPill';
@@ -34,6 +31,57 @@ ChartJS.register(
   Legend,
   ArcElement
 );
+
+// Hoisted static chart configurations to avoid GC churn & canvas re-initialization
+const BAR_CHART_OPTIONS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        font: { family: 'inherit', size: 12, weight: 'bold' },
+        color: '#475569',
+        usePointStyle: true,
+        boxWidth: 8,
+      }
+    },
+    tooltip: {
+      backgroundColor: '#162533',
+      titleFont: { weight: 'bold' },
+      padding: 10,
+      cornerRadius: 8,
+    }
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { font: { size: 11, weight: '600' }, color: '#64748B' }
+    },
+    y: {
+      beginAtZero: true,
+      grid: { color: '#F1F5F9' },
+      ticks: { font: { size: 11 }, color: '#94A3B8' }
+    }
+  }
+};
+
+const DOUGHNUT_OPTIONS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        font: { family: 'inherit', size: 11, weight: '600' },
+        color: '#475569',
+        usePointStyle: true,
+        padding: 14,
+      }
+    }
+  },
+  cutout: '68%',
+};
 
 export default function AttendanceAnalytics({ 
   sessions = [], 
@@ -77,39 +125,6 @@ export default function AttendanceAnalytics({
     };
   }, [sortedSessions]);
 
-  const barChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          font: { family: 'inherit', size: 12, weight: 'bold' },
-          color: '#475569',
-          usePointStyle: true,
-          boxWidth: 8,
-        }
-      },
-      tooltip: {
-        backgroundColor: '#162533',
-        titleFont: { weight: 'bold' },
-        padding: 10,
-        cornerRadius: 8,
-      }
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { font: { size: 11, weight: '600' }, color: '#64748B' }
-      },
-      y: {
-        beginAtZero: true,
-        grid: { color: '#F1F5F9' },
-        ticks: { font: { size: 11 }, color: '#94A3B8' }
-      }
-    }
-  };
-
   // Engagement Tier Distribution Doughnut
   const doughnutData = useMemo(() => {
     let faithful = 0;
@@ -136,23 +151,6 @@ export default function AttendanceAnalytics({
       ]
     };
   }, [analyzedMembers]);
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          font: { family: 'inherit', size: 11, weight: '600' },
-          color: '#475569',
-          usePointStyle: true,
-          padding: 14,
-        }
-      }
-    },
-    cutout: '68%',
-  };
 
   // High-level averages
   const averageAttendance = useMemo(() => {
@@ -232,7 +230,7 @@ export default function AttendanceAnalytics({
 
             <div className="h-64 sm:h-72 w-full mt-2">
               {sortedSessions.length > 0 ? (
-                <Bar data={barChartData} options={barChartOptions} />
+                <Bar data={barChartData} options={BAR_CHART_OPTIONS} />
               ) : (
                 <div className="h-full flex items-center justify-center text-xs text-slate-400">
                   Insufficient session history to plot velocity.
@@ -257,7 +255,7 @@ export default function AttendanceAnalytics({
 
             <div className="h-56 sm:h-64 w-full relative flex items-center justify-center">
               {analyzedMembers.length > 0 ? (
-                <Doughnut data={doughnutData} options={doughnutOptions} />
+                <Doughnut data={doughnutData} options={DOUGHNUT_OPTIONS} />
               ) : (
                 <div className="text-xs text-slate-400">No member data to display.</div>
               )}

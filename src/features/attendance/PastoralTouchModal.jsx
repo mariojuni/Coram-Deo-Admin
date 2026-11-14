@@ -9,14 +9,11 @@ import {
   Package, 
   CheckCircle2, 
   Clock, 
-  Calendar, 
-  User, 
   AlertCircle 
 } from 'lucide-react';
 import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import StatusPill from '../../components/ui/StatusPill';
 
 const CONTACT_TYPES = [
   { id: 'phone_call', label: 'Phone Call', icon: Phone },

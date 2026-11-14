@@ -15,7 +15,7 @@ export const DEFAULT_TEMPLATES = [
   {
     id: 'template_sunday_school',
     title: 'Sunday School',
-    category: 'Sunday School',
+    category: 'Discipleship',
     dayOfWeek: 'sunday',
     startTime: '08:30',
     endTime: '09:30',
@@ -28,7 +28,7 @@ export const DEFAULT_TEMPLATES = [
   {
     id: 'template_sunday_worship',
     title: 'Sunday Worship Service',
-    category: 'Worship Service',
+    category: 'Weekly Service',
     dayOfWeek: 'sunday',
     startTime: '09:30',
     endTime: '11:45',
@@ -41,7 +41,7 @@ export const DEFAULT_TEMPLATES = [
   {
     id: 'template_wednesday_prayer',
     title: 'Wednesday Prayer Meeting',
-    category: 'Prayer Meeting',
+    category: 'Weekly Service',
     dayOfWeek: 'wednesday',
     startTime: '18:30',
     endTime: '20:00',
@@ -54,7 +54,7 @@ export const DEFAULT_TEMPLATES = [
   {
     id: 'template_friday_bible_study',
     title: 'Friday Bible Study',
-    category: 'Bible Study',
+    category: 'Weekly Service',
     dayOfWeek: 'friday',
     startTime: '18:30',
     endTime: '20:00',

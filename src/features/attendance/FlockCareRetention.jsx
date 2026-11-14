@@ -1,24 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Users, 
   AlertTriangle, 
-  Clock, 
   Phone, 
   Mail, 
   Search, 
-  Filter, 
   HeartHandshake, 
   CheckCircle2, 
   UserCheck, 
   Download, 
-  ChevronRight,
   ShieldAlert,
   ArrowUpDown
 } from 'lucide-react';
 import SoftCard from '../../components/ui/SoftCard';
 import StatusPill from '../../components/ui/StatusPill';
-import GradientButton from '../../components/ui/GradientButton';
 import PastoralTouchModal from './PastoralTouchModal';
+
+// Hoisted filter configuration to eliminate GC churn on re-renders
+const FILTER_TABS_CONFIG = [
+  { id: 'at_risk', label: 'All At-Risk', getCount: (m) => (m.criticalCount || 0) + (m.warningCount || 0) },
+  { id: 'critical', label: '🔴 3+ Weeks Absent', getCount: (m) => m.criticalCount || 0 },
+  { id: 'warning', label: '🟡 2 Weeks Absent', getCount: (m) => m.warningCount || 0 },
+  { id: 'irregular', label: '🔵 Irregular (<50%)', getCount: (m) => m.irregularCount || 0 },
+  { id: 'visitors', label: '🟣 Visitors', getCount: (m) => m.visitorsCount || 0 },
+  { id: 'in_progress', label: '📋 In Care Queue', getCount: (m) => m.activeFollowupsCount || 0 },
+  { id: 'all', label: '👥 Entire Roster', getCount: (m) => m.totalMembers || 0 },
+];
 
 export default function FlockCareRetention({ 
   analyzedMembers = [], 
@@ -170,16 +176,9 @@ export default function FlockCareRetention({
         {/* Filter Pills */}
         <div className="flex flex-wrap gap-2 items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex flex-wrap gap-1.5">
-            {[
-              { id: 'at_risk', label: 'All At-Risk', count: (metrics.criticalCount || 0) + (metrics.warningCount || 0) },
-              { id: 'critical', label: '🔴 3+ Weeks Absent', count: metrics.criticalCount || 0 },
-              { id: 'warning', label: '🟡 2 Weeks Absent', count: metrics.warningCount || 0 },
-              { id: 'irregular', label: '🔵 Irregular (<50%)', count: metrics.irregularCount || 0 },
-              { id: 'visitors', label: '🟣 Visitors', count: metrics.visitorsCount || 0 },
-              { id: 'in_progress', label: '📋 In Care Queue', count: metrics.activeFollowupsCount || 0 },
-              { id: 'all', label: '👥 Entire Roster', count: metrics.totalMembers || 0 },
-            ].map(tab => {
+            {FILTER_TABS_CONFIG.map(tab => {
               const active = filterTab === tab.id;
+              const count = tab.getCount(metrics);
               return (
                 <button
                   key={tab.id}
@@ -194,7 +193,7 @@ export default function FlockCareRetention({
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
                     active ? 'bg-white/20 text-white' : 'bg-white text-slate-500'
                   }`}>
-                    {tab.count}
+                    {count}
                   </span>
                 </button>
               );

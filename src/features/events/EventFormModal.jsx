@@ -8,8 +8,9 @@ import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import ModernTimePicker from '../../components/ui/ModernTimePicker';
 
 const EVENT_CATEGORIES = [
-  'Worship Service', 'Sunday School', 'Prayer Meeting', 'Bible Study', 
-  'Youth Fellowship', 'Church Anniversary', 'VBS', 'Outreach', 
+  'Weekly Service', 'Worship Service', 'Discipleship', 'Sunday School', 
+  'Prayer Meeting', 'Bible Study', 'Youth Fellowship', 
+  'Church Anniversary', 'VBS', 'Outreach', 
   'Visitation', 'Leadership Meeting'
 ];
 

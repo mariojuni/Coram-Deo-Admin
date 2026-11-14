@@ -5,8 +5,6 @@ import { db } from '../../firebase';
 import { 
   ClipboardCheck, 
   Plus, 
-  Calendar, 
-  Users, 
   ArrowRight, 
   HeartHandshake, 
   TrendingUp, 
@@ -112,7 +110,10 @@ export default function AttendanceDashboard() {
     return () => unsubscribe();
   }, [CHURCH_ID]);
 
-  // 4. Fetch records for the top 10 recent sessions
+  // 4. Stable primitive signature for top 10 sessions to prevent redundant record re-fetches
+  const topSessionIds = useMemo(() => sessions.slice(0, 10).map(s => s.id).join(','), [sessions]);
+
+  // Fetch records for the top 10 recent sessions
   const fetchRecentRecords = useCallback(async () => {
     if (!sessions.length) {
       setLoadingRecords(false);
@@ -140,7 +141,7 @@ export default function AttendanceDashboard() {
     } finally {
       setLoadingRecords(false);
     }
-  }, [sessions]);
+  }, [topSessionIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (sessions.length > 0) {
@@ -148,7 +149,7 @@ export default function AttendanceDashboard() {
     } else if (!loadingSessions) {
       setLoadingRecords(false);
     }
-  }, [sessions, loadingSessions, fetchRecentRecords]);
+  }, [topSessionIds, sessions.length, loadingSessions, fetchRecentRecords]);
 
   // 5. Analyze member retention
   const analyzedMembers = useMemo(() => {
