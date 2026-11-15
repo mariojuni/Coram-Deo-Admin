@@ -90,9 +90,9 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
       maxWidth="xl"
       footer={
         <>
-          <button 
+          <button
             type="button"
-            onClick={onClose} 
+            onClick={onClose}
             className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
           >
             Cancel
@@ -156,13 +156,12 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
             previews.map((item) => (
               <div
                 key={item._previewId}
-                className={`flex items-start justify-between p-3.5 rounded-xl border transition-all ${
-                  item.isDuplicate
-                    ? 'bg-amber-50/60 border-amber-200/80 opacity-80 cursor-not-allowed'
-                    : item.selected
+                className={`flex items-start justify-between p-3.5 rounded-xl border transition-all ${item.isDuplicate
+                  ? 'bg-amber-50/60 border-amber-200/80 opacity-80 cursor-not-allowed'
+                  : item.selected
                     ? 'border-[#2C4A60] bg-[#2C4A60]/5 shadow-2xs'
                     : 'border-slate-200/70 bg-white/70 hover:border-slate-300'
-                }`}
+                  }`}
               >
                 <div className="flex-1 mr-4">
                   <div className="flex items-center space-x-2 mb-1">
@@ -200,11 +199,10 @@ export default function GenerateGroupMeetingsModal({ isOpen, onClose, group, onG
 
                 {!item.isDuplicate && (
                   <button
-                    type="button" 
+                    type="button"
                     onClick={() => toggleSelect(item._previewId)}
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-1 ${
-                      item.selected ? 'bg-[#2C4A60] text-white shadow-2xs' : 'border border-slate-300 hover:border-[#2C4A60] bg-white'
-                    }`}
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-1 ${item.selected ? 'bg-[#2C4A60] text-white shadow-2xs' : 'border border-slate-300 hover:border-[#2C4A60] bg-white'
+                      }`}
                   >
                     {item.selected && <Check size={14} />}
                   </button>

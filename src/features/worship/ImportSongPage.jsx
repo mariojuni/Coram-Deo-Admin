@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../firebase';
-import { 
-  getSongImportSettings, 
-  createSong, 
-  createSongVersion, 
-  checkDuplicateSong 
+import {
+  getSongImportSettings,
+  createSong,
+  createSongVersion,
+  checkDuplicateSong
 } from './worshipService';
 import { parseWorshipPdf } from './utils/pdfParser';
 import { convertToChordPro } from './utils/chordProConverter';
@@ -16,13 +16,13 @@ import { convertToChordPro } from './utils/chordProConverter';
 export default function ImportSongPage() {
   const navigate = useNavigate();
   const { userProfile, currentUser } = useAuth();
-  
+
   const [settings, setSettings] = useState(null);
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, parsing, preview, saving, success
   const [error, setError] = useState(null);
   const [duplicates, setDuplicates] = useState([]);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     composer: '',
@@ -68,13 +68,13 @@ export default function ImportSongPage() {
   const handleFileDrop = async (e) => {
     e.preventDefault();
     if (status === 'parsing') return;
-    
+
     const droppedFile = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
     if (!droppedFile || droppedFile.type !== 'application/pdf') {
       setError('Please upload a valid PDF file.');
       return;
     }
-    
+
     setFile(droppedFile);
     processFile(droppedFile);
   };
@@ -85,11 +85,11 @@ export default function ImportSongPage() {
     try {
       const arrayBuffer = await pdfFile.arrayBuffer();
       const parsedData = await parseWorshipPdf(arrayBuffer);
-      
+
       const chordProData = convertToChordPro(parsedData.lines, parsedData.metadata?.title);
-      
+
       const meta = parsedData.metadata;
-      
+
       setFormData({
         title: settings?.autoDetectTitle ? meta.title : '',
         composer: settings?.useAuthorLineAsComposer ? meta.composer : '',
@@ -105,7 +105,7 @@ export default function ImportSongPage() {
         lyricsWithChords: chordProData.chordChart,
         lyricsOnly: chordProData.lyricsOnly
       });
-      
+
       setStatus('preview');
     } catch (err) {
       console.error(err);
@@ -124,10 +124,10 @@ export default function ImportSongPage() {
       setError("Title is required.");
       return;
     }
-    
+
     if (settings?.duplicateCheckEnabled && !forceSave) {
       const dups = await checkDuplicateSong(
-        userProfile.churchId, 
+        userProfile.churchId,
         settings.duplicateCheckByTitle ? formData.title : null,
         settings.duplicateCheckByCcliSongNumber ? formData.ccliSongNumber : null
       );
@@ -225,13 +225,13 @@ export default function ImportSongPage() {
             {duplicates.map(d => <li key={d.id}>{d.title} (CCLI: {d.ccliSongNumber || 'N/A'})</li>)}
           </ul>
           <div className="flex space-x-4 pt-2">
-            <button 
+            <button
               onClick={() => setDuplicates([])}
               className="px-4 py-2 bg-white text-orange-700 border border-orange-200 rounded-xl text-sm font-bold"
             >
               Cancel Import
             </button>
-            <button 
+            <button
               onClick={() => { setDuplicates([]); handleConfirmSave(true); }}
               className="px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-700"
             >
@@ -242,7 +242,7 @@ export default function ImportSongPage() {
       )}
 
       {status === 'idle' && (
-        <div 
+        <div
           className="border-2 border-dashed border-gray-300 rounded-3xl p-12 text-center bg-white hover:bg-gray-50 transition-colors cursor-pointer"
           onDragOver={e => e.preventDefault()}
           onDrop={handleFileDrop}
@@ -253,11 +253,11 @@ export default function ImportSongPage() {
           </div>
           <h3 className="text-xl font-bold text-church-navy mb-2">Drag & Drop PDF Here</h3>
           <p className="text-church-slate text-sm mb-6">or click to browse from your computer (SongSelect PDF format recommended)</p>
-          <input 
-            type="file" 
-            id="pdf-upload" 
-            accept="application/pdf" 
-            className="hidden" 
+          <input
+            type="file"
+            id="pdf-upload"
+            accept="application/pdf"
+            className="hidden"
             onChange={handleFileDrop}
           />
           <button className="px-6 py-3 bg-[#162533] text-white font-bold rounded-full shadow-sm hover:bg-[#1E2E3D] transition-all">
@@ -282,13 +282,13 @@ export default function ImportSongPage() {
           <h3 className="text-2xl font-bold text-church-navy mb-2">Song Imported Successfully!</h3>
           <p className="text-church-slate mb-8">The song has been saved to your library.</p>
           <div className="flex justify-center space-x-4">
-            <button 
+            <button
               onClick={() => { setStatus('idle'); setFile(null); }}
               className="px-6 py-3 bg-white border border-gray-200 text-church-navy font-bold rounded-full hover:bg-gray-50"
             >
               Import Another
             </button>
-            <button 
+            <button
               onClick={() => navigate('/admin/worship/songs')}
               className="px-6 py-3 bg-[#162533] text-white font-bold rounded-full hover:bg-[#1E2E3D] shadow-sm transition-all"
             >
@@ -300,7 +300,7 @@ export default function ImportSongPage() {
 
       {status === 'preview' && (
         <div className="bg-white rounded-3xl shadow-church-soft border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-          
+
           {/* Form Side */}
           <div className="w-full md:w-1/2 p-8 border-r border-gray-100 overflow-y-auto max-h-[80vh]">
             <div className="flex items-center justify-between mb-6">
@@ -309,13 +309,13 @@ export default function ImportSongPage() {
                 Extracted Metadata
               </h3>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-church-slate mb-1 uppercase tracking-wider">Title *</label>
                 <input type="text" name="title" required value={formData.title} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green" />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-church-slate mb-1 uppercase tracking-wider">Composer</label>
@@ -369,7 +369,7 @@ export default function ImportSongPage() {
                   <strong>Licensing Reminder:</strong> Please make sure your church has permission or proper licensing (e.g. CCLI) before storing, copying, projecting, or sharing this song.
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => handleConfirmSave(false)}
                 className="w-full px-6 py-3 bg-church-green text-white font-bold rounded-xl shadow-md hover:bg-church-green/90"
               >
@@ -383,7 +383,7 @@ export default function ImportSongPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-church-navy uppercase tracking-wider">Lyrics & Chords (ChordPro)</h3>
             </div>
-            <textarea 
+            <textarea
               name="lyricsWithChords"
               value={formData.lyricsWithChords}
               onChange={handleInputChange}

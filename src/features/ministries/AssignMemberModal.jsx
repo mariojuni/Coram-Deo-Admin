@@ -25,16 +25,16 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
     try {
       // Fetch all users without orderBy to ensure users missing the 'name' field are not dropped
       const snap = await getDocs(collection(db, 'users'));
-      
+
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       const formattedDocs = docs.map(d => ({
         ...d,
         displayName: formatStandardName(d)
       }));
-      
+
       // Sort members alphabetically by standardized display name locally
       formattedDocs.sort((a, b) => a.displayName.localeCompare(b.displayName));
-      
+
       // Deduplicate by displayName to prevent duplicated/tripled names from showing in the dropdown
       const uniqueDocsMap = new Map();
       formattedDocs.forEach(d => {
@@ -43,14 +43,14 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
         }
       });
       const uniqueFormattedDocs = Array.from(uniqueDocsMap.values());
-      
+
       // Filter out people already in this ministry, and those who are inactive/deceased/transferred if needed
       const existingMemberIds = (ministry?.members || []).map(m => m.memberId);
       const availableMembers = uniqueFormattedDocs.filter(m => {
         const mIds = [m.id, m.uid, m.authUid].filter(Boolean);
         return !mIds.some(id => existingMemberIds.includes(id)) && m.status !== 'deceased' && m.status !== 'transferred';
       });
-      
+
       setMembers(availableMembers);
     } catch (err) {
       console.error('Error fetching church members:', err);
@@ -73,14 +73,14 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       setError("Please select a member");
       return;
     }
-    
+
     setSaving(true);
     setError('');
 
     try {
       const memberDoc = members.find(m => m.id === selectedMemberId);
       const displayName = formatStandardName(memberDoc || {});
-      
+
       const newMemberObj = {
         memberId: selectedMemberId,
         memberName: displayName,
@@ -88,12 +88,12 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       };
 
       const updatedMembers = [...(ministry.members || []), newMemberObj];
-      
+
       await updateDoc(doc(db, 'ministries', ministry.id), {
         members: updatedMembers,
         updatedAt: new Date()
       });
-      
+
       // Sync to ministryMembers collection for mobile app compatibility
       try {
         const memberDocId = `${ministry.id}_${selectedMemberId}`;
@@ -111,7 +111,7 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       } catch (err) {
         console.warn('Failed to sync to ministryMembers collection', err);
       }
-      
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -130,10 +130,10 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
             <X size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-28 min-h-[220px]">
           {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-          
+
           <div>
             <label className="block text-sm font-medium text-church-navy mb-2">Select Church Member</label>
             {loading ? (

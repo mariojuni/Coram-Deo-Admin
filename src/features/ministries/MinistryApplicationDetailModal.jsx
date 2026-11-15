@@ -64,7 +64,7 @@ export default function MinistryApplicationDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
       <div className="glass-light-card rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col my-8 border border-white/95">
-        
+
         {/* Header */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center space-x-3">

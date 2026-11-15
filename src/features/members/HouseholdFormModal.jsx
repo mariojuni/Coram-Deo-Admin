@@ -142,15 +142,15 @@ export default function HouseholdFormModal({ isOpen, onClose, household = null }
       maxWidth="md"
       footer={
         <>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={onClose}
             disabled={loading}
             className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
           >
             Cancel
           </button>
-          <button 
+          <button
             type="submit"
             form="household-form"
             disabled={loading}
@@ -173,7 +173,7 @@ export default function HouseholdFormModal({ isOpen, onClose, household = null }
             value={formData.name}
             onChange={handleChange}
             placeholder="e.g. Smith Family"
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-slate-900 bg-white placeholder:text-slate-400 text-sm" 
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-slate-900 bg-white placeholder:text-slate-400 text-sm"
           />
         </div>
 

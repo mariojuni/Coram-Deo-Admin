@@ -23,7 +23,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
         const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         docs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setMembers(docs);
-        
+
         // Initialize selected IDs from the ministry's existing memberIds array
         if (ministry && ministry.memberIds) {
           const selected = new Set();
@@ -52,7 +52,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
 
   if (!isOpen || !ministry) return null;
 
-  const filteredMembers = members.filter(m => 
+  const filteredMembers = members.filter(m =>
     m.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -97,10 +97,10 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
             <X size={24} />
           </button>
         </div>
-        
+
         <div className="p-6 flex flex-col overflow-hidden">
           {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>}
-          
+
           <div className="relative mb-4 shrink-0">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Search size={18} className="text-gray-400" />
@@ -124,7 +124,7 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
                 {filteredMembers.map(member => {
                   const isSelected = selectedIds.has(member.id);
                   return (
-                    <div 
+                    <div
                       key={member.id}
                       onClick={() => toggleMember(member.id)}
                       className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors"
@@ -138,9 +138,8 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
                           <p className="text-xs text-church-slate">{member.role ? member.role.replace('_', ' ') : 'Member'}</p>
                         </div>
                       </div>
-                      <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${
-                        isSelected ? 'bg-[#2C4A60] border-[#2C4A60]' : 'border-gray-300 bg-white'
-                      }`}>
+                      <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#2C4A60] border-[#2C4A60]' : 'border-gray-300 bg-white'
+                        }`}>
                         {isSelected && <Check size={14} className="text-white" />}
                       </div>
                     </div>
@@ -149,21 +148,21 @@ export default function MinistryTeamModal({ isOpen, onClose, ministry = null }) 
               </div>
             )}
           </div>
-          
+
           <div className="mt-4 flex justify-between items-center shrink-0">
             <span className="text-sm font-medium text-church-slate">
               {selectedIds.size} members selected
             </span>
             <div className="flex space-x-3">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={onClose}
                 disabled={saving}
                 className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSubmit}
                 disabled={saving}
                 className="px-5 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
