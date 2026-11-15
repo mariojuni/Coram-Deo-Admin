@@ -1,3 +1,6 @@
+import { doc, getDoc } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getActiveApp, getActiveDb } from '../firebase';
 import { getBibleIndex, saveBibleIndex, getChapter, saveChapter, deleteOfflineBible } from './offlineDb';
 
 const API_BASE = 'https://api.youversion.com/v1';
@@ -7,6 +10,44 @@ const getHeaders = () => ({
   'x-yvp-app-key': API_KEY,
   'Accept': 'application/json'
 });
+
+/**
+ * Calculates day of year aligned with Asia/Manila 00:00 midnight (matching CoramDeoBackend).
+ */
+export const calculateDayOfYear = (date = new Date(), timeZone = 'Asia/Manila') => {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
+    const parts = formatter.formatToParts(date);
+    const year = parseInt(parts.find((p) => p.type === 'year')?.value || `${date.getFullYear()}`, 10);
+    const month = parseInt(parts.find((p) => p.type === 'month')?.value || `${date.getMonth() + 1}`, 10);
+    const day = parseInt(parts.find((p) => p.type === 'day')?.value || `${date.getDate()}`, 10);
+
+    const targetDate = new Date(Date.UTC(year, month - 1, day));
+    const startOfYear = new Date(Date.UTC(year, 0, 1));
+    const diffMs = targetDate.getTime() - startOfYear.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  } catch (_) {
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    return Math.floor((date.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  }
+};
+
+/**
+ * Canonical fallback scripture if offline or network completely unreachable.
+ */
+export const FALLBACK_VOTD = {
+  dayOfYear: 1,
+  passageId: 'PSA.119.105',
+  reference: 'Psalm 119:105',
+  text: 'Your word is a lamp to my feet and a light to my path.',
+  verseText: 'Your word is a lamp to my feet and a light to my path.',
+  translation: 'NIV',
+};
 
 /**
  * Fetch all available Languages.
@@ -25,42 +66,127 @@ export const fetchLanguages = async () => {
 
 /**
  * Fetch Verse of the Day text and reference.
+ * Multi-tier resilient integration aligned with CoramDeoBackend:
+ * 1. Checks fast local storage cache (`votd_${dayOfYear}_${translationId}`).
+ * 2. Checks Firestore cache (`verse-of-the-days/${dayOfYear}`).
+ * 3. Calls CoramDeo backend callable function (`getVerseOfTheDay`).
+ * 4. Falls back to direct YouVersion API v1.
+ * 5. Falls back to canonical CoramDeo scripture.
  */
 export const fetchVerseOfTheDay = async (translationId = '111') => {
+  const dayOfYear = calculateDayOfYear();
+  const cacheKey = `votd_${dayOfYear}_${translationId}`;
+
+  // 1. Fast Local Storage Cache
   try {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    
-    // Get passage ID
-    const votdRes = await fetch(`${API_BASE}/verse_of_the_days/${dayOfYear}`, { headers: getHeaders() });
-    if (!votdRes.ok) return null;
-    const votdData = await votdRes.json();
-    const passageId = votdData.passage_id || (votdData.data && votdData.data.passage_id);
-    if (!passageId) return null;
-
-    // Fetch passage text
-    const passageRes = await fetch(`${API_BASE}/bibles/${translationId}/passages/${passageId}?format=html`, { headers: getHeaders() });
-    if (!passageRes.ok) return null;
-    const passageData = await passageRes.json();
-    
-    // Parse HTML to plain text
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = passageData.content || (passageData.data && passageData.data.content) || '';
-    const text = tempDiv.textContent || tempDiv.innerText || '';
-    
-    // Clean up verse numbers from text (usually start of string)
-    const cleanText = text.replace(/^\d+\s*/, '').trim();
-
-    return {
-      text: cleanText,
-      reference: passageData.reference || (passageData.data && passageData.data.reference),
-      passageId: passageId
-    };
-  } catch (e) {
-    console.error("Error fetching Verse of the Day:", e);
-    return null;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.reference && (parsed.verseText || parsed.text)) {
+        return {
+          ...parsed,
+          text: parsed.verseText || parsed.text,
+          verseText: parsed.verseText || parsed.text,
+        };
+      }
+    }
+  } catch (storageErr) {
+    // Non-fatal, proceed to network
   }
+
+  // 2. Query Firestore collection 'verse-of-the-days' (populated by daily 6:00 AM backend sweep)
+  try {
+    const db = getActiveDb();
+    if (db) {
+      const snap = await getDoc(doc(db, 'verse-of-the-days', String(dayOfYear)));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data && data.reference && data.verseText) {
+          const result = {
+            dayOfYear,
+            passageId: data.passageId || '',
+            reference: data.reference,
+            text: data.verseText,
+            verseText: data.verseText,
+            translation: data.translation || 'NIV',
+          };
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(result));
+          } catch (_) {}
+          return result;
+        }
+      }
+    }
+  } catch (fsErr) {
+    // Non-fatal cache miss or permission check, fall through to Cloud Function
+  }
+
+  // 3. Call CoramDeo Backend Callable Function 'getVerseOfTheDay'
+  try {
+    const app = getActiveApp();
+    if (app) {
+      const functions = getFunctions(app, 'asia-southeast1');
+      const getVotdFn = httpsCallable(functions, 'getVerseOfTheDay');
+      const res = await getVotdFn({ translationId });
+      const data = res?.data;
+      if (data && data.reference && (data.verseText || data.text)) {
+        const result = {
+          dayOfYear: data.dayOfYear || dayOfYear,
+          passageId: data.passageId || '',
+          reference: data.reference,
+          text: data.verseText || data.text,
+          verseText: data.verseText || data.text,
+          translation: data.translation || 'NIV',
+        };
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(result));
+        } catch (_) {}
+        return result;
+      }
+    }
+  } catch (fnErr) {
+    console.warn('[bibleApi] Backend VOTD callable failed, attempting live YouVersion API fallback:', fnErr);
+  }
+
+  // 4. Fallback to direct YouVersion API v1
+  try {
+    const votdRes = await fetch(`${API_BASE}/verse_of_the_days/${dayOfYear}`, { headers: getHeaders() });
+    if (votdRes.ok) {
+      const votdData = await votdRes.json();
+      const passageId = votdData.passage_id || (votdData.data && votdData.data.passage_id);
+      if (passageId) {
+        const passageRes = await fetch(`${API_BASE}/bibles/${translationId}/passages/${passageId}?format=html`, { headers: getHeaders() });
+        if (passageRes.ok) {
+          const passageData = await passageRes.json();
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = passageData.content || (passageData.data && passageData.data.content) || '';
+          const text = tempDiv.textContent || tempDiv.innerText || '';
+          const cleanText = text.replace(/^\d+\s*/, '').trim();
+
+          const result = {
+            dayOfYear,
+            passageId,
+            reference: passageData.reference || (passageData.data && passageData.data.reference) || passageId,
+            text: cleanText,
+            verseText: cleanText,
+            translation: translationId === '111' ? 'NIV' : translationId,
+          };
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(result));
+          } catch (_) {}
+          return result;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[bibleApi] Direct YouVersion API fetch error:', e);
+  }
+
+  // 5. Canonical fallback
+  return {
+    ...FALLBACK_VOTD,
+    dayOfYear,
+  };
 };
 
 /**

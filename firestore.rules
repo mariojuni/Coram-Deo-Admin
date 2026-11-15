@@ -452,6 +452,12 @@ service cloud.firestore {
       }
     }
 
+    // ── Verse of the Day (Cached daily scriptures) ───────────────────────────
+    match /verse-of-the-days/{dayId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
     // ── Global Spiritual Growth & Devotional Plans ───────────────────────────
     match /plans/{planId} {
       allow read: if isSignedIn();

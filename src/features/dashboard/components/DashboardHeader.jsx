@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Sun, Moon, CloudSun, BookOpen, Building, Play } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Moon, CloudSun, BookOpen, Building } from 'lucide-react';
 import { CathedralLogo } from '../../../components/ui/icons';
+import { fetchVerseOfTheDay } from '../../../utils/bibleApi';
 
 const ROLE_TITLE_MAP = {
   super_admin: 'Super Administrator',
@@ -28,6 +28,29 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
   const primaryRole = userProfile?.primaryRole || roles[0] || 'member';
 
   const roleTitleMap = ROLE_TITLE_MAP;
+
+  const [votd, setVotd] = useState(null);
+  const [loadingVotd, setLoadingVotd] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadVerse() {
+      try {
+        const data = await fetchVerseOfTheDay();
+        if (isMounted && data) {
+          setVotd(data);
+        }
+      } catch (err) {
+        console.warn('[DashboardHeader] Error loading dynamic Verse of the Day:', err);
+      } finally {
+        if (isMounted) setLoadingVotd(false);
+      }
+    }
+    loadVerse();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -92,7 +115,7 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-[#4F748E] px-2.5 py-0.5 rounded-full bg-[#EBF2F7] border border-[#D5E3EC]">
-                ESV
+                {votd?.translation || 'NIV'}
               </span>
               <div className="w-7 h-7 rounded-full glass-light-pill flex items-center justify-center text-[#4F748E]">
                 <BookOpen size={14} />
@@ -101,26 +124,18 @@ export default function DashboardHeader({ userProfile, activeChurchName }) {
           </div>
 
           {/* Scripture Reference Title */}
-          <h2 className="text-2xl md:text-3xl font-black text-[#1E2E3D] tracking-tight">
-            1 Chronicles 16:24
+          <h2 className="text-2xl md:text-3xl font-black text-[#1E2E3D] tracking-tight transition-opacity duration-200">
+            {votd?.reference || (loadingVotd ? 'Loading Scripture...' : 'Psalm 119:105')}
           </h2>
 
           {/* Scripture Verse Quotation */}
-          <blockquote className="text-base md:text-lg text-[#334E68] font-normal leading-relaxed italic max-w-4xl">
-            &ldquo;Declare his glory among the nations, his marvelous works among all the peoples!&rdquo;
+          <blockquote className="text-base md:text-lg text-[#334E68] font-normal leading-relaxed italic max-w-4xl transition-opacity duration-200">
+            &ldquo;{votd?.verseText || votd?.text || (loadingVotd ? 'Loading today\'s scripture verse...' : 'Your word is a lamp to my feet and a light to my path.')}&rdquo;
           </blockquote>
 
-          {/* Bottom Action Row */}
+          {/* Bottom Action Row (Read chapter removed as requested) */}
           <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/50">
-            <Link
-              to="/admin/bible"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#162533] hover:bg-[#243746] text-white text-xs font-bold shadow-xs transition-all active:scale-95"
-            >
-              <Play size={12} className="fill-white" />
-              <span>Read chapter</span>
-            </Link>
-
-            <span className="text-xs font-semibold text-[#5A7385] hidden sm:inline">
+            <span className="text-xs font-semibold text-[#5A7385]">
               Daily Walk in His Presence &bull; Coram Deo Rhythms
             </span>
           </div>
