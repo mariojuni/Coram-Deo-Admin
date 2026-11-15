@@ -15,8 +15,8 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
   const CHURCH_ID = userProfile?.churchId;
   
   const [step, setStep] = useState(1);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
   const [previewEvents, setPreviewEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,11 +42,11 @@ export default function GenerateMonthlyEventsModal({ isOpen, onClose }) {
   }, [isOpen]);
 
   const toggleTemplate = (id) => {
-    setTemplates(templates.map(t => t.id === id ? { ...t, isSelected: !t.isSelected } : t));
+    setTemplates(prev => prev.map(t => t.id === id ? { ...t, isSelected: !t.isSelected } : t));
   };
 
   const handleTemplateChange = (id, field, value) => {
-    setTemplates(templates.map(t => t.id === id ? { ...t, [field]: value } : t));
+    setTemplates(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 
   const handlePreview = async () => {

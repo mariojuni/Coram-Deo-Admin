@@ -6,28 +6,36 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 import UltimateGuitarImportModal from './UltimateGuitarImportModal';
 import Modal from '../../components/ui/Modal';
 
+const YT_EMBED_REGEX = /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/;
+const YT_WATCH_REGEX = /v=([a-zA-Z0-9_-]{11})/;
+const YT_SHORT_REGEX = /youtu\.be\/([a-zA-Z0-9_-]{11})/;
+const YT_SHORTS_REGEX = /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/;
+const YT_FALLBACK_REGEX = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+const CHORD_REGEX = /^[A-G][#b]?(?:m|min|maj|dim|aug|sus)?\d?(?:\/[A-G][#b]?)?$/;
+const PUNCTUATION_CLEAN_REGEX = /[.,;!?]$/;
+const KEY_EXTRACT_REGEX = /^[A-G][#b]?/;
+
 export function extractYouTubeVideoId(url) {
   if (!url || typeof url !== 'string') return null;
   const str = url.trim();
 
   // Match embed URL (works for full iframe code paste as well)
-  const embedMatch = str.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  const embedMatch = str.match(YT_EMBED_REGEX);
   if (embedMatch) return embedMatch[1];
 
   // Match watch URL
-  const watchMatch = str.match(/v=([a-zA-Z0-9_-]{11})/);
+  const watchMatch = str.match(YT_WATCH_REGEX);
   if (watchMatch) return watchMatch[1];
 
   // Match youtu.be URL
-  const shortMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  const shortMatch = str.match(YT_SHORT_REGEX);
   if (shortMatch) return shortMatch[1];
 
   // Match shorts URL
-  const shortsMatch = str.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+  const shortsMatch = str.match(YT_SHORTS_REGEX);
   if (shortsMatch) return shortsMatch[1];
 
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = str.match(regExp);
+  const match = str.match(YT_FALLBACK_REGEX);
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
@@ -133,8 +141,6 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
     if (!pastedText) return;
 
     const lines = pastedText.split('\n');
-    const chordRegex = /^[A-G][#b]?(?:m|min|maj|dim|aug|sus)?\d?(?:\/[A-G][#b]?)?$/;
-    
     let lyricsLines = [];
     let detectedKey = formData.defaultKey;
     let hasChords = false;
@@ -152,8 +158,8 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
           chordTokens++;
           continue;
         }
-        const cleanToken = token.replace(/[.,;!?]$/, '');
-        if (chordRegex.test(cleanToken)) {
+        const cleanToken = token.replace(PUNCTUATION_CLEAN_REGEX, '');
+        if (CHORD_REGEX.test(cleanToken)) {
           chordTokens++;
         }
       }
@@ -166,7 +172,7 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
         if (!detectedKey) {
           const firstToken = line.trim().split(/\s+/)[0];
           if (firstToken && firstToken.toUpperCase() !== 'N.C.') {
-            const keyMatch = firstToken.match(/^[A-G][#b]?/);
+            const keyMatch = firstToken.match(KEY_EXTRACT_REGEX);
             if (keyMatch) detectedKey = keyMatch[0];
           }
         }

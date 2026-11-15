@@ -26,13 +26,17 @@ const STEP_REVIEW  = 'review';
 const STEP_SUCCESS = 'success';
 
 // ─── UG URL validator ────────────────────────────────────────────────────────
+const UG_HOSTNAMES = new Set([
+  'tabs.ultimate-guitar.com',
+  'www.ultimate-guitar.com',
+  'ultimate-guitar.com'
+]);
+
 function isValidUGUrl(url) {
   try {
     const u = new URL(url);
     return (
-      (u.hostname === 'tabs.ultimate-guitar.com' ||
-        u.hostname === 'www.ultimate-guitar.com' ||
-        u.hostname === 'ultimate-guitar.com') &&
+      UG_HOSTNAMES.has(u.hostname) &&
       (u.pathname.includes('/tab/') || u.pathname.includes('/tabs/'))
     );
   } catch {

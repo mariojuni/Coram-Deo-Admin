@@ -41,7 +41,7 @@ export default function ManualPaymentModal({
   const [bankReferenceNumber, setBankReferenceNumber] = useState('');
   const [senderAccountName, setSenderAccountName] = useState('');
   const [senderBank, setSenderBank] = useState('');
-  const [dateTransferred, setDateTransferred] = useState(new Date().toISOString().split('T')[0]);
+  const [dateTransferred, setDateTransferred] = useState(() => new Date().toISOString().split('T')[0]);
   const [amountPaid, setAmountPaid] = useState('');
   const [tenantNotes, setTenantNotes] = useState('');
   

@@ -3,7 +3,7 @@ import { collection, doc, setDoc, updateDoc, serverTimestamp, getDocs, query, wh
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { Save, Play, Pause, CheckCircle, Archive, AlertCircle, Image as ImageIcon, Trash2, Target, DollarSign, Eye, Layers } from 'lucide-react';
+import { Play, Pause, CheckCircle, Archive, Image as ImageIcon, Trash2, Target, Eye } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import Modal from '../../components/ui/Modal';
 

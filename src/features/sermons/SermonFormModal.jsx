@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, UploadCloud, Film, Headphones, Image as ImageIcon, CheckCircle2, Scissors, Settings, Play, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, UploadCloud, Film, Headphones, Image as ImageIcon, CheckCircle2, Scissors, Globe } from 'lucide-react';
 import { collection, doc, setDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { trimMedia, compressAudio, compressVideo, generateThumbnail } from '../../utils/mediaProcessor';
+import { generateThumbnail } from '../../utils/mediaProcessor';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
@@ -46,7 +46,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   const [error, setError] = useState('');
   
   // Form State
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     title: '',
     description: '',
     preacherName: '',
@@ -55,7 +55,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     seriesTitle: '',
     mediaType: 'audio',
     visibility: 'public',
-  });
+  }));
 
   // Media State
   const [mediaFile, setMediaFile] = useState(null);
@@ -74,12 +74,25 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   
   // Optimization State
   const [optimizedFile, setOptimizedFile] = useState(null);
-  const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [isOptimizing, setIsOptimizing] = useState(false);
   
   // Upload State
   const [uploadProgress, setUploadProgress] = useState({ media: 0, thumbnail: 0 });
   const [uploadStatus, setUploadStatus] = useState('draft'); // draft, processing, ready, published, failed
+
+  const resetMediaState = useCallback(() => {
+    setMediaFile(null);
+    setMediaPreviewUrl('');
+    setTrimStart(sermon?.trimStartSeconds || 0);
+    setTrimEnd(sermon?.trimEndSeconds || 0);
+    setDuration(sermon?.durationSeconds || 0);
+    setThumbnailFile(null);
+    setThumbnailPreviewUrl('');
+    setThumbnailTime(0);
+    setOptimizedFile(null);
+    setIsOptimizing(false);
+    setUploadProgress({ media: 0, thumbnail: 0 });
+  }, [sermon]);
 
   useEffect(() => {
     if (sermon) {
@@ -112,22 +125,7 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     setActiveStepIndex(0);
     setActiveEditTab('Details');
     setError('');
-  }, [sermon, isOpen]);
-  
-  const resetMediaState = () => {
-    setMediaFile(null);
-    setMediaPreviewUrl('');
-    setTrimStart(sermon?.trimStartSeconds || 0);
-    setTrimEnd(sermon?.trimEndSeconds || 0);
-    setDuration(sermon?.durationSeconds || 0);
-    setThumbnailFile(null);
-    setThumbnailPreviewUrl('');
-    setThumbnailTime(0);
-    setOptimizedFile(null);
-    setOptimizationProgress(0);
-    setIsOptimizing(false);
-    setUploadProgress({ media: 0, thumbnail: 0 });
-  }
+  }, [sermon, isOpen, resetMediaState]);
 
   if (!isOpen) return null;
 
@@ -203,8 +201,6 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
     setThumbnailFile(file);
     setThumbnailPreviewUrl(URL.createObjectURL(file));
   };
-
-  const MAX_CLIENT_SIZE = 150 * 1024 * 1024; // 150MB
 
   const handleOptimize = async () => {
     if (!mediaFile) return;

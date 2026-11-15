@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useId } from 'react';
 import { X } from 'lucide-react';
 
 /**
@@ -46,7 +46,8 @@ export default function Modal({
   ariaLabel,
 }) {
   const modalRef = useRef(null);
-  const titleId = useRef(`modal-title-${Math.random().toString(36).slice(2, 9)}`);
+  const generatedId = useId();
+  const titleId = `modal-title-${generatedId}`;
 
   // Handle ESC key dismiss
   const handleKeyDown = useCallback((event) => {
@@ -84,7 +85,7 @@ export default function Modal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? titleId.current : undefined}
+      aria-labelledby={title ? titleId : undefined}
       aria-label={!title ? ariaLabel : undefined}
       onClick={handleBackdropClick}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/50 backdrop-blur-md animate-fade-in"
