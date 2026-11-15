@@ -7,6 +7,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import DaySequenceBuilder from './DaySequenceBuilder';
 import { parseScriptureReference } from '../../constants/bibleCanon';
+import Modal from '../../components/ui/Modal';
 
 // Pre-built sample for 7-day Devotional
 const SAMPLE_DEVOTIONAL_DAYS = [
@@ -391,42 +392,49 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
   const activeDay = formData.days[activeDayIndex] || { dayNumber: 1, title: 'Day 1', items: [] };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/95">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-200/80 flex justify-between items-center bg-gray-50/50">
-          <div>
-            <h2 className="text-xl font-bold text-brand-dark">
-              {plan ? 'Edit Spiritual Plan' : 'Create Spiritual Growth & Devotional Plan'}
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              System Admin Global Catalog • Managed centrally for all church tenants
-            </p>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={plan ? 'Edit Spiritual Plan' : 'Create Spiritual Growth & Devotional Plan'}
+      subtitle="System Admin Global Catalog • Managed centrally for all church tenants"
+      icon={BookOpen}
+      maxWidth="4xl"
+      headerActions={
+        !plan && (
+          <button
+            type="button"
+            onClick={handleLoadSampleDevotional}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/70 rounded-xl text-xs font-semibold transition-colors"
+          >
+            {templateLoaded ? <><Check size={13} /> Loaded!</> : <><FileText size={13} /> Load Sample Devotional</>}
           </button>
-        </div>
+        )
+      }
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="bible-plan-form"
+            disabled={loading}
+            className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+          >
+            {loading ? 'Saving Plan...' : 'Save & Publish Global Plan'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-semibold border border-red-200/70">{error}</div>}
 
-        {/* Template Prompt */}
-        {!plan && (
-          <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center justify-between">
-            <div className="flex items-center text-amber-900 text-xs font-medium">
-              <FileText size={16} className="mr-2 text-amber-600 shrink-0" />
-              Want to see a sample 7-day Devotional with R.C. Sproul's "The Priority of Love"?
-            </div>
-            <button
-              type="button"
-              onClick={handleLoadSampleDevotional}
-              className="px-3.5 py-1.5 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 flex items-center shadow-sm shrink-0"
-            >
-              {templateLoaded ? <><Check size={14} className="mr-1" /> Loaded!</> : 'Load Sample Devotional'}
-            </button>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-6 flex-1">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-medium">{error}</div>}
+        <form id="bible-plan-form" onSubmit={handleSubmit} className="space-y-4">
 
           {/* Section 1: Plan Metadata */}
           <div className="space-y-4">
@@ -650,26 +658,8 @@ export default function BiblePlanFormModal({ isOpen, onClose, plan = null }) {
             </div>
           </div>
 
-          {/* Form Actions */}
-          <div className="pt-4 border-t border-slate-200/80 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-5 py-2.5 bg-white border border-slate-300 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-xs font-bold hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-sm"
-            >
-              {loading ? 'Saving Plan...' : 'Save & Publish Global Plan'}
-            </button>
-          </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }

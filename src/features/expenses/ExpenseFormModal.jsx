@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
+import { Upload, Receipt, DollarSign, Calendar, FileText, Building2 } from 'lucide-react';
 import { collection, doc, setDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
@@ -8,6 +8,7 @@ import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
 import StorageQuotaModal from '../subscription/components/StorageQuotaModal';
+import Modal from '../../components/ui/Modal';
 
 export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   const { userProfile } = useAuth();
@@ -49,7 +50,7 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         date: new Date().toISOString().split('T')[0],
         amount: '',
         payee: '',
-        category: '',
+        category: 'Utilities',
         description: '',
         fundId: '',
         fundType: '',
@@ -58,92 +59,111 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
     setReceiptFile(null);
     setUploadProgress(0);
     setError('');
+  }, [expense, isOpen]);
 
-    // Fetch active funds for dropdown
-    if (isOpen) {
-      const fetchFundsAndCategories = async () => {
-        try {
-          if (!CHURCH_ID) return;
-          const { query, where, getDocs } = await import('firebase/firestore');
-          
-          // Fetch Funds
-          const qFunds = query(collection(db, 'givingFunds'), where('churchId', '==', CHURCH_ID), where('status', '==', 'active'));
-          const snapFunds = await getDocs(qFunds);
-          const activeFunds = snapFunds.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(f => f.allowExpenses !== false)
-            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-          setFunds(activeFunds);
-          
-          // Fetch Categories
-          const qCats = query(collection(db, 'expenseCategories'), where('churchId', '==', CHURCH_ID), where('status', '==', 'active'));
-          const snapCats = await getDocs(qCats);
-          const activeCategories = snapCats.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-          
-          // Prepend existing category if it's not in the active list
-          if (expense?.category && !activeCategories.find(c => c.name === expense.category)) {
-            activeCategories.unshift({ id: 'legacy', name: expense.category, status: 'active' });
-          }
-          
-          setCategories(activeCategories);
+  // Fetch available Giving Funds and Custom Expense Categories for dropdowns
+  useEffect(() => {
+    if (!isOpen || !CHURCH_ID) return;
 
-          setFormData(prev => {
-            const updates = {};
-            if (!expense && activeFunds.length > 0 && !prev.fundId) {
-               updates.fundId = activeFunds[0].id;
-               updates.fundType = activeFunds[0].name;
-            }
-            if (!expense && activeCategories.length > 0 && !prev.category) {
-               updates.category = activeCategories[0].name;
-            } else if (expense?.category && !prev.category) {
-               updates.category = expense.category;
-            }
-            return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
-          });
-        } catch (e) {
-          console.error("Failed to fetch funds/categories for dropdown", e);
+    const fetchDropdownData = async () => {
+      try {
+        const { query, where, getDocs } = await import('firebase/firestore');
+        
+        // 1. Fetch active funds
+        const qFunds = query(
+          collection(db, 'givingFunds'),
+          where('churchId', '==', CHURCH_ID),
+          where('status', '==', 'active')
+        );
+        const snapFunds = await getDocs(qFunds);
+        const fundsList = snapFunds.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(f => f.allowExpenses !== false)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setFunds(fundsList);
+
+        // Auto-select first fund if not editing
+        if (!expense && fundsList.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            fundId: prev.fundId || fundsList[0].id,
+            fundType: prev.fundType || fundsList[0].type || 'general'
+          }));
         }
-      };
-      
-      fetchFundsAndCategories();
-    }
-  }, [expense, isOpen, CHURCH_ID]);
+
+        // 2. Fetch custom active expense categories
+        const qCats = query(
+          collection(db, 'expenseCategories'),
+          where('churchId', '==', CHURCH_ID),
+          where('status', '==', 'active')
+        );
+        const snapCats = await getDocs(qCats);
+        const customCats = snapCats.docs.map(d => d.data().name);
+
+        const defaultCategories = [
+          'Utilities', 'Ministry', 'Maintenance', 'Salaries & Honorarium',
+          'Honorarium', 'Events', 'Mission & Outreach', 'Audio & Video', 'Office Supplies', 'Other'
+        ];
+        
+        const mergedCategories = Array.from(new Set([...defaultCategories, ...customCats])).sort();
+        setCategories(mergedCategories);
+
+        if (!expense && !formData.category && mergedCategories.length > 0) {
+          setFormData(prev => ({ ...prev, category: mergedCategories[0] }));
+        }
+      } catch (err) {
+        console.error('Error fetching funds or categories for expense form:', err);
+      }
+    };
+
+    fetchDropdownData();
+  }, [isOpen, CHURCH_ID, expense]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFundChange = (fundId) => {
+    const selected = funds.find(f => f.id === fundId);
+    setFormData(prev => ({
+      ...prev,
+      fundId,
+      fundType: selected ? (selected.type || 'general') : ''
+    }));
   };
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
-      const selected = e.target.files[0];
-      const capacity = storageQuota.checkUploadCapacity(selected.size);
-      if (!capacity.allowed) {
+      const file = e.target.files[0];
+      
+      // Proactive Pre-flight Storage Check
+      const check = storageQuota.checkStorageUpload(file.size);
+      if (!check.allowed) {
         setStorageModalInfo({
-          fileSizeFormatted: capacity.fileSizeFormatted,
-          targetTier: capacity.targetTier
+          fileSizeFormatted: check.fileSizeFormatted,
+          targetTier: check.targetTier || 'kingdom'
         });
         setIsStorageModalOpen(true);
-        e.target.value = '';
+        e.target.value = null; // reset file input
         return;
       }
-      setReceiptFile(selected);
+      
+      setReceiptFile(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!CHURCH_ID) {
+      setError('Church ID is missing. Cannot save.');
+      return;
+    }
 
-    if (receiptFile && !storageQuota.canUploadBytes(receiptFile.size)) {
-      const capacity = storageQuota.checkUploadCapacity(receiptFile.size);
-      setStorageModalInfo({
-        fileSizeFormatted: capacity.fileSizeFormatted,
-        targetTier: capacity.targetTier
-      });
-      setIsStorageModalOpen(true);
+    if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
+      setError('Please enter a valid expense amount.');
       return;
     }
 
@@ -151,13 +171,13 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
     setError('');
 
     try {
-      const expensesColRef = collection(db, 'givingExpenses');
-      const docRef = expense ? doc(db, 'givingExpenses', expense.id) : doc(expensesColRef);
+      let receiptUrl = expense?.receiptUrl || '';
 
-      let receiptUrl = expense?.receiptUrl || null;
-
+      // Upload receipt if selected
       if (receiptFile) {
-        const storageRef = ref(storage, `receipts/${CHURCH_ID}/${docRef.id}_${receiptFile.name}`);
+        const fileExt = receiptFile.name.split('.').pop();
+        const fileName = `expense_${Date.now()}.${fileExt}`;
+        const storageRef = ref(storage, `receipts/${CHURCH_ID}/${fileName}`);
         const uploadTask = uploadBytesResumable(storageRef, receiptFile);
 
         await new Promise((resolve, reject) => {
@@ -176,17 +196,16 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         });
       }
 
-      // Map final fundType for fallback
-      let finalFundType = formData.fundType;
-      if (formData.fundId) {
-        const selectedFund = funds.find(f => f.id === formData.fundId);
-        if (selectedFund) {
-          finalFundType = selectedFund.name;
-        }
-      }
+      const expensesColRef = collection(db, 'expenses');
+      const docRef = expense ? doc(db, 'expenses', expense.id) : doc(expensesColRef);
+
+      const finalFundId = formData.fundId || (funds.length > 0 ? funds[0].id : null);
+      const matchedFund = funds.find(f => f.id === finalFundId);
+      const finalFundType = formData.fundType || (matchedFund ? matchedFund.type : 'general');
 
       const expenseDoc = {
         ...formData,
+        fundId: finalFundId,
         fundType: finalFundType,
         amount: parseFloat(formData.amount) || 0,
         receiptUrl,
@@ -226,35 +245,80 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/95">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-xl font-bold text-church-navy">{expense ? 'Edit Expense' : 'Log Expense'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Amount (₱) *</label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  name="amount"
-                  required
-                  value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all text-lg font-bold text-[#2C4A60] bg-white" 
-                />
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={expense ? 'Edit Expense' : 'Log Expense'}
+        subtitle="Record operational costs, disbursement receipts, and fund allocations"
+        icon={Receipt}
+        maxWidth="lg"
+        footer={
+          <>
+            <button 
+              type="button" 
+              onClick={onClose}
+              disabled={loading}
+              className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              form="expense-form"
+              disabled={loading}
+              className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : expense ? 'Save Changes' : 'Log Expense'}
+            </button>
+          </>
+        }
+      >
+        <form id="expense-form" onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+              {error}
+            </div>
+          )}
+          
+          {/* Section 1: Financial & Date Parameters */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <DollarSign size={14} strokeWidth={2.4} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Date *</label>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Amount & Schedule
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Core transaction value and accounting date</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Amount (PHP) <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs sm:text-sm">₱</span>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    name="amount"
+                    required
+                    value={formData.amount}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    className="w-full pl-8 pr-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-bold text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Disbursement Date <span className="text-rose-500">*</span>
+                </label>
                 <ModernDatePicker 
                   name="date"
                   value={formData.date}
@@ -262,94 +326,105 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
                 />
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Payee / Vendor *</label>
-                <input 
-                  type="text" 
-                  name="payee"
-                  required
-                  value={formData.payee}
-                  onChange={handleChange}
-                  placeholder="e.g. Meralco"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
-                />
+          {/* Section 2: Allocation & Category */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <Building2 size={14} strokeWidth={2.4} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Fund *</label>
-                <ModernDropdown
-                  value={formData.fundId}
-                  onChange={(val) => handleChange({ target: { name: 'fundId', value: val } })}
-                  options={funds.map(f => ({ value: f.id, label: f.name }))}
-                />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Classification & Fund Source
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Designate which fund and budget category to deduct from</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Category *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Category *</label>
                 <ModernDropdown
                   value={formData.category}
                   onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
-                  options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
+                  options={categories.map(c => ({ value: c, label: c }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Deduct from Fund *</label>
+                <ModernDropdown
+                  value={formData.fundId}
+                  onChange={handleFundChange}
+                  options={funds.map(f => ({ value: f.id, label: `${f.name} (${f.type || 'general'})` }))}
+                  placeholder="Select source fund"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-church-navy mb-1">Description</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Payee / Vendor <span className="text-rose-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                name="payee"
+                required
+                value={formData.payee}
+                onChange={handleChange}
+                placeholder="e.g. Meralco, Office Depot, Pastor John"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Description / Purpose</label>
               <textarea 
                 name="description"
                 rows="2"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="What was this for?"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white" 
+                placeholder="What was this expense for?"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none" 
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-church-navy mb-1">Receipt Upload (Optional)</label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-gray-50 transition-colors">
-                <div className="space-y-1 text-center">
-                  <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                  <div className="flex text-sm text-gray-600 justify-center">
-                    <label htmlFor="receipt-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-[#2C4A60] hover:text-[#1D3547] focus-within:outline-none">
-                      <span>{receiptFile ? receiptFile.name : 'Upload a file'}</span>
-                      <input id="receipt-upload" name="receipt-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*,.pdf" />
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, PDF up to 5MB</p>
-                </div>
+          {/* Section 3: Receipt Attachment */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <FileText size={14} strokeWidth={2.4} />
               </div>
-              {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                  <div className="bg-[#2C4A60] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
-                </div>
-              )}
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Receipt Attachment
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Digital audit trail and proof of disbursement</p>
+              </div>
             </div>
 
-            <div className="pt-4 flex justify-end space-x-3 border-t border-gray-100">
-              <button 
-                type="button" 
-                onClick={onClose}
-                disabled={loading}
-                className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
-              >
-                {loading ? 'Saving...' : 'Save Expense'}
-              </button>
+            <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/80 border-dashed rounded-xl hover:bg-slate-50 transition-colors">
+              <div className="space-y-1.5 text-center">
+                <Upload className="mx-auto h-7 w-7 text-[#2C4A60]" />
+                <div className="text-xs sm:text-sm text-slate-600">
+                  <label htmlFor="receipt-upload" className="cursor-pointer font-bold text-[#2C4A60] hover:text-[#162533] focus-within:outline-none">
+                    <span>{receiptFile ? receiptFile.name : 'Choose a file or click to browse'}</span>
+                    <input id="receipt-upload" name="receipt-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*,.pdf" />
+                  </label>
+                </div>
+                <p className="text-[11px] text-slate-400">PNG, JPG, PDF up to 5MB</p>
+              </div>
             </div>
-          </form>
-        </div>
-      </div>
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                <div className="bg-[#2C4A60] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+              </div>
+            )}
+          </div>
+        </form>
+      </Modal>
 
       <StorageQuotaModal
         isOpen={isStorageModalOpen}
@@ -357,6 +432,6 @@ export default function ExpenseFormModal({ isOpen, onClose, expense = null }) {
         fileSizeFormatted={storageModalInfo.fileSizeFormatted}
         targetTier={storageModalInfo.targetTier}
       />
-    </div>
+    </>
   );
 }

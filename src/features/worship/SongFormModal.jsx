@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Guitar } from 'lucide-react';
+import { Music, Guitar, Sparkles, Video, Globe, FileText, Shield } from 'lucide-react';
 import { createSong, updateSong } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import UltimateGuitarImportModal from './UltimateGuitarImportModal';
+import Modal from '../../components/ui/Modal';
 
 export function extractYouTubeVideoId(url) {
   if (!url || typeof url !== 'string') return null;
@@ -61,12 +62,10 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
     setFormData(prev => ({
       ...prev,
       ...ugFormData,
-      // Preserve any already-filled fields the user may have typed
-      title:    prev.title    || ugFormData.title,
-      artist:   prev.artist   || ugFormData.artist,
+      title: prev.title || ugFormData.title,
+      artist: prev.artist || ugFormData.artist,
       defaultKey: prev.defaultKey || ugFormData.defaultKey,
       originalKey: prev.originalKey || ugFormData.originalKey,
-      // Always take the chord chart from UG
       chordChart: ugFormData.chordChart || prev.chordChart,
       lyrics: ugFormData.lyrics || prev.lyrics,
     }));
@@ -120,8 +119,6 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
       });
     }
   }, [song, isOpen]);
-
-  if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -178,7 +175,6 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
       }
     });
 
-    // If we detected chords, we take over the paste behavior
     if (hasChords) {
       e.preventDefault();
       setFormData(prev => ({
@@ -230,109 +226,137 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
     setSaving(false);
   };
 
+  const videoId = extractYouTubeVideoId(formData.youtubeUrl);
+
   return (
     <>
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm sm:p-6">
-      <div className="fixed inset-0 bg-church-navy/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
-          <div>
-            <h2 className="text-xl font-bold text-church-navy">
-              {song ? 'Edit Song' : 'Add New Song'}
-            </h2>
-            {!song && (
-              <button
-                type="button"
-                onClick={() => setIsUGModalOpen(true)}
-                className="mt-1 flex items-center gap-1.5 text-xs text-orange-500 hover:text-orange-700 font-semibold transition-colors"
-              >
-                <Guitar size={13} />
-                Auto-fill from Ultimate Guitar
-              </button>
-            )}
-          </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-6">
-          <form id="song-form" onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Title *</label>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={song ? 'Edit Song' : 'Add New Song'}
+        subtitle={song ? 'Update worship track details, chord charts, and community directory visibility' : 'Add a new song to your church catalog with chords and lyrics'}
+        icon={Music}
+        maxWidth="3xl"
+        headerActions={
+          !song && (
+            <button
+              type="button"
+              onClick={() => setIsUGModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/70 rounded-xl text-xs font-semibold transition-colors"
+            >
+              <Guitar size={13} />
+              <span>Auto-fill from Ultimate Guitar</span>
+            </button>
+          )
+        }
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="song-form"
+              disabled={saving}
+              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : (song ? 'Save Changes' : 'Create Song')}
+            </button>
+          </>
+        }
+      >
+        <form id="song-form" onSubmit={handleSubmit} className="space-y-4">
+          {/* Card 1: Track Details */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <Music size={14} />
+              </div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Song Information</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Song Title *</label>
                 <input 
                   type="text" 
                   name="title" 
                   required 
+                  placeholder="e.g. 10,000 Reasons (Bless the Lord)"
                   value={formData.title} 
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-church-navy mb-2">Artist / Band</label>
-                  <input 
-                    type="text" 
-                    name="artist" 
-                    value={formData.artist} 
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-church-navy mb-2">Composer</label>
-                  <input 
-                    type="text" 
-                    name="composer" 
-                    value={formData.composer} 
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
-                  />
-                </div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Default Key</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Artist / Band</label>
                 <input 
                   type="text" 
-                  name="defaultKey"
-                  placeholder="e.g. G, C#"
-                  value={formData.defaultKey} 
+                  name="artist" 
+                  placeholder="e.g. Matt Redman"
+                  value={formData.artist} 
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
                 />
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Tempo (BPM)</label>
-                <input 
-                  type="number" 
-                  name="tempoBpm" 
-                  value={formData.tempoBpm} 
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Status</label>
-                <ModernDropdown
-                  value={formData.status}
-                  onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
-                  options={[
-                    { value: 'active', label: 'Active' },
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'archived', label: 'Archived' }
-                  ]}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Language</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Composer / Arranger</label>
+                <input 
+                  type="text" 
+                  name="composer" 
+                  placeholder="e.g. Jonas Myrin, Matt Redman"
+                  value={formData.composer} 
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 md:col-span-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Default Key</label>
+                  <input 
+                    type="text" 
+                    name="defaultKey"
+                    placeholder="e.g. G, C#, Bb"
+                    value={formData.defaultKey} 
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm font-semibold focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tempo (BPM)</label>
+                  <input 
+                    type="number" 
+                    name="tempoBpm" 
+                    placeholder="e.g. 73"
+                    value={formData.tempoBpm} 
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Status</label>
+                  <ModernDropdown
+                    value={formData.status}
+                    onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
+                    options={[
+                      { value: 'active', label: 'Active' },
+                      { value: 'draft', label: 'Draft' },
+                      { value: 'archived', label: 'Archived' }
+                    ]}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Language</label>
                 <ModernDropdown
                   value={formData.language}
                   onChange={(val) => handleChange({ target: { name: 'language', value: val } })}
@@ -344,8 +368,9 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
                   ]}
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Category</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Category</label>
                 <ModernDropdown
                   value={formData.category}
                   onChange={(val) => handleChange({ target: { name: 'category', value: val } })}
@@ -362,81 +387,110 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
                   ]}
                 />
               </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tags (comma separated)</label>
+                <input 
+                  type="text" 
+                  name="tags"
+                  placeholder="e.g. Praise, Fast, Cross, Easter"
+                  value={formData.tags} 
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Media Reference */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <Video size={14} />
+              </div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Media & Video Reference</h3>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Tags (comma separated)</label>
-              <input 
-                type="text" 
-                name="tags"
-                placeholder="e.g. Praise, Fast, Easter"
-                value={formData.tags} 
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">YouTube Reference Link</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">YouTube Video Link</label>
               <input 
                 type="text" 
                 name="youtubeUrl"
                 placeholder="e.g. https://www.youtube.com/watch?v=... or https://youtu.be/..."
                 value={formData.youtubeUrl} 
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
               />
-              {extractYouTubeVideoId(formData.youtubeUrl) && (
-                <div className="mt-3 flex items-center p-3 bg-red-50 rounded-xl border border-red-100">
+              {videoId && (
+                <div className="mt-3 flex items-center p-3 bg-red-50/70 rounded-xl border border-red-100">
                   <img 
-                    src={`https://img.youtube.com/vi/${extractYouTubeVideoId(formData.youtubeUrl)}/hqdefault.jpg`} 
+                    src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} 
                     alt="YouTube Preview" 
-                    className="w-24 h-16 object-cover rounded-lg mr-3 border border-red-200 shadow-sm"
+                    className="w-24 h-16 object-cover rounded-lg mr-3 border border-red-200 shadow-2xs"
                   />
                   <div>
-                    <span className="text-xs font-bold text-red-700 uppercase tracking-wider block">YouTube Reference Preview</span>
-                    <span className="text-xs text-gray-600">Video ID: <code className="bg-red-100 px-1.5 py-0.5 rounded text-red-800 font-mono text-xs">{extractYouTubeVideoId(formData.youtubeUrl)}</code></span>
+                    <span className="text-[11px] font-bold text-red-700 uppercase tracking-wider block">YouTube Reference Preview</span>
+                    <span className="text-xs text-slate-600">Video ID: <code className="bg-red-100 px-1.5 py-0.5 rounded text-red-800 font-mono text-xs">{videoId}</code></span>
                   </div>
                 </div>
               )}
             </div>
-            
-            <div className="border-t border-gray-100 pt-6 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
-              <h3 className="text-base font-bold text-church-navy mb-1">Mobile Community Directory</h3>
-              <p className="text-xs text-church-slate mb-4">
-                Songs marked Members Only or Public will appear in the mobile Community Songs Directory. Chords and worship arrangement details remain available only through assigned worship duties.
-              </p>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-church-navy mb-2">Directory Visibility</label>
-                  <ModernDropdown
-                    value={formData.directoryVisibility}
-                    onChange={(val) => handleChange({ target: { name: 'directoryVisibility', value: val } })}
-                    options={[
-                      { value: 'hidden', label: 'Hidden' },
-                      { value: 'members_only', label: 'Members Only' },
-                      { value: 'public', label: 'Public' }
-                    ]}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-church-navy mb-2">Allow Lyrics in Directory</label>
-                  <ModernDropdown
-                    value={formData.allowLyricsInDirectory ? 'yes' : 'no'}
-                    onChange={(val) => handleChange({ target: { name: 'allowLyricsInDirectory', type: 'checkbox', checked: val === 'yes' } })}
-                    options={[
-                      { value: 'no', label: 'No' },
-                      { value: 'yes', label: 'Yes' }
-                    ]}
-                  />
-                </div>
+          {/* Card 3: Mobile Community Directory */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <Globe size={14} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Mobile Community Directory</h3>
+                <p className="text-[11px] text-slate-500">Configure how this song appears in the mobile member app.</p>
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-6">
-              <label className="block text-sm font-semibold text-church-navy mb-2">Lyrics</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Directory Visibility</label>
+                <ModernDropdown
+                  value={formData.directoryVisibility}
+                  onChange={(val) => handleChange({ target: { name: 'directoryVisibility', value: val } })}
+                  options={[
+                    { value: 'hidden', label: 'Hidden (Team Only)' },
+                    { value: 'members_only', label: 'Members Only' },
+                    { value: 'public', label: 'Public' }
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Allow Lyrics in Directory</label>
+                <ModernDropdown
+                  value={formData.allowLyricsInDirectory ? 'yes' : 'no'}
+                  onChange={(val) => handleChange({ target: { name: 'allowLyricsInDirectory', type: 'checkbox', checked: val === 'yes' } })}
+                  options={[
+                    { value: 'no', label: 'No (Hide Lyrics)' },
+                    { value: 'yes', label: 'Yes (Show Lyrics)' }
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Lyrics & Chords */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <FileText size={14} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lyrics & Chord Chart</h3>
+                <p className="text-[11px] text-slate-500">Paste lyrics with chords to auto-detect keys and separate lyrics.</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Lyrics</label>
               <textarea 
                 name="lyrics" 
                 rows={6}
@@ -444,74 +498,66 @@ export default function SongFormModal({ isOpen, onClose, song, onSaved }) {
                 onChange={handleChange}
                 onPaste={handleLyricsPaste}
                 placeholder="Paste lyrics with chords here to auto-detect!"
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green font-mono text-sm" 
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm font-mono focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
               />
             </div>
             
             <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Chord Chart / Notes</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Chord Chart / Musician Notes</label>
               <textarea 
                 name="chordChart" 
-                rows={4}
+                rows={5}
                 value={formData.chordChart} 
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green font-mono text-sm" 
+                placeholder="[Verse 1]&#10;G       D/F#&#10;Bless the Lord O my soul..."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm font-mono focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
               />
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          </div>
+
+          {/* Card 5: Licensing & Copyright */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <Shield size={14} />
+              </div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Licensing & Copyright</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">Copyright / License Info</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Copyright / License Info</label>
                 <input 
                   type="text" 
                   name="copyrightInfo"
-                  placeholder="e.g. Sovereign Grace Worship"
+                  placeholder="e.g. Sovereign Grace Worship / Integrity Music"
                   value={formData.copyrightInfo} 
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">CCLI Song Number</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">CCLI Song Number</label>
                 <input 
                   type="text" 
                   name="ccliSongNumber"
                   placeholder="e.g. 7096627"
                   value={formData.ccliSongNumber} 
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2C4A60] focus:ring-2 focus:ring-[#2C4A60]/10 transition-all" 
                 />
               </div>
             </div>
-          </form>
-        </div>
-        
-        <div className="px-6 py-5 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex justify-end space-x-3">
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-church-slate hover:bg-gray-200 rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            form="song-form"
-            disabled={saving}
-            className="px-5 py-2.5 bg-church-green text-white text-sm font-semibold rounded-xl hover:bg-church-green/90 transition-opacity disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save Song'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </div>
+        </form>
+      </Modal>
 
-    <UltimateGuitarImportModal
-      isOpen={isUGModalOpen}
-      onClose={() => setIsUGModalOpen(false)}
-      mergeMode={true}
-      onMergeData={handleUGMerge}
-    />
+      <UltimateGuitarImportModal
+        isOpen={isUGModalOpen}
+        onClose={() => setIsUGModalOpen(false)}
+        mergeMode={true}
+        onMergeData={handleUGMerge}
+      />
     </>
   );
 }

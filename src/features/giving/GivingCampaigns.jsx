@@ -7,7 +7,7 @@ import CampaignFormModal from './CampaignFormModal';
 
 export default function GivingCampaigns() {
   const { userProfile, formatCurrency } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const CHURCH_ID = userProfile?.churchId;
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,7 +48,7 @@ export default function GivingCampaigns() {
         console.error("Error fetching funds:", err);
       }
     };
-    
+
     let unsubscribeFunds;
     fetchFunds().then(unsub => unsubscribeFunds = unsub);
 
@@ -75,7 +75,7 @@ export default function GivingCampaigns() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const filteredCampaigns = campaigns.filter(c => 
+  const filteredCampaigns = campaigns.filter(c =>
     c.title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   );
 
@@ -113,7 +113,7 @@ export default function GivingCampaigns() {
           <h1 className="text-3xl font-bold text-church-navy">Giving Campaigns</h1>
           <p className="text-sm text-church-slate mt-1">Manage fundraising and special projects.</p>
         </div>
-        <button 
+        <button
           onClick={handleAddClick}
           className="flex items-center px-5 py-2.5 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
         >
@@ -138,7 +138,7 @@ export default function GivingCampaigns() {
             />
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -193,14 +193,14 @@ export default function GivingCampaigns() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
-                        <button 
+                        <button
                           onClick={() => handleEditClick(campaign)}
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View / Edit"
                         >
                           <Edit size={16} />
                         </button>
-                        
+
                         {campaign.status === 'draft' && (
                           <button onClick={() => handleUpdateStatus(campaign, 'activate')} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Activate">
                             <Play size={16} />
@@ -237,7 +237,7 @@ export default function GivingCampaigns() {
       </div>
 
       {isModalOpen && (
-        <CampaignFormModal 
+        <CampaignFormModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           campaign={editingCampaign}

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { X, Upload, Check, AlertCircle } from 'lucide-react';
+import { Upload, AlertCircle, BookOpen, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { importDiscipleshipPlanJSON } from './discipleshipService';
 import { parseAndValidateJSONEnvelope } from '../../utils/jsonImportExport';
+import Modal from '../../components/ui/Modal';
 
 export default function DiscipleshipImportModal({ isOpen, onClose, onImportSuccess }) {
-  const { userProfile, currentUser } = useAuth();
-  const CHURCH_ID = userProfile?.churchId ;
+  const { userProfile } = useAuth();
+  const CHURCH_ID = userProfile?.churchId;
   const [jsonFile, setJsonFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -178,7 +179,7 @@ export default function DiscipleshipImportModal({ isOpen, onClose, onImportSucce
     }
 
     try {
-      await importDiscipleshipPlanJSON(CHURCH_ID, currentUser?.uid, previewData);
+      await importDiscipleshipPlanJSON(CHURCH_ID, userProfile?.uid, previewData);
       onImportSuccess();
       onClose();
     } catch (err) {
@@ -189,95 +190,95 @@ export default function DiscipleshipImportModal({ isOpen, onClose, onImportSucce
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-church-navy/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xl flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mr-3">
-              <Upload size={20} className="text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-church-navy">Import Plan JSON</h2>
-              <p className="text-sm text-gray-500">Upload a discipleship plan</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="p-6">
-          {error && (
-            <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-xl text-sm flex items-start">
-              <AlertCircle size={16} className="mt-0.5 mr-2 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 relative hover:bg-gray-100 transition-colors">
-            <input
-              type="file"
-              accept=".json,application/json"
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <Upload size={32} className="mx-auto text-gray-400 mb-3" />
-            <p className="text-church-navy font-medium">Click or drag JSON file here</p>
-            <p className="text-sm text-gray-500 mt-1">
-              {jsonFile ? jsonFile.name : 'Must follow discipleship JSON schema'}
-            </p>
-          </div>
-
-          {previewData && (
-            <div className="mt-6 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-church-navy mb-2">Preview</h3>
-              {Array.isArray(previewData) ? (
-                <div>
-                  <p className="text-sm text-gray-600"><strong>Bulk Import:</strong> {previewData.length} Discipleship Plans found.</p>
-                  <ul className="mt-2 text-xs text-gray-600 space-y-1 max-h-32 overflow-y-auto pl-4 list-disc">
-                    {previewData.map((plan, idx) => (
-                      <li key={idx}><strong>{plan.title || 'Untitled'}</strong> ({plan.weeks?.length || 0} weeks)</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm text-gray-600"><strong>Title:</strong> {previewData.title}</p>
-                  <p className="text-sm text-gray-600"><strong>Subtitle:</strong> {previewData.subtitle || 'N/A'}</p>
-                  <p className="text-sm text-gray-600"><strong>Total Weeks:</strong> {previewData.weeks?.length || 0}</p>
-                </div>
-              )}
-              <p className="text-xs text-blue-600 font-medium mt-2">
-                This plan will be imported as Draft and assigned to your current active church workspace.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Import Discipleship Plan JSON"
+      subtitle="Upload single or bulk curriculum plans to your church catalog"
+      icon={Upload}
+      maxWidth="xl"
+      footer={
+        <>
           <button
+            type="button"
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl"
+            disabled={loading}
+            className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleImport}
             disabled={!previewData || loading}
-            className="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-50"
+            className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
           >
             {loading ? 'Importing...' : 'Confirm Import'}
           </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-semibold flex items-start border border-red-200/70">
+            <AlertCircle size={15} className="mt-0.5 mr-2 shrink-0 text-red-500" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center bg-slate-50/50 hover:bg-slate-100/60 transition-colors relative cursor-pointer group">
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={handleFileChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <div className="w-12 h-12 rounded-2xl bg-white shadow-2xs border border-slate-200/70 text-[#2C4A60] flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
+            <Upload size={22} />
+          </div>
+          <p className="text-sm font-bold text-slate-800">Click or drag Discipleship JSON file here</p>
+          <p className="text-xs text-slate-500 mt-1 font-medium">
+            {jsonFile ? jsonFile.name : 'Must follow discipleship JSON schema'}
+          </p>
         </div>
+
+        {previewData && (
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center">
+                <BookOpen size={14} />
+              </div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Plan Preview</h3>
+            </div>
+
+            {Array.isArray(previewData) ? (
+              <div>
+                <p className="text-xs text-slate-600 font-medium">
+                  <strong>Bulk Import:</strong> {previewData.length} Discipleship Plans found.
+                </p>
+                <ul className="mt-2 text-xs text-slate-600 space-y-1.5 max-h-40 overflow-y-auto pl-4 list-disc bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                  {previewData.map((plan, idx) => (
+                    <li key={idx}>
+                      <span className="font-semibold text-slate-800">{plan.title || 'Untitled'}</span>{' '}
+                      <span className="text-slate-500">({plan.weeks?.length || 0} weeks)</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/60 text-xs text-slate-700 space-y-1">
+                <p><strong className="text-slate-800">Title:</strong> {previewData.title}</p>
+                <p><strong className="text-slate-800">Subtitle:</strong> {previewData.subtitle || 'N/A'}</p>
+                <p><strong className="text-slate-800">Total Weeks:</strong> {previewData.weeks?.length || 0}</p>
+              </div>
+            )}
+            <p className="text-[11px] text-slate-500 font-medium pt-1">
+              This plan will be imported as Draft and assigned to your current active church workspace.
+            </p>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

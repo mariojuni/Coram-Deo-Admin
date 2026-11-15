@@ -8,7 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 export default function DonationAccountFormModal({ isOpen, onClose, account, accounts }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
-  
+
   const [formData, setFormData] = useState({
     displayName: '',
     bankName: '',
@@ -86,14 +86,14 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!CHURCH_ID) return;
-    
+
     setLoading(true);
     setError('');
 
     try {
       const accountsColRef = collection(db, 'donationAccounts');
       const docRef = account ? doc(db, 'donationAccounts', account.id) : doc(accountsColRef);
-      
+
       let qrImagePath = qrPreview;
 
       // Handle file upload if there's a new file
@@ -120,14 +120,14 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
 
       // Handle batch if isPrimary is true and needs to clear other primaries
       let batch = writeBatch(db);
-      
+
       if (formData.isPrimary) {
         const q = query(
-          collection(db, 'donationAccounts'), 
+          collection(db, 'donationAccounts'),
           where('churchId', '==', CHURCH_ID)
         );
         const allAccounts = await getDocs(q);
-        
+
         allAccounts.forEach((docSnap) => {
           if (docSnap.id !== docRef.id && docSnap.data().isPrimary === true) {
             batch.update(docSnap.ref, { isPrimary: false, updatedAt: serverTimestamp(), updatedBy: userProfile.uid });
@@ -172,34 +172,34 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">{error}</div>}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Display Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="displayName"
                   required
                   value={formData.displayName}
                   onChange={handleChange}
                   placeholder="e.g. Main Church Bank"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Bank Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="bankName"
                   required
                   value={formData.bankName}
                   onChange={handleChange}
                   placeholder="e.g. Producers Savings Bank"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 />
               </div>
             </div>
@@ -207,26 +207,26 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Account Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="accountName"
                   required
                   value={formData.accountName}
                   onChange={handleChange}
                   placeholder="e.g. Church of the Nazarene"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Account Number *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="accountNumber"
                   required
                   value={formData.accountNumber}
                   onChange={handleChange}
                   placeholder="e.g. 1234567890"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-mono" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all font-mono"
                 />
               </div>
             </div>
@@ -234,36 +234,36 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Branch (Optional)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="branchName"
                   value={formData.branchName}
                   onChange={handleChange}
                   placeholder="e.g. Main Branch"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-church-navy mb-1.5">Display Order</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   name="displayOrder"
                   value={formData.displayOrder}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all" 
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-bold text-church-navy mb-1.5">Transfer Instructions (Optional)</label>
-              <textarea 
+              <textarea
                 name="instructions"
                 rows="2"
                 value={formData.instructions}
                 onChange={handleChange}
                 placeholder="Any specific instructions for members transferring to this account..."
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none" 
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none"
               />
             </div>
 
@@ -297,7 +297,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
             {/* QR Upload */}
             <div>
               <label className="block text-sm font-bold text-church-navy mb-1.5">Official Receiving QR (Optional)</label>
-              
+
               {!qrPreview ? (
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-2xl hover:bg-gray-50 hover:border-[#2C4A60]/50 transition-colors cursor-pointer group relative">
                   <input id="qr-upload" name="qr-upload" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileChange} accept="image/*" />
@@ -314,7 +314,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                 </div>
               ) : (
                 <div className="relative rounded-2xl border-2 border-gray-200 overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-4">
-                  <button 
+                  <button
                     type="button"
                     onClick={handleRemoveQr}
                     className="absolute top-2 right-2 p-1.5 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors shadow-sm z-10"
@@ -326,7 +326,7 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
                   <p className="mt-3 text-sm text-gray-500 font-medium">Official QR Image</p>
                 </div>
               )}
-              
+
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
                   <div className="bg-[#2C4A60] h-full rounded-full transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
@@ -337,16 +337,16 @@ export default function DonationAccountFormModal({ isOpen, onClose, account, acc
             </div>
 
             <div className="pt-6 flex justify-end space-x-3 border-t border-gray-100">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={onClose}
                 disabled={loading}
                 className="px-6 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-bold text-church-slate hover:bg-gray-50 hover:text-church-navy transition-colors"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="px-8 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all shadow-sm hover:shadow disabled:opacity-50 flex items-center"
               >

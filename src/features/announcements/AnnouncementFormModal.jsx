@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Smartphone, Megaphone, Calendar, Users, Shield, RefreshCw } from 'lucide-react';
+import { Smartphone, Megaphone, Calendar, Users, Shield, RefreshCw } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
+import Modal from '../../components/ui/Modal';
 
 const CORE_AUDIENCE_OPTIONS = [
   'All Members',
@@ -58,62 +59,64 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
   }, [isOpen, CHURCH_ID]);
 
   useEffect(() => {
-    if (isOpen) {
-      if (announcement) {
-        setTitle(announcement.title || '');
-        setMessage(announcement.message || '');
-        setImageUrl(announcement.imageUrl || '');
-        setTargetAudience(announcement.targetAudience || ['All Members']);
-        
-        // Convert ISO strings to datetime-local format (YYYY-MM-DDThh:mm)
-        setPublishDate(announcement.publishDate ? new Date(announcement.publishDate).toISOString().slice(0, 16) : '');
-        setExpiryDate(announcement.expiryDate ? new Date(announcement.expiryDate).toISOString().slice(0, 16) : '');
-        
-        setPushNotification(announcement.pushNotification !== undefined ? announcement.pushNotification : true);
-        setResendPush(false);
+    if (announcement) {
+      setTitle(announcement.title || '');
+      setMessage(announcement.message || '');
+      setImageUrl(announcement.imageUrl || '');
+      setTargetAudience(announcement.targetAudience || ['All Members']);
+      
+      // Parse publishDate to local datetime-local string
+      if (announcement.publishDate) {
+        const d = new Date(announcement.publishDate);
+        setPublishDate(d.toISOString().slice(0, 16));
       } else {
-        // Defaults for new
-        setTitle('');
-        setMessage('');
-        setImageUrl('');
-        setTargetAudience(['All Members']);
-        
-        // Default publish date to now
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        setPublishDate(now.toISOString().slice(0, 16));
-        
-        // Default expiry to 30 days from now
-        const future = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-        setExpiryDate(future.toISOString().slice(0, 16));
-        
-        setPushNotification(true);
-        setResendPush(false);
+        setPublishDate('');
       }
-      setError('');
+
+      // Parse expiryDate
+      if (announcement.expiryDate) {
+        const d = new Date(announcement.expiryDate);
+        setExpiryDate(d.toISOString().slice(0, 16));
+      } else {
+        setExpiryDate('');
+      }
+
+      setPushNotification(announcement.pushNotification !== false);
+      setResendPush(false);
+    } else {
+      setTitle('');
+      setMessage('');
+      setImageUrl('');
+      setTargetAudience(['All Members']);
+      setPublishDate('');
+      setExpiryDate('');
+      setPushNotification(true);
+      setResendPush(false);
     }
-  }, [isOpen, announcement]);
+    setError('');
+  }, [announcement, isOpen]);
 
   if (!isOpen) return null;
 
-  const toggleAudience = (aud) => {
-    if (aud === 'All Members') {
+  const toggleAudience = (tag) => {
+    if (tag === 'All Members') {
       setTargetAudience(['All Members']);
       return;
     }
-    
-    let newAud = targetAudience.filter(a => a !== 'All Members');
-    if (newAud.includes(aud)) {
-      newAud = newAud.filter(a => a !== aud);
-    } else {
-      newAud.push(aud);
-    }
-    
-    if (newAud.length === 0) newAud = ['All Members'];
-    setTargetAudience(newAud);
+
+    setTargetAudience(prev => {
+      // Remove 'All Members' when selecting a specific tag
+      const filtered = prev.filter(t => t !== 'All Members');
+      if (filtered.includes(tag)) {
+        const next = filtered.filter(t => t !== tag);
+        return next.length === 0 ? ['All Members'] : next;
+      } else {
+        return [...filtered, tag];
+      }
+    });
   };
 
-  const handleSave = async (status) => {
+  const handleSave = async (status = 'Published') => {
     if (!title.trim()) {
       setError('Title is required');
       return;
@@ -165,214 +168,20 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
   const alreadySent = Boolean(announcement?.notificationSent);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-church-soft overflow-hidden flex flex-col my-8">
-        
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#162533] text-white">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
-              <Megaphone size={20} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">
-                {announcement ? 'Edit Announcement' : 'Create Announcement'}
-              </h2>
-              <p className="text-xs text-slate-300 mt-0.5">Broadcast notifications and notices to your congregation</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-gray-300 hover:text-white transition-colors bg-white/10 p-2 rounded-full">
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">{error}</div>}
-          
-          <div>
-            <label className="block text-sm font-bold text-church-navy mb-2">Title</label>
-            <input 
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
-              placeholder="e.g. Sunday Worship Schedule Update"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-church-navy mb-2">Message</label>
-            <textarea 
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] h-32 resize-none text-sm font-medium"
-              placeholder="Write your announcement message here..."
-            />
-          </div>
-
-          {/* Image URL (Optional) */}
-          <div>
-            <label className="block text-sm font-bold text-church-navy mb-2">Image URL (Optional)</label>
-            <input 
-              type="url"
-              value={imageUrl}
-              onChange={e => setImageUrl(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm"
-              placeholder="https://example.com/banner.jpg"
-            />
-          </div>
-
-          {/* Target Audience Tags */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-bold text-church-navy">
-                Target Audience
-              </label>
-              <span className="text-xs font-semibold text-church-slate bg-gray-100 px-2 py-0.5 rounded-full">
-                {targetAudience.includes('All Members') ? 'Broadcast to Everyone' : `${targetAudience.length} selected`}
-              </span>
-            </div>
-
-            {/* Core Member & Leader Groups */}
-            <div>
-              <p className="text-xs font-semibold text-church-slate mb-2 flex items-center">
-                <Users size={13} className="mr-1 text-[#2C4A60]" /> Congregation Groups
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {CORE_AUDIENCE_OPTIONS.map(aud => {
-                  const isSelected = targetAudience.includes(aud);
-                  return (
-                    <button
-                      key={aud}
-                      type="button"
-                      onClick={() => toggleAudience(aud)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                        isSelected
-                          ? 'bg-[#2C4A60] text-white border-[#2C4A60] shadow-sm'
-                          : 'bg-gray-50 text-church-charcoal border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
-                      {aud}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Available Church Ministries */}
-            <div>
-              <p className="text-xs font-semibold text-church-slate mb-2 flex items-center">
-                <Shield size={13} className="mr-1 text-purple-600" /> Available Church Ministries
-              </p>
-              {loadingMinistries ? (
-                <div className="text-xs text-church-muted py-2 italic">Loading church ministries...</div>
-              ) : ministries.length === 0 ? (
-                <div className="text-xs text-church-muted py-2">No ministries configured yet.</div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {ministries.map(min => {
-                    const isSelected = targetAudience.includes(min.name);
-                    return (
-                      <button
-                        key={min.id}
-                        type="button"
-                        onClick={() => toggleAudience(min.name)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                          isSelected
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                            : 'bg-purple-50/50 text-purple-900 border-purple-200/60 hover:bg-purple-100/50'
-                        }`}
-                      >
-                        {min.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-church-muted">
-              Select <strong>All Members</strong> to broadcast to the entire church, or tap specific groups and ministries to restrict delivery.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-church-navy mb-2">Publish Date & Time</label>
-              <div className="relative">
-                <input 
-                  type="datetime-local"
-                  value={publishDate}
-                  onChange={e => setPublishDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Set to a future date to schedule</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-church-navy mb-2">Expiry Date & Time</label>
-              <div className="relative">
-                <input 
-                  type="datetime-local"
-                  value={expiryDate}
-                  onChange={e => setExpiryDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60] text-sm font-medium"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Hides automatically after this date</p>
-            </div>
-          </div>
-
-          {/* Push Notification Controls */}
-          <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
-            <div className="flex items-start">
-              <div className="flex h-5 items-center">
-                <input
-                  id="pushNotification"
-                  type="checkbox"
-                  checked={pushNotification}
-                  onChange={e => setPushNotification(e.target.checked)}
-                  className="w-4 h-4 text-[#2C4A60] bg-white border-gray-300 rounded focus:ring-[#2C4A60] focus:ring-2"
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="pushNotification" className="font-bold text-church-navy flex items-center cursor-pointer">
-                  <Smartphone size={16} className="mr-1.5 text-[#2C4A60]" /> Send Push Notification
-                </label>
-                <p className="text-church-slate text-xs mt-0.5">
-                  When published, members in the targeted audience will receive an immediate push alert and in-app notification on their iOS/Android devices.
-                </p>
-              </div>
-            </div>
-
-            {/* If notification was already sent on an existing post */}
-            {announcement?.id && alreadySent && (
-              <div className="pt-2 border-t border-purple-100/70 flex items-center justify-between text-xs">
-                <span className="text-emerald-700 font-semibold flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />
-                  Push notification was previously delivered
-                </span>
-                <label className="flex items-center space-x-1.5 cursor-pointer font-bold text-purple-700 hover:text-purple-900">
-                  <input 
-                    type="checkbox"
-                    checked={resendPush}
-                    onChange={e => setResendPush(e.target.checked)}
-                    className="w-3.5 h-3.5 text-purple-600 rounded border-gray-300"
-                  />
-                  <RefreshCw size={12} className={resendPush ? 'animate-spin' : ''} />
-                  <span>Resend push to audience</span>
-                </label>
-              </div>
-            )}
-          </div>
-
-        </div>
-        
-        <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={announcement ? 'Edit Announcement' : 'Create Announcement'}
+      subtitle="Broadcast notifications and notices to your congregation"
+      icon={Megaphone}
+      maxWidth="2xl"
+      footer={
+        <>
           <button 
             type="button" 
             onClick={onClose} 
             disabled={saving} 
-            className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors"
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
           >
             Cancel
           </button>
@@ -381,7 +190,7 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
             type="button" 
             onClick={() => handleSave('Draft')} 
             disabled={saving} 
-            className="px-5 py-2.5 bg-gray-200 text-church-navy rounded-full text-sm font-bold hover:bg-gray-300 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 text-slate-800 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98 disabled:opacity-50"
           >
             Save Draft
           </button>
@@ -390,13 +199,234 @@ export default function AnnouncementFormModal({ isOpen, onClose, announcement })
             type="button" 
             onClick={() => handleSave('Published')} 
             disabled={saving} 
-            className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-md"
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
           >
-            {saving ? 'Saving...' : 'Publish'}
+            {saving ? 'Publishing...' : 'Publish'}
           </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+            {error}
+          </div>
+        )}
+        
+        {/* Section 1: Message Content */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Megaphone size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Announcement Details
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Main content, notice text, and optional media</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Title <span className="text-rose-500">*</span>
+            </label>
+            <input 
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+              placeholder="e.g. Sunday Worship Schedule Update"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Message <span className="text-rose-500">*</span>
+            </label>
+            <textarea 
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              rows="4"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
+              placeholder="Write your announcement message here..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Cover Image URL (Optional)
+            </label>
+            <input 
+              type="url"
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+              placeholder="https://example.com/banner.jpg"
+            />
+          </div>
         </div>
 
+        {/* Section 2: Target Audience */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <Users size={14} strokeWidth={2.4} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Target Audience
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Select groups who should receive this announcement</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2.5 py-1 rounded-full border border-[#D5E3EC]">
+              {targetAudience.includes('All Members') ? 'Broadcast to Everyone' : `${targetAudience.length} selected`}
+            </span>
+          </div>
+
+          {/* Core Member & Leader Groups */}
+          <div>
+            <p className="text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+              <Users size={13} className="text-[#2C4A60]" /> Congregation Segments
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CORE_AUDIENCE_OPTIONS.map(aud => {
+                const isSelected = targetAudience.includes(aud);
+                return (
+                  <button
+                    key={aud}
+                    type="button"
+                    onClick={() => toggleAudience(aud)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                      isSelected
+                        ? 'bg-[#162533] text-white border-[#162533] shadow-2xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    {aud}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Available Church Ministries */}
+          <div>
+            <p className="text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+              <Shield size={13} className="text-[#2C4A60]" /> Church Ministries
+            </p>
+            {loadingMinistries ? (
+              <div className="text-xs text-slate-400 py-2 italic">Loading church ministries...</div>
+            ) : ministries.length === 0 ? (
+              <div className="text-xs text-slate-400 py-2">No ministries configured yet.</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {ministries.map(min => {
+                  const isSelected = targetAudience.includes(min.name);
+                  return (
+                    <button
+                      key={min.id}
+                      type="button"
+                      onClick={() => toggleAudience(min.name)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                        isSelected
+                          ? 'bg-[#2C4A60] text-white border-[#2C4A60] shadow-2xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      {min.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Scheduling */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Calendar size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Schedule & Visibility
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Automatic publishing and expiration windows</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Publish Date & Time</label>
+              <input 
+                type="datetime-local"
+                value={publishDate}
+                onChange={e => setPublishDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">Leave blank to publish immediately</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Expiry Date & Time</label>
+              <input 
+                type="datetime-local"
+                value={expiryDate}
+                onChange={e => setExpiryDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">Hides automatically after this date</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Push Notification Delivery */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+          <div className="flex items-start">
+            <div className="flex h-5 items-center">
+              <input
+                id="pushNotification"
+                type="checkbox"
+                checked={pushNotification}
+                onChange={e => setPushNotification(e.target.checked)}
+                className="w-4 h-4 text-[#2C4A60] bg-white border-slate-300 rounded focus:ring-[#2C4A60] focus:ring-2"
+              />
+            </div>
+            <div className="ml-3 text-xs sm:text-sm">
+              <label htmlFor="pushNotification" className="font-bold text-slate-900 flex items-center cursor-pointer">
+                <Smartphone size={15} className="mr-1.5 text-[#2C4A60]" /> Send Push Notification
+              </label>
+              <p className="text-slate-500 text-xs mt-0.5">
+                When published, targeted members will receive an immediate mobile alert and in-app banner.
+              </p>
+            </div>
+          </div>
+
+          {/* If notification was already sent on an existing post */}
+          {announcement?.id && alreadySent && (
+            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-emerald-700 font-semibold flex items-center">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />
+                Push notification was previously delivered
+              </span>
+              <label className="flex items-center space-x-1.5 cursor-pointer font-bold text-[#2C4A60] hover:text-[#162533]">
+                <input 
+                  type="checkbox"
+                  checked={resendPush}
+                  onChange={e => setResendPush(e.target.checked)}
+                  className="w-3.5 h-3.5 text-[#2C4A60] rounded border-slate-300"
+                />
+                <RefreshCw size={12} className={resendPush ? 'animate-spin' : ''} />
+                <span>Resend push to audience</span>
+              </label>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

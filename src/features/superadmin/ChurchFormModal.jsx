@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import Modal from '../../components/ui/Modal';
 
 export default function ChurchFormModal({ isOpen, onClose, church = null }) {
   const { currentUser } = useAuth();
@@ -68,54 +69,96 @@ export default function ChurchFormModal({ isOpen, onClose, church = null }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-church-soft overflow-hidden flex flex-col my-8 max-h-[90vh]">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-church-navy">{church ? 'Edit Tenant' : 'New Church Tenant'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:bg-gray-50 p-2 rounded-full"><X size={20} /></button>
-        </div>
-        
-        <form id="church-form" onSubmit={handleSubmit} className="p-6 space-y-4 flex-1 overflow-y-auto">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={church ? 'Edit Tenant Workspace' : 'New Church Tenant'}
+      subtitle="Configure independent tenant organization profile and contact channels"
+      icon={Building2}
+      maxWidth="md"
+      footer={
+        <>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            disabled={loading} 
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            form="church-form" 
+            disabled={loading} 
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : church ? 'Save Changes' : 'Create Workspace'}
+          </button>
+        </>
+      }
+    >
+      <form id="church-form" onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">Church Name *</label>
-            <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:border-transparent" />
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Church Organization Name *</label>
+            <input 
+              type="text" 
+              name="name" 
+              required 
+              value={formData.name} 
+              onChange={handleChange} 
+              placeholder="e.g. Grace Fellowship Church"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">Address</label>
-            <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:border-transparent" />
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Official Address</label>
+            <input 
+              type="text" 
+              name="address" 
+              value={formData.address} 
+              onChange={handleChange} 
+              placeholder="e.g. 123 Church St, Metro Manila"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-sm font-medium text-church-navy mb-1">Email</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:border-transparent" />
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="contact@church.org"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-church-navy mb-1">Phone</label>
-              <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-church-green focus:border-transparent" />
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Phone</label>
+              <input 
+                type="text" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                placeholder="+63 917 123 4567"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+              />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">Status</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Tenant Status</label>
             <ModernDropdown
               value={formData.status}
               onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
               options={[
-                { value: 'Active', label: 'Active' },
-                { value: 'Disabled', label: 'Disabled' }
+                { value: 'Active', label: 'Active Tenant' },
+                { value: 'Disabled', label: 'Suspended / Disabled' }
               ]}
             />
           </div>
-        </form>
-
-        <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50">
-          <button type="button" onClick={onClose} disabled={loading} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100">
-            Cancel
-          </button>
-          <button type="submit" form="church-form" disabled={loading} className="px-6 py-2.5 bg-church-green text-white rounded-full text-sm font-bold hover:bg-church-green/90 shadow-md">
-            {loading ? 'Saving...' : 'Save Church'}
-          </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

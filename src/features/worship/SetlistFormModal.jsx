@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Music } from 'lucide-react';
 import { createSetlist, updateSetlist } from './worshipService';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import Modal from '../../components/ui/Modal';
 
 export default function SetlistFormModal({ isOpen, onClose, setlist, events, onSaved }) {
   const { userProfile, currentUser } = useAuth();
@@ -78,76 +79,20 @@ export default function SetlistFormModal({ isOpen, onClose, setlist, events, onS
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
-      <div className="fixed inset-0 bg-church-navy/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-church-navy">
-            {setlist ? 'Edit Setlist Metadata' : 'Create New Setlist'}
-          </h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-6">
-          <form id="setlist-form" onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Linked Event *</label>
-              <ModernDropdown
-                value={formData.eventId}
-                onChange={(val) => handleChange({ target: { name: 'eventId', value: val } })}
-                options={[
-                  { value: '', label: '-- Select an Event --' },
-                  ...Object.values(events || {})
-                    .sort((a, b) => {
-                      const now = new Date();
-                      const dateA = a.date ? new Date(a.date + 'T00:00:00') : null;
-                      const dateB = b.date ? new Date(b.date + 'T00:00:00') : null;
-                      if (!dateA && !dateB) return 0;
-                      if (!dateA) return 1;
-                      if (!dateB) return -1;
-                      const diffA = Math.abs(dateA.getTime() - now.getTime());
-                      const diffB = Math.abs(dateB.getTime() - now.getTime());
-                      return diffA - diffB;
-                    })
-                    .map(event => ({ value: event.id, label: `${event.date} | ${event.title}` }))
-                ]}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Setlist Title *</label>
-              <input 
-                type="text" 
-                name="title" 
-                required 
-                value={formData.title} 
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-church-green focus:ring-1 focus:ring-church-green" 
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Status</label>
-              <ModernDropdown
-                value={formData.status}
-                onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
-                options={[
-                  { value: 'draft', label: 'Draft (Private)' },
-                  { value: 'published', label: 'Published (Visible to Team)' },
-                  { value: 'archived', label: 'Archived' }
-                ]}
-              />
-            </div>
-          </form>
-        </div>
-        
-        <div className="px-6 py-5 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex justify-end space-x-3">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={setlist ? 'Edit Worship Setlist' : 'Create Worship Setlist'}
+      subtitle="Link service order of songs to a church calendar event"
+      icon={Music}
+      maxWidth="md"
+      footer={
+        <>
           <button 
             type="button" 
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-church-slate hover:bg-gray-200 rounded-xl transition-colors"
+            disabled={saving}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
           >
             Cancel
           </button>
@@ -155,12 +100,66 @@ export default function SetlistFormModal({ isOpen, onClose, setlist, events, onS
             type="submit" 
             form="setlist-form"
             disabled={saving}
-            className="px-5 py-2.5 bg-church-green text-white text-sm font-semibold rounded-xl hover:bg-church-green/90 transition-opacity disabled:opacity-50"
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
           >
             {saving ? 'Saving...' : (setlist ? 'Save Changes' : 'Create Setlist')}
           </button>
+        </>
+      }
+    >
+      <form id="setlist-form" onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Linked Church Event *</label>
+            <ModernDropdown
+              value={formData.eventId}
+              onChange={(val) => handleChange({ target: { name: 'eventId', value: val } })}
+              options={[
+                { value: '', label: '-- Select an Event --' },
+                ...Object.values(events || {})
+                  .sort((a, b) => {
+                    const now = new Date();
+                    const dateA = a.date ? new Date(a.date + 'T00:00:00') : null;
+                    const dateB = b.date ? new Date(b.date + 'T00:00:00') : null;
+                    if (!dateA && !dateB) return 0;
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    const diffA = Math.abs(dateA.getTime() - now.getTime());
+                    const diffB = Math.abs(dateB.getTime() - now.getTime());
+                    return diffA - diffB;
+                  })
+                  .map(event => ({ value: event.id, label: `${event.date} | ${event.title}` }))
+              ]}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Setlist Title *</label>
+            <input 
+              type="text" 
+              name="title" 
+              required 
+              value={formData.title} 
+              onChange={handleChange}
+              placeholder="e.g. Sunday Worship - Holy Spirit Sunday"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Publish Status</label>
+            <ModernDropdown
+              value={formData.status}
+              onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
+              options={[
+                { value: 'draft', label: 'Draft (Private)' },
+                { value: 'published', label: 'Published (Visible to Team)' },
+                { value: 'archived', label: 'Archived' }
+              ]}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

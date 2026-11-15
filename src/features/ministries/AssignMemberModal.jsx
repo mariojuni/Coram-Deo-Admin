@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { collection, query, orderBy, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { UserCheck } from 'lucide-react';
+import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { formatStandardName } from '../../utils/nameUtils';
+import Modal from '../../components/ui/Modal';
 
 export default function AssignMemberModal({ isOpen, onClose, ministry }) {
   const [members, setMembers] = useState([]);
@@ -23,19 +24,15 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      // Fetch all users without orderBy to ensure users missing the 'name' field are not dropped
       const snap = await getDocs(collection(db, 'users'));
-
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       const formattedDocs = docs.map(d => ({
         ...d,
         displayName: formatStandardName(d)
       }));
 
-      // Sort members alphabetically by standardized display name locally
       formattedDocs.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-      // Deduplicate by displayName to prevent duplicated/tripled names from showing in the dropdown
       const uniqueDocsMap = new Map();
       formattedDocs.forEach(d => {
         if (!uniqueDocsMap.has(d.displayName)) {
@@ -44,7 +41,6 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
       });
       const uniqueFormattedDocs = Array.from(uniqueDocsMap.values());
 
-      // Filter out people already in this ministry, and those who are inactive/deceased/transferred if needed
       const existingMemberIds = (ministry?.members || []).map(m => m.memberId);
       const availableMembers = uniqueFormattedDocs.filter(m => {
         const mIds = [m.id, m.uid, m.authUid].filter(Boolean);
@@ -60,17 +56,20 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
     }
   };
 
-  if (!isOpen || !ministry) return null;
+  if (!isOpen) return null;
 
-  const dropdownOptions = members.map(m => ({
-    value: m.id,
-    label: m.displayName
-  }));
+  const dropdownOptions = members.map(m => {
+    const roleLabel = m.role ? ` (${m.role.replace('_', ' ')})` : '';
+    return {
+      value: m.id,
+      label: `${m.displayName}${roleLabel}`
+    };
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMemberId) {
-      setError("Please select a member");
+      setError('Please select a member.');
       return;
     }
 
@@ -78,35 +77,29 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
     setError('');
 
     try {
-      const memberDoc = members.find(m => m.id === selectedMemberId);
-      const displayName = formatStandardName(memberDoc || {});
+      const memberObj = members.find(m => m.id === selectedMemberId);
+      const ministryRef = doc(db, 'ministries', ministry.id);
 
-      const newMemberObj = {
+      const existingMembers = ministry.members || [];
+      const newMember = {
         memberId: selectedMemberId,
-        memberName: displayName,
-        servingRole: 'Member'
+        name: memberObj?.displayName || memberObj?.name || 'Unknown',
+        role: memberObj?.role || 'member',
+        assignedAt: new Date().toISOString()
       };
 
-      const updatedMembers = [...(ministry.members || []), newMemberObj];
-
-      await updateDoc(doc(db, 'ministries', ministry.id), {
-        members: updatedMembers,
-        updatedAt: new Date()
+      await updateDoc(ministryRef, {
+        members: [...existingMembers, newMember]
       });
 
-      // Sync to ministryMembers collection for mobile app compatibility
       try {
-        const memberDocId = `${ministry.id}_${selectedMemberId}`;
-        const memberRef = doc(db, 'ministryMembers', memberDocId);
-        await setDoc(memberRef, {
-          churchId: ministry.churchId || ministry.church_id || '',
+        const mmRef = doc(db, 'ministryMembers', `${ministry.id}_${selectedMemberId}`);
+        await setDoc(mmRef, {
           ministryId: ministry.id,
           memberId: selectedMemberId,
-          userId: selectedMemberId,
-          status: 'active',
-          ministryRole: 'Member',
-          joinedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          memberName: memberObj?.displayName || memberObj?.name || 'Unknown',
+          ministryName: ministry.name,
+          assignedAt: new Date().toISOString()
         }, { merge: true });
       } catch (err) {
         console.warn('Failed to sync to ministryMembers collection', err);
@@ -122,45 +115,60 @@ export default function AssignMemberModal({ isOpen, onClose, ministry }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-visible flex flex-col my-8 border border-white/95">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl">
-          <h2 className="text-xl font-bold text-church-navy">Assign to {ministry.name}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-            <X size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-28 min-h-[220px]">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-
-          <div>
-            <label className="block text-sm font-medium text-church-navy mb-2">Select Church Member</label>
-            {loading ? (
-              <div className="p-4 text-center text-sm text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
-                Loading members...
-              </div>
-            ) : (
-              <ModernDropdown
-                options={dropdownOptions}
-                value={selectedMemberId}
-                onChange={setSelectedMemberId}
-                placeholder="Choose a member to assign..."
-                searchable={true}
-              />
-            )}
-          </div>
-        </form>
-
-        <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50 rounded-b-3xl">
-          <button type="button" onClick={onClose} disabled={saving} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Assign to ${ministry?.name || 'Ministry'}`}
+      subtitle="Select a church member to join this ministry team roster"
+      icon={UserCheck}
+      maxWidth="md"
+      footer={
+        <>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            disabled={saving} 
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
             Cancel
           </button>
-          <button type="submit" onClick={handleSubmit} disabled={saving || !selectedMemberId} className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm">
+          <button 
+            type="submit" 
+            form="assign-member-form"
+            disabled={saving || !selectedMemberId} 
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+          >
             {saving ? 'Assigning...' : 'Assign Member'}
           </button>
+        </>
+      }
+    >
+      <form id="assign-member-form" onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Select Church Member *
+          </label>
+          {loading ? (
+            <div className="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-100 font-medium">
+              Loading church members directory...
+            </div>
+          ) : (
+            <ModernDropdown
+              options={dropdownOptions}
+              value={selectedMemberId}
+              onChange={setSelectedMemberId}
+              placeholder="Choose a member to assign..."
+              searchable={true}
+            />
+          )}
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

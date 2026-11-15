@@ -11,30 +11,30 @@ export default function ExpenseCategoriesList() {
   const CHURCH_ID = userProfile?.churchId;
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
     if (!CHURCH_ID) return;
-    
+
     const q = query(
-      collection(db, 'expenseCategories'), 
+      collection(db, 'expenseCategories'),
       where('churchId', '==', CHURCH_ID)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let docs = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      
+
       docs.sort((a, b) => {
         if (a.status === b.status) {
-           const nameA = a.name || '';
-           const nameB = b.name || '';
-           return nameA.localeCompare(nameB);
+          const nameA = a.name || '';
+          const nameB = b.name || '';
+          return nameA.localeCompare(nameB);
         }
         if (a.status === 'active') return -1;
         if (b.status === 'active') return 1;
@@ -65,7 +65,7 @@ export default function ExpenseCategoriesList() {
   const handleToggleStatus = async (category) => {
     const newStatus = category.status === 'active' ? 'inactive' : 'active';
     const action = newStatus === 'active' ? 'activate' : 'deactivate';
-    
+
     if (window.confirm(`Are you sure you want to ${action} the ${category.name} category?`)) {
       try {
         await updateDoc(doc(db, 'expenseCategories', category.id), { status: newStatus });
@@ -89,7 +89,7 @@ export default function ExpenseCategoriesList() {
           <p className="text-sm text-church-slate mt-1">Manage categories used for logging church expenses.</p>
         </div>
         {canManageFinanceSettings(userProfile) && (
-          <button 
+          <button
             onClick={handleAddClick}
             className="flex items-center px-5 py-2.5 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
           >
@@ -105,7 +105,7 @@ export default function ExpenseCategoriesList() {
             All Categories
           </h2>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -132,48 +132,48 @@ export default function ExpenseCategoriesList() {
               ) : (
                 categories.map((category) => {
                   return (
-                  <tr key={category.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-church-navy">{category.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(category.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {canManageFinanceSettings(userProfile) && (
-                          <>
-                            <button 
-                              onClick={() => handleEditClick(category)}
-                              className="text-church-slate hover:text-church-navy p-1 rounded-md hover:bg-gray-100 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            {category.status === 'active' ? (
-                              <button 
-                                onClick={() => handleToggleStatus(category)}
-                                className="text-yellow-500 hover:text-yellow-600 p-1 rounded-md hover:bg-yellow-50 transition-colors"
-                                title="Deactivate"
+                    <tr key={category.id} className="hover:bg-gray-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-church-navy">{category.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(category.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {canManageFinanceSettings(userProfile) && (
+                            <>
+                              <button
+                                onClick={() => handleEditClick(category)}
+                                className="text-church-slate hover:text-church-navy p-1 rounded-md hover:bg-gray-100 transition-colors"
+                                title="Edit"
                               >
-                                <PowerOff size={18} />
+                                <Edit size={18} />
                               </button>
-                            ) : (
-                              <button 
-                                onClick={() => handleToggleStatus(category)}
-                                className="text-green-500 hover:text-green-600 p-1 rounded-md hover:bg-green-50 transition-colors"
-                                title="Activate"
-                              >
-                                <Power size={18} />
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                              {category.status === 'active' ? (
+                                <button
+                                  onClick={() => handleToggleStatus(category)}
+                                  className="text-yellow-500 hover:text-yellow-600 p-1 rounded-md hover:bg-yellow-50 transition-colors"
+                                  title="Deactivate"
+                                >
+                                  <PowerOff size={18} />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleStatus(category)}
+                                  className="text-green-500 hover:text-green-600 p-1 rounded-md hover:bg-green-50 transition-colors"
+                                  title="Activate"
+                                >
+                                  <Power size={18} />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -182,9 +182,9 @@ export default function ExpenseCategoriesList() {
         </div>
       </div>
 
-      <ExpenseCategoryFormModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <ExpenseCategoryFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         category={editingCategory}
       />
     </div>

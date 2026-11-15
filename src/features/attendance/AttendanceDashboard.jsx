@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { collection, query, onSnapshot, where, getDocs } from 'firebase/firestore';
+import { collection, query, onSnapshot, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { 
   ClipboardCheck, 
@@ -39,6 +39,7 @@ export default function AttendanceDashboard() {
   const [recordsBySession, setRecordsBySession] = useState({});
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [followups, setFollowups] = useState({});
+  const [flatAttendance, setFlatAttendance] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 1. Fetch active members
@@ -49,10 +50,7 @@ export default function AttendanceDashboard() {
         const snap = await getDocs(q);
         const activeMembers = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
-          .filter(m => {
-            const status = m.membershipStatus || 'Active';
-            return ['Active', 'Visitor', 'Fellowship', 'Regular'].includes(status);
-          })
+          .filter(m => m.membershipStatus !== 'Archived')
           .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
         
         const dedupedMembers = deduplicateMembers(activeMembers, {});
@@ -72,16 +70,17 @@ export default function AttendanceDashboard() {
       setLoadingSessions(false);
       return;
     }
-    const q = query(
-      collection(db, 'attendance_sessions'),
-      where('churchId', '==', CHURCH_ID)
-    );
+    const q = query(collection(db, 'attendance_sessions'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      docs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      let docs = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(s => s.churchId === CHURCH_ID || (!s.churchId && !CHURCH_ID));
+
+      docs.sort((a, b) => {
+        const dA = new Date(a.date || a.eventDate || a.startDateTime || (a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt) || 0);
+        const dB = new Date(b.date || b.eventDate || b.startDateTime || (b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt) || 0);
+        return dB - dA;
+      });
       setSessions(docs);
       setLoadingSessions(false);
     }, (err) => {
@@ -110,8 +109,62 @@ export default function AttendanceDashboard() {
     return () => unsubscribe();
   }, [CHURCH_ID]);
 
-  // 4. Stable primitive signature for top 10 sessions to prevent redundant record re-fetches
-  const topSessionIds = useMemo(() => sessions.slice(0, 10).map(s => s.id).join(','), [sessions]);
+  // 4. Subscribe to flat scanner / manual attendance check-ins
+  useEffect(() => {
+    if (!CHURCH_ID) return;
+    const q = query(collection(db, 'attendance'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(a => a.churchId === CHURCH_ID || (!a.churchId && !CHURCH_ID));
+      setFlatAttendance(docs);
+    }, (err) => {
+      console.warn("Flat attendance fetch error (non-fatal):", err);
+    });
+    return () => unsubscribe();
+  }, [CHURCH_ID]);
+
+  // 5. Stable primitive signature for top sessions to prevent redundant record re-fetches
+  const topSessionIds = useMemo(() => sessions.slice(0, 50).map(s => s.id).join(','), [sessions]);
+
+  const membersMap = useMemo(() => {
+    const map = new Map();
+    members.forEach(m => map.set(m.id, m));
+    return map;
+  }, [members]);
+
+  const isVisitorRecord = useCallback((r) => {
+    if (!r) return false;
+    const rType = (r.type || '').toLowerCase();
+    const rRole = (r.role || '').toLowerCase();
+    if (
+      rType === 'visitor' || 
+      rType === 'guest' || 
+      rRole.includes('visitor') || 
+      rRole.includes('guest') ||
+      (r.id && (r.id.startsWith('visitor_') || r.id.startsWith('guest_'))) ||
+      (r.memberId && (r.memberId.startsWith('visitor_') || r.memberId.startsWith('guest_'))) ||
+      r.isVisitor === true
+    ) {
+      return true;
+    }
+    const m = membersMap.get(r.memberId || r.userId || r.id);
+    if (m) {
+      const mStatus = (m.membershipStatus || '').toLowerCase();
+      const mRole = (m.role || '').toLowerCase();
+      if (
+        mStatus === 'visitor' || 
+        mStatus === 'visitors' || 
+        mRole.includes('visitor') || 
+        mRole.includes('guest') ||
+        m.status === 'new' ||
+        m.isVisitor === true
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }, [membersMap]);
 
   // Fetch records for the top 10 recent sessions
   const fetchRecentRecords = useCallback(async () => {
@@ -120,7 +173,7 @@ export default function AttendanceDashboard() {
       return;
     }
     try {
-      const topSessions = sessions.slice(0, 10);
+      const topSessions = sessions.slice(0, 50);
       const recordsMap = {};
 
       await Promise.all(
@@ -128,7 +181,54 @@ export default function AttendanceDashboard() {
           try {
             const recordsQ = query(collection(db, 'attendance_sessions', sess.id, 'records'));
             const snap = await getDocs(recordsQ);
-            recordsMap[sess.id] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const recs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            recordsMap[sess.id] = recs;
+
+            // Auto-heal / sync session.metrics if out of sync with actual records
+            if (recs.length > 0) {
+              let recPresent = 0;
+              let recLate = 0;
+              let recAbsent = 0;
+              let recExcused = 0;
+              let recVisitors = 0;
+
+              recs.forEach(r => {
+                const isVisitor = isVisitorRecord(r);
+                const status = (r.status || '').toLowerCase();
+                if (isVisitor) {
+                  if (status === 'present' || status === 'late' || !status) {
+                    recVisitors++;
+                  }
+                } else {
+                  if (status === 'present') recPresent++;
+                  else if (status === 'late') recLate++;
+                  else if (status === 'absent') recAbsent++;
+                  else if (status === 'excused') recExcused++;
+                }
+              });
+
+              const currentPresent = sess.metrics?.present || 0;
+              const currentLate = sess.metrics?.late || 0;
+              const currentVisitors = Number(sess.metrics?.visitors ?? sess.metrics?.firstTimeVisitors ?? sess.visitors ?? 0);
+              const finalVisitors = Math.max(recVisitors, currentVisitors);
+
+              if (currentPresent !== recPresent || currentLate !== recLate || currentVisitors !== finalVisitors) {
+                const sessionRef = doc(db, 'attendance_sessions', sess.id);
+                setDoc(sessionRef, {
+                  metrics: {
+                    ...sess.metrics,
+                    present: recPresent,
+                    late: recLate,
+                    absent: recAbsent,
+                    excused: recExcused,
+                    visitors: finalVisitors,
+                  },
+                  updatedAt: new Date().toISOString()
+                }, { merge: true }).catch(err => {
+                  console.warn(`Could not sync metrics for session ${sess.id}:`, err);
+                });
+              }
+            }
           } catch (e) {
             console.warn(`Could not load records for session ${sess.id}`, e);
           }
@@ -141,7 +241,7 @@ export default function AttendanceDashboard() {
     } finally {
       setLoadingRecords(false);
     }
-  }, [topSessionIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [topSessionIds, isVisitorRecord]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (sessions.length > 0) {
@@ -299,12 +399,75 @@ export default function AttendanceDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {sessions.map(session => {
-                const dateObj = new Date(session.date);
-                const isToday = dateObj.toDateString() === new Date().toDateString();
-                const totalPresent = (session.metrics?.present || 0) + (session.metrics?.visitors || 0);
-                const memberCount = session.metrics?.present || 0;
-                const visitorCount = session.metrics?.visitors || 0;
-                const attendancePct = members.length > 0 ? Math.min(100, Math.round((memberCount / members.length) * 100)) : 0;
+                const rawDate = session.date || session.eventDate || session.startDateTime || (session.createdAt?.toDate ? session.createdAt.toDate() : session.createdAt);
+                const dateObj = rawDate ? new Date(rawDate) : new Date();
+                const isValidDate = !isNaN(dateObj.getTime());
+                const isToday = isValidDate && dateObj.toDateString() === new Date().toDateString();
+
+                const sessionRecords = recordsBySession[session.id];
+                let memberCount = Number(
+                  session.metrics?.present ?? 
+                  session.metrics?.memberCheckins ?? 
+                  session.present ?? 
+                  session.memberCheckins ?? 
+                  session.totalAttendance ?? 
+                  0
+                );
+                let visitorCount = Number(
+                  session.metrics?.visitors ?? 
+                  session.metrics?.firstTimeVisitors ?? 
+                  session.metrics?.guests ?? 
+                  session.firstTimeVisitors ?? 
+                  session.visitors ?? 
+                  session.guests ?? 
+                  session.guestCount ?? 
+                  0
+                );
+
+                if (sessionRecords && sessionRecords.length > 0) {
+                  let recPresent = 0;
+                  let recVisitors = 0;
+                  sessionRecords.forEach(r => {
+                    const isVisitor = isVisitorRecord(r);
+                    const status = (r.status || '').toLowerCase();
+                    if (isVisitor) {
+                      if (status === 'present' || status === 'late' || !status) {
+                        recVisitors++;
+                      }
+                    } else if (status === 'present' || status === 'late') {
+                      recPresent++;
+                    }
+                  });
+                  if (recPresent > 0 || recVisitors > 0 || !session.metrics) {
+                    memberCount = recPresent > 0 ? recPresent : memberCount;
+                    visitorCount = Math.max(visitorCount, recVisitors);
+                  }
+                }
+
+                // Fallback to flat attendance collection if no subcollection records exist for this session
+                const sessionDateStr = session.date || session.eventDate;
+                if ((!sessionRecords || sessionRecords.length === 0) && memberCount === 0 && sessionDateStr) {
+                  const matchingFlat = flatAttendance.filter(a => {
+                    const aDate = a.date || (a.timestamp?.toDate ? a.timestamp.toDate().toISOString().split('T')[0] : '');
+                    return aDate === sessionDateStr || a.eventId === session.id || a.sessionId === session.id;
+                  });
+                  if (matchingFlat.length > 0) {
+                    let flatPresent = 0;
+                    let flatVisitors = 0;
+                    matchingFlat.forEach(a => {
+                      if (isVisitorRecord(a)) flatVisitors++;
+                      else flatPresent++;
+                    });
+                    memberCount = Math.max(memberCount, flatPresent);
+                    visitorCount = Math.max(visitorCount, flatVisitors);
+                  }
+                }
+
+                const totalPresent = Math.max(memberCount + visitorCount, Number(session.totalAttendance || session.total || 0));
+                const rosterCount = session.status === 'Closed' && session.metrics?.totalRoster
+                  ? session.metrics.totalRoster
+                  : (members.length || session.metrics?.totalRoster || 0);
+                const attendancePct = rosterCount > 0 ? Math.min(100, Math.round((memberCount / rosterCount) * 100)) : 0;
                 const isOpen = session.status === 'Open';
 
                 return (
@@ -317,7 +480,7 @@ export default function AttendanceDashboard() {
                     <div>
                       <div className="flex justify-between items-start mb-3">
                         <StatusPill variant={isToday ? "steel" : "slate"}>
-                          {isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {isToday ? 'Today' : (isValidDate ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Scheduled')}
                         </StatusPill>
                         <StatusPill variant={isOpen ? "emerald" : "slate"}>
                           {session.status}
@@ -334,7 +497,7 @@ export default function AttendanceDashboard() {
                           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance Roll</span>
                           <div className="text-right">
                             <span className="text-2xl font-black text-slate-900">{totalPresent}</span>
-                            <span className="text-xs font-bold text-slate-400 ml-1">/ {members.length} members</span>
+                            <span className="text-xs font-bold text-slate-400 ml-1">/ {rosterCount} members</span>
                           </div>
                         </div>
 
@@ -377,6 +540,7 @@ export default function AttendanceDashboard() {
       {activeTab === 'analytics' && (
         <AttendanceAnalytics
           sessions={sessions}
+          recordsBySession={recordsBySession}
           analyzedMembers={analyzedMembers}
           totalMembers={members.length}
         />

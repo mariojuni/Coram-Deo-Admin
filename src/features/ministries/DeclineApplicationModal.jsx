@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { UserX, AlertCircle } from 'lucide-react';
+import Modal from '../../components/ui/Modal';
 
 export default function DeclineApplicationModal({
   isOpen,
@@ -24,69 +25,71 @@ export default function DeclineApplicationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="glass-light-card rounded-2xl border border-white/95 w-full max-w-lg shadow-xl overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/50">
-          <h3 className="text-lg font-bold text-slate-900">Decline Application</h3>
-          <button onClick={onClose} disabled={processing} className="text-slate-400 hover:text-slate-600 transition-colors bg-white/80 p-2 rounded-full border border-slate-100 shadow-sm">
-            <X size={18} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Decline Ministry Application"
+      subtitle="Provide constructive pastoral feedback explaining the application status"
+      icon={UserX}
+      maxWidth="md"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={processing}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
+            Cancel
           </button>
-        </div>
+          <button
+            type="submit"
+            form="decline-app-form"
+            disabled={processing || !declineReason.trim()}
+            className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50"
+          >
+            {processing ? 'Declining...' : 'Confirm Decline'}
+          </button>
+        </>
+      }
+    >
+      <form id="decline-app-form" onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium flex items-center">
+            <AlertCircle size={15} className="mr-2 shrink-0" />
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-center">
-              <AlertCircle size={16} className="mr-2 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">
-              Decline Reason <span className="text-red-500">*</span>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Decline Reason (Visible to Applicant) <span className="text-rose-500">*</span>
             </label>
             <textarea
               rows={3}
               required
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
-              placeholder="Provide reason for declining this application..."
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm"
+              placeholder="e.g. Schedule incompatibility, prerequisites not yet met, or ministry full..."
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-church-navy mb-1">
-              Internal Review Note <span className="text-xs text-gray-400">(Optional)</span>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Internal Leadership Note (Optional)
             </label>
             <textarea
               rows={2}
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
-              placeholder="Optional notes for admin records..."
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-sm"
+              placeholder="Internal notes for pastors and ministry leaders..."
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
             />
           </div>
-
-          <div className="pt-4 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={processing}
-              className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={processing}
-              className="px-6 py-2.5 bg-red-600 text-white rounded-full text-sm font-bold hover:bg-red-700 transition-colors shadow-md disabled:opacity-50"
-            >
-              {processing ? 'Processing...' : 'Confirm Decline'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

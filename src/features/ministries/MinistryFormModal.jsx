@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Users, BookOpen, Monitor, Mic, Guitar, Drum, Piano, GraduationCap, Shield, Music, Heart, Star, Settings, Check } from 'lucide-react';
+import { Plus, Trash2, Users, BookOpen, Monitor, Mic, Guitar, Drum, Piano, GraduationCap, Shield, Music, Heart, Star, Settings, Check, X } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import Modal from '../../components/ui/Modal';
 
 const normalizeRole = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -58,27 +59,26 @@ const PALETTE = [
 ];
 
 const ICON_COLORS = {
-  '#E0E7FF': '#818CF8', // Indigo
-  '#E8F0FF': '#4D8BFF', // Blue
-  '#F3F4F6': '#6B7280', // Gray
-  '#FFE8F0': '#FF6596', // Pink
-  '#FEF3C7': '#F59E0B', // Amber
-  '#FEE2E2': '#EF4444', // Red
-  '#D1FAE5': '#10B981', // Emerald
-  '#F3EEFF': '#8B6FE8', // Purple
+  '#E0E7FF': '#818CF8',
+  '#E8F0FF': '#4D8BFF',
+  '#F3F4F6': '#6B7280',
+  '#FFE8F0': '#FF6596',
+  '#FEF3C7': '#F59E0B',
+  '#FEE2E2': '#EF4444',
+  '#D1FAE5': '#10B981',
+  '#F3EEFF': '#A855F7'
 };
 
 const AVAILABLE_ICONS = [
   { name: 'Users', Icon: Users },
-  { name: 'Shield', Icon: Shield },
-  { name: 'Mic', Icon: Mic },
-  { name: 'Monitor', Icon: Monitor },
   { name: 'BookOpen', Icon: BookOpen },
+  { name: 'Monitor', Icon: Monitor },
+  { name: 'Mic', Icon: Mic },
+  { name: 'Music', Icon: Music },
   { name: 'Guitar', Icon: Guitar },
   { name: 'Drum', Icon: Drum },
   { name: 'Piano', Icon: Piano },
   { name: 'GraduationCap', Icon: GraduationCap },
-  { name: 'Music', Icon: Music },
   { name: 'Heart', Icon: Heart },
   { name: 'Star', Icon: Star },
   { name: 'Settings', Icon: Settings },
@@ -86,24 +86,24 @@ const AVAILABLE_ICONS = [
 
 export default function MinistryFormModal({ isOpen, onClose, ministry = null }) {
   const { userProfile } = useAuth();
-  
-  const [activeTab, setActiveTab] = useState('general');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     type: 'general',
     status: 'Active',
-    roles: ['Leader', 'Member'],
-    roleDetails: {},
     features: {
       songListEnabled: false
     }
   });
+
+  const [roles, setRoles] = useState([]);
   const [newRole, setNewRole] = useState('');
+  const [roleStyles, setRoleStyles] = useState({});
   const [selectedColor, setSelectedColor] = useState(PALETTE[0]);
   const [selectedIcon, setSelectedIcon] = useState('Users');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('general');
 
   useEffect(() => {
     if (ministry) {
@@ -112,168 +112,188 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
         description: ministry.description || '',
         type: ministry.type || 'general',
         status: ministry.status || 'Active',
-        roles: ministry.roles || ['Leader', 'Member'],
-        roleDetails: ministry.roleDetails || {},
         features: {
-          songListEnabled: ministry.features?.songListEnabled ?? false
+          songListEnabled: ministry.features?.songListEnabled || false,
+          ...ministry.features
         }
       });
+      setRoles(ministry.roles || []);
+      setRoleStyles(ministry.roleStyles || {});
     } else {
       setFormData({
         name: '',
         description: '',
         type: 'general',
         status: 'Active',
-        roles: ['Leader', 'Member'],
-        roleDetails: {},
         features: {
           songListEnabled: false
         }
       });
+      setRoles([]);
+      setRoleStyles({});
     }
-    setError('');
-    setNewRole('');
-    setSelectedColor(PALETTE[0]);
-    setSelectedIcon('Users');
     setActiveTab('general');
+    setError('');
   }, [ministry, isOpen]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'type') {
-      setFormData(prev => ({
-        ...prev,
-        type: value,
-        features: {
-          ...prev.features,
-          songListEnabled: value === 'worship' ? prev.features?.songListEnabled || false : false
-        }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleFeatureChange = (featureKey) => {
-    setFormData(prev => {
-      const currentFeatures = prev.features || {};
-      return {
-        ...prev,
-        features: {
-          ...currentFeatures,
-          [featureKey]: !currentFeatures[featureKey]
-        }
-      };
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddRole = (e) => {
     e.preventDefault();
-    if (newRole.trim() && !formData.roles.includes(newRole.trim())) {
-      const roleName = newRole.trim();
-      setFormData(prev => ({
-        ...prev,
-        roles: [...prev.roles, roleName],
-        roleDetails: {
-          ...prev.roleDetails,
-          [roleName]: { color: selectedColor, icon: selectedIcon }
-        }
-      }));
-      setNewRole('');
+    if (!newRole.trim()) return;
+    if (roles.includes(newRole.trim())) {
+      setError('Role already exists');
+      return;
     }
+
+    const trimmed = newRole.trim();
+    setRoles([...roles, trimmed]);
+    setRoleStyles({
+      ...roleStyles,
+      [trimmed]: {
+        backgroundColor: selectedColor,
+        iconName: selectedIcon,
+        iconColor: ICON_COLORS[selectedColor] || '#4B5563'
+      }
+    });
+
+    setNewRole('');
+    setError('');
   };
 
   const handleRemoveRole = (roleToRemove) => {
-    setFormData(prev => {
-      const newRoleDetails = { ...prev.roleDetails };
-      delete newRoleDetails[roleToRemove];
-      return {
-        ...prev,
-        roles: prev.roles.filter(r => r !== roleToRemove),
-        roleDetails: newRoleDetails
-      };
-    });
+    setRoles(roles.filter(r => r !== roleToRemove));
+    const nextStyles = { ...roleStyles };
+    delete nextStyles[roleToRemove];
+    setRoleStyles(nextStyles);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      setError('Ministry Name is required.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
-    const payload = {
-      ...formData,
-      type: formData.type || 'general',
-      features: {
-        songListEnabled: formData.type === 'worship' ? Boolean(formData.features?.songListEnabled) : false
-      },
-      updatedAt: serverTimestamp()
-    };
-
     try {
+      const payload = {
+        ...formData,
+        roles,
+        roleStyles,
+        churchId: userProfile?.churchId || null,
+        updatedAt: serverTimestamp()
+      };
+
       if (ministry) {
         await updateDoc(doc(db, 'ministries', ministry.id), payload);
       } else {
-        await addDoc(collection(db, 'ministries'), {
-          ...payload,
-          members: [],
-          createdAt: serverTimestamp(),
-          churchId: userProfile?.churchId  
-        });
+        payload.createdAt = serverTimestamp();
+        payload.members = [];
+        await addDoc(collection(db, 'ministries'), payload);
       }
+
       onClose();
     } catch (err) {
       console.error(err);
-      setError('Failed to save ministry data. Please try again.');
+      setError('Failed to save ministry. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col my-8 border border-white/95">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-xl font-bold text-church-navy">{ministry ? 'Edit Ministry' : 'Create Ministry'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-            <X size={20} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={ministry ? 'Edit Ministry' : 'Create Ministry'}
+      subtitle="Configure church departments, custom service roles, and member permission sets"
+      icon={Shield}
+      maxWidth="xl"
+      footer={
+        <>
+          <button 
+            type="button" 
+            onClick={onClose}
+            disabled={loading}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
+            Cancel
           </button>
-        </div>
-        
-        <div className="flex border-b border-gray-100 px-6 pt-2 bg-gray-50/50">
+          <button 
+            type="submit" 
+            form="ministry-form"
+            disabled={loading}
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : ministry ? 'Save Changes' : 'Create Ministry'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* Tab Switcher */}
+        <div className="flex bg-white rounded-2xl border border-slate-200/80 p-1 shadow-2xs">
           <button
+            type="button"
             onClick={() => setActiveTab('general')}
-            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'general' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'general' ? 'bg-[#162533] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            General
+            General Details
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('features')}
-            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'features' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'features' ? 'bg-[#162533] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            Features
+            Feature Permissions
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('roles')}
-            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'roles' ? 'border-[#2C4A60] text-[#2C4A60]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'roles' ? 'bg-[#162533] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            Roles
+            Custom Roles ({roles.length})
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 overflow-y-auto">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-          
-          <div className={activeTab === 'general' ? 'block' : 'hidden'}>
-            <div className="space-y-6">
+        <form id="ministry-form" onSubmit={handleSubmit} className="space-y-4">
+          {activeTab === 'general' && (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Ministry Name *</label>
-                <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="e.g. Praise and Worship" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" />
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Ministry Name *</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  required 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Praise and Worship Ministry" 
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Ministry Type *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Ministry Type *</label>
                 <ModernDropdown
                   value={formData.type}
                   onChange={(val) => handleChange({ target: { name: 'type', value: val } })}
@@ -291,143 +311,143 @@ export default function MinistryFormModal({ isOpen, onClose, ministry = null }) 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Description</label>
-                <textarea name="description" rows="3" value={formData.description} onChange={handleChange} placeholder="What is the purpose of this ministry?" className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none bg-white"></textarea>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Description</label>
+                <textarea 
+                  name="description" 
+                  rows="3" 
+                  value={formData.description} 
+                  onChange={handleChange} 
+                  placeholder="Explain the purpose and ministry responsibilities..." 
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-church-navy mb-1">Status</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Status</label>
                 <ModernDropdown
                   value={formData.status}
                   onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
                   options={[
-                    { value: 'Active', label: 'Active' },
+                    { value: 'Active', label: 'Active Ministry' },
                     { value: 'Archived', label: 'Archived' }
                   ]}
                 />
               </div>
             </div>
-          </div>
+          )}
 
-          <div className={activeTab === 'features' ? 'block' : 'hidden'}>
-            <p className="text-xs text-church-slate mb-4">Configure access permissions and features for active members of this ministry.</p>
-            
-            <div className="space-y-4">
+          {activeTab === 'features' && (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+              <p className="text-xs text-slate-500 font-medium">
+                Configure module privileges and tools unlocked for rostered members of this ministry.
+              </p>
+              
               {formData.type === 'worship' ? (
-                <label className="flex items-start space-x-3 cursor-pointer p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                <label className="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50/80 border border-slate-200/80 rounded-xl">
                   <input 
                     type="checkbox"
                     checked={formData.features?.songListEnabled || false}
-                    onChange={() => handleFeatureChange('songListEnabled')}
-                    className="mt-1 w-4 h-4 text-[#2C4A60] accent-[#2C4A60] border-gray-300 rounded focus:ring-[#2C4A60]"
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      features: { ...prev.features, songListEnabled: e.target.checked }
+                    }))}
+                    className="w-4 h-4 text-[#2C4A60] rounded border-slate-300 focus:ring-[#2C4A60] mt-0.5"
                   />
                   <div>
-                    <span className="block text-sm font-bold text-church-navy">Enable Song List Access</span>
-                    <span className="block text-xs text-church-slate mt-1">
-                      When enabled, members assigned to this ministry for an upcoming worship event can view the worship song list, lyrics, chords, key, capo, tempo, and save their own personal arrangement in the mobile app.
-                    </span>
+                    <span className="text-xs font-bold text-slate-900 block">Worship Song List & Chord Chart Access</span>
+                    <span className="text-[11px] text-slate-500">Allow members to view the church song repository, setlists, and chord charts.</span>
                   </div>
                 </label>
               ) : (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-600">
-                  Song list access is only available for <strong>Worship</strong> type ministries. Change the Ministry Type to <strong>Worship (Music & Praise)</strong> in the General tab to enable song list access.
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-400 font-medium text-center">
+                  No specialized features for this ministry type yet.
                 </div>
               )}
             </div>
-          </div>
+          )}
 
+          {activeTab === 'roles' && (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {roles.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No roles configured yet. Add role names below.</p>
+                ) : (
+                  roles.map(role => {
+                    const style = roleStyles[role];
+                    const bg = style?.backgroundColor || getRoleBg(role);
+                    const SelectedIconComp = style?.iconName ? AVAILABLE_ICONS.find(i => i.name === style.iconName)?.Icon : null;
+                    const iconColor = style?.iconColor || ICON_COLORS[bg] || '#4B5563';
+                    const iconNode = SelectedIconComp ? <SelectedIconComp size={14} color={iconColor} /> : getRoleIcon(role);
+                    
+                    return (
+                      <div 
+                        key={role} 
+                        className="flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-2xs border border-black/5"
+                        style={{ backgroundColor: bg }}
+                      >
+                        <span className="mr-1.5 opacity-90">{iconNode}</span>
+                        <span className="text-slate-800">{role}</span>
+                        <button type="button" onClick={() => handleRemoveRole(role)} className="ml-2 text-slate-400 hover:text-slate-700 transition-colors">
+                          <X size={13} />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
 
-          <div className={activeTab === 'roles' ? 'block' : 'hidden'}>
-            <p className="text-xs text-church-slate mb-4">Define the specific roles members can have in this ministry (e.g. Vocalist, Drummer, Sound Tech).</p>
-            
-            <div className="flex flex-wrap gap-2 mb-4 max-h-[120px] overflow-y-auto p-1">
-              {formData.roles.map(role => {
-                const customDetails = formData.roleDetails?.[role];
-                const bg = customDetails?.color || getRoleBg(role);
-                const iconName = customDetails?.icon;
-                const iconColor = ICON_COLORS[bg] || '#6B7280';
-                const SelectedIconComp = iconName ? AVAILABLE_ICONS.find(i => i.name === iconName)?.Icon : null;
-                const iconNode = SelectedIconComp ? <SelectedIconComp size={16} color={iconColor} /> : getRoleIcon(role);
-                
-                return (
-                  <div 
-                    key={role} 
-                    className="flex items-center px-3 py-1.5 rounded-full text-sm font-medium shadow-sm border border-black/5"
-                    style={{ backgroundColor: bg }}
-                  >
-                    <span className="mr-2 opacity-80">{iconNode}</span>
-                    <span className="text-gray-800">{role}</span>
-                    <button type="button" onClick={() => handleRemoveRole(role)} className="ml-2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors">
-                      <X size={14} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <div className="flex space-x-2">
+              <div className="space-y-3 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80">
                 <input 
                   type="text" 
                   value={newRole} 
                   onChange={(e) => setNewRole(e.target.value)} 
-                  placeholder="New Role Name" 
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] bg-white transition-all"
-                  onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddRole(e); } }}
+                  placeholder="New Role Name (e.g. Lead Guitarist, Backup Singer)" 
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-[#2C4A60]/10 focus:border-[#2C4A60] transition-all"
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddRole(e); } }}
                 />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Role Color</label>
-                  <div className="flex flex-wrap gap-2">
-                    {PALETTE.map(color => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setSelectedColor(color)}
-                        className="w-6 h-6 rounded-full shadow-sm border border-black/10 flex items-center justify-center transition-transform hover:scale-110"
-                        style={{ backgroundColor: color }}
-                      >
-                        {selectedColor === color && <Check size={12} color="#1F2937" />}
-                      </button>
-                    ))}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Color Tag</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {PALETTE.map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setSelectedColor(color)}
+                          className="w-6 h-6 rounded-full border border-black/10 flex items-center justify-center transition-transform hover:scale-110"
+                          style={{ backgroundColor: color }}
+                        >
+                          {selectedColor === color && <Check size={12} color="#1F2937" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Role Icon</label>
-                  <div className="flex items-center">
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Icon</label>
                     <ModernDropdown
                       value={selectedIcon}
                       onChange={(val) => setSelectedIcon(val)}
                       options={AVAILABLE_ICONS.map(icon => ({ value: icon.name, label: icon.name }))}
                     />
-                    {(() => {
-                      const IconComp = AVAILABLE_ICONS.find(i => i.name === selectedIcon)?.Icon;
-                      return IconComp ? <div className="w-8 h-8 flex flex-shrink-0 items-center justify-center bg-white border border-gray-200 rounded-lg"><IconComp size={16} color="#4B5563" /></div> : null;
-                    })()}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end pt-1">
-                <button type="button" onClick={handleAddRole} className="px-4 py-2 bg-[#162533] text-white rounded-lg text-sm font-bold shadow-sm hover:bg-[#1E2E3D] transition-all">
-                  Add Role
-                </button>
+                <div className="flex justify-end pt-1">
+                  <button 
+                    type="button" 
+                    onClick={handleAddRole} 
+                    className="px-4 py-2 bg-[#162533] text-white rounded-xl text-xs font-bold hover:bg-[#1E2E3D] transition-all shadow-xs"
+                  >
+                    Add Role
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </form>
-
-        <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50">
-          <button type="button" onClick={onClose} disabled={loading} className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-bold text-church-slate hover:bg-gray-100 transition-colors">
-            Cancel
-          </button>
-          <button type="submit" onClick={handleSubmit} disabled={loading} className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm">
-            {loading ? 'Saving...' : 'Save Ministry'}
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

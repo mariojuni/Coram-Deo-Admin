@@ -85,6 +85,7 @@ const DOUGHNUT_OPTIONS = {
 
 export default function AttendanceAnalytics({ 
   sessions = [], 
+  recordsBySession = {},
   analyzedMembers = [],
   totalMembers = 0 
 }) {
@@ -103,8 +104,35 @@ export default function AttendanceAnalytics({
       return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
     });
 
-    const membersData = sortedSessions.map(s => s.metrics?.present || 0);
-    const visitorsData = sortedSessions.map(s => s.metrics?.visitors || 0);
+    const membersData = sortedSessions.map(s => {
+      const recs = recordsBySession?.[s.id];
+      if (recs && recs.length > 0) {
+        const count = recs.filter(r => (r.type !== 'visitor' && !r.id?.startsWith('visitor_')) && (r.status?.toLowerCase() === 'present' || r.status?.toLowerCase() === 'late')).length;
+        if (count > 0 || !s.metrics?.present) return Math.max(count, s.metrics?.present || 0);
+      }
+      return s.metrics?.present || 0;
+    });
+
+    const visitorsData = sortedSessions.map(s => {
+      const recs = recordsBySession?.[s.id];
+      if (recs && recs.length > 0) {
+        const count = recs.filter(r => {
+          const rType = (r.type || '').toLowerCase();
+          const rRole = (r.role || '').toLowerCase();
+          return (
+            rType === 'visitor' ||
+            rType === 'guest' ||
+            rRole.includes('visitor') ||
+            rRole.includes('guest') ||
+            (r.id && (r.id.startsWith('visitor_') || r.id.startsWith('guest_'))) ||
+            (r.memberId && (r.memberId.startsWith('visitor_') || r.memberId.startsWith('guest_'))) ||
+            r.isVisitor === true
+          );
+        }).length;
+        if (count > 0 || !s.metrics?.visitors) return Math.max(count, Number(s.metrics?.visitors ?? s.visitors ?? 0));
+      }
+      return Number(s.metrics?.visitors ?? s.visitors ?? 0);
+    });
 
     return {
       labels,

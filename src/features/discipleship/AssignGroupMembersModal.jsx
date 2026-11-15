@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, Shield, User, Check, Plus, Trash2 } from 'lucide-react';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { Users, Search, Shield, User, Check, Loader2 } from 'lucide-react';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { assignGroupLeadersAndMembers } from './discipleshipGroupService';
 import { formatStandardName, deduplicateMembers } from '../../utils/nameUtils';
+import Modal from '../../components/ui/Modal';
 
 export default function AssignGroupMembersModal({ isOpen, onClose, group, onSaved }) {
   const { userProfile, activeChurchId } = useAuth();
@@ -34,16 +35,16 @@ export default function AssignGroupMembersModal({ isOpen, onClose, group, onSave
       try {
         const q = query(collection(db, 'users'));
         const snap = await getDocs(q);
-        let allMembers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        allMembers = deduplicateMembers(allMembers);
-        allMembers.sort((a, b) => {
+        let membersList = snap.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+        membersList = deduplicateMembers(membersList);
+        membersList.sort((a, b) => {
           const nameA = (a.name || a.displayName || '').toLowerCase();
           const nameB = (b.name || b.displayName || '').toLowerCase();
           return nameA.localeCompare(nameB);
         });
 
-        const membersList = allMembers.filter(m => !m.churchId || m.churchId === CHURCH_ID);
-        setAllMembers(membersList);
+        const filtered = membersList.filter(m => !m.churchId || m.churchId === CHURCH_ID);
+        setAllMembers(filtered);
       } catch (err) {
         console.error("Error fetching members:", err);
       } finally {
@@ -88,108 +89,131 @@ export default function AssignGroupMembersModal({ isOpen, onClose, group, onSave
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-church-navy/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative border border-gray-100 flex flex-col max-h-[85vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-church-navy">Manage Group Roster</h2>
-            <p className="text-xs text-gray-500">{group.name}</p>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Manage Group Roster"
+      subtitle={group?.name ? `Assign leaders and members for ${group.name}` : 'Manage group assignments'}
+      icon={Users}
+      maxWidth="xl"
+      badge={
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EBF2F7] text-[#2C4A60] border border-[#D5E3EC]">
+          {selectedLeaderIds.length} Leaders • {selectedMemberIds.length} Members
+        </span>
+      }
+      footer={
+        <div className="flex items-center justify-between w-full">
+          <span className="text-xs font-semibold text-slate-500">
+            {activeTab === 'leaders' ? `${selectedLeaderIds.length} leaders assigned` : `${selectedMemberIds.length} members assigned`}
+          </span>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Assignments'}
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-            <X size={20} />
-          </button>
         </div>
-
+      }
+    >
+      <div className="space-y-4">
         {/* Tab Switcher */}
-        <div className="flex space-x-2 my-4 border-b border-gray-100 pb-2 shrink-0">
+        <div className="flex gap-2 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60">
           <button
+            type="button"
             onClick={() => setActiveTab('leaders')}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center space-x-2 ${
-              activeTab === 'leaders' ? 'bg-church-green text-white shadow-sm' : 'bg-gray-100 text-church-slate hover:bg-gray-200'
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'leaders'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Shield size={14} />
+            <Shield size={13} className={activeTab === 'leaders' ? 'text-[#2C4A60]' : ''} />
             <span>Group Leaders ({selectedLeaderIds.length})</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('members')}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center space-x-2 ${
-              activeTab === 'members' ? 'bg-church-green text-white shadow-sm' : 'bg-gray-100 text-church-slate hover:bg-gray-200'
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'members'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <User size={14} />
+            <User size={13} className={activeTab === 'members' ? 'text-[#2C4A60]' : ''} />
             <span>Group Members ({selectedMemberIds.length})</span>
           </button>
         </div>
 
         {/* Search */}
-        <div className="relative mb-3 shrink-0">
-          <Search size={16} className="absolute left-3.5 top-3 text-gray-400" />
+        <div className="relative">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search member by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:outline-none focus:ring-2 focus:ring-church-green/20"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#2C4A60]/10 focus:border-[#2C4A60] transition-all"
           />
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden max-h-[360px] flex flex-col">
           {loading ? (
-            <div className="text-center py-8 text-xs text-gray-400 font-medium">Loading roster...</div>
+            <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+              <Loader2 size={24} className="animate-spin text-[#2C4A60]" />
+              <p className="text-xs font-medium">Loading church members...</p>
+            </div>
           ) : filteredMembers.length === 0 ? (
-            <div className="text-center py-8 text-xs text-gray-400 font-medium">No members found.</div>
+            <div className="py-12 text-center text-slate-400 text-xs font-medium">
+              No members found matching your search.
+            </div>
           ) : (
-            filteredMembers.map((m) => {
-              const isSelected = activeTab === 'leaders'
-                ? selectedLeaderIds.includes(m.id)
-                : selectedMemberIds.includes(m.id);
-              const formattedName = formatStandardName(m);
+            <div className="divide-y divide-slate-100 overflow-y-auto">
+              {filteredMembers.map((m) => {
+                const isSelected = activeTab === 'leaders'
+                  ? selectedLeaderIds.includes(m.id)
+                  : selectedMemberIds.includes(m.id);
+                const formattedName = formatStandardName(m);
 
-              return (
-                <div
-                  key={m.id}
-                  onClick={() => (activeTab === 'leaders' ? toggleLeader(m.id) : toggleMember(m.id))}
-                  className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    isSelected ? 'border-church-green bg-church-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-church-navy/10 text-church-navy font-bold flex items-center justify-center text-xs">
-                      {formattedName.charAt(0).toUpperCase()}
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => (activeTab === 'leaders' ? toggleLeader(m.id) : toggleMember(m.id))}
+                    className="flex items-center justify-between p-3.5 hover:bg-slate-50/80 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 font-bold flex items-center justify-center text-xs uppercase shrink-0">
+                        {formattedName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800 truncate">{formattedName}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{m.email || m.role || 'Member'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-church-navy">{formattedName}</p>
-                      <p className="text-[10px] text-gray-400">{m.email || m.role || 'Member'}</p>
+                    <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
+                      isSelected ? 'bg-[#162533] border-[#162533] text-white shadow-2xs' : 'border-slate-300 bg-white'
+                    }`}>
+                      {isSelected && <Check size={12} strokeWidth={3} />}
                     </div>
                   </div>
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
-                    isSelected ? 'bg-church-green text-white' : 'border border-gray-300'
-                  }`}>
-                    {isSelected && <Check size={14} />}
-                  </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 mt-4 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-church-navy">
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2 bg-church-green text-white text-xs font-bold rounded-xl shadow-lg shadow-church-green/20 hover:bg-church-green/90"
-          >
-            {saving ? 'Saving...' : 'Save Assignments'}
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

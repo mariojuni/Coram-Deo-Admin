@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { X, ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, ArrowDown } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import ModernDatePicker from '../../components/ui/ModernDatePicker';
+import Modal from '../../components/ui/Modal';
 
 export default function FundTransferModal({ isOpen, onClose }) {
   const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId;
-  
+
   const [funds, setFunds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -93,7 +95,7 @@ export default function FundTransferModal({ isOpen, onClose }) {
         amount: numAmount,
         date,
         notes: notes.trim(),
-        createdBy: userProfile.uid,
+        createdBy: userProfile?.uid || null,
         createdAt: serverTimestamp()
       });
 
@@ -111,133 +113,122 @@ export default function FundTransferModal({ isOpen, onClose }) {
   const fundOptions = funds.map(f => ({ value: f.id, label: f.name }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
-      <div className="glass-light-card rounded-3xl shadow-2xl w-full max-w-lg border border-white/95 flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0 bg-gray-50/50 rounded-t-3xl">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-2xl bg-[#2C4A60]/10 flex items-center justify-center text-[#2C4A60] mr-3">
-              <ArrowRightLeft size={20} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-church-navy">Transfer Funds</h2>
-              <p className="text-xs text-church-slate">Move money between active funds</p>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Transfer Funds"
+      subtitle="Reallocate balances between active church designated funds"
+      icon={ArrowRightLeft}
+      maxWidth="md"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="transferForm"
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? 'Processing...' : 'Complete Transfer'}
+          </button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4 p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      <form id="transferForm" onSubmit={handleSubmit} className="space-y-4">
+        {/* Source & Destination Routing Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Source Fund (From) <span className="text-rose-500">*</span>
+            </label>
+            <ModernDropdown
+              value={sourceFundId}
+              onChange={(val) => setSourceFundId(val)}
+              options={fundOptions}
+              placeholder="Select source fund"
+            />
+          </div>
+
+          <div className="flex justify-center -my-1">
+            <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-[#2C4A60] shadow-2xs">
+              <ArrowDown size={14} strokeWidth={2.5} />
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X size={20} />
-          </button>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Destination Fund (To) <span className="text-rose-500">*</span>
+            </label>
+            <ModernDropdown
+              value={destinationFundId}
+              onChange={(val) => setDestinationFundId(val)}
+              options={fundOptions}
+              placeholder="Select destination fund"
+            />
+          </div>
         </div>
 
-        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100 font-medium">
-              {error}
-            </div>
-          )}
-
-          <form id="transferForm" onSubmit={handleSubmit} className="space-y-5">
-            
-            <div className="grid grid-cols-1 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">From Fund *</label>
-                <ModernDropdown
-                  options={fundOptions}
-                  value={sourceFundId}
-                  onChange={setSourceFundId}
-                  placeholder="Select source fund"
-                />
-              </div>
-              
-              <div className="flex justify-center -my-2 relative z-10">
-                <div className="bg-white rounded-full p-2 shadow-sm border border-gray-100 text-church-slate">
-                  <ArrowRightLeft size={16} className="transform rotate-90" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-church-navy mb-2">To Fund *</label>
-                <ModernDropdown
-                  options={fundOptions}
-                  value={destinationFundId}
-                  onChange={setDestinationFundId}
-                  placeholder="Select destination fund"
-                />
-              </div>
-            </div>
-
+        {/* Transfer Parameters Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Amount (PHP) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Transfer Amount (PHP) <span className="text-rose-500">*</span>
+              </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₱</span>
-                <input 
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs sm:text-sm">₱</span>
+                <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-9 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
                   placeholder="0.00"
                   required
+                  className="w-full pl-8 pr-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Date *</label>
-              <input 
-                type="date"
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Effective Date <span className="text-rose-500">*</span>
+              </label>
+              <ModernDatePicker
+                name="transferDate"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all"
-                required
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-church-navy mb-2">Notes (Optional)</label>
-              <textarea 
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows="3"
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all resize-none"
-                placeholder="Reason for transfer..."
-              />
-            </div>
-          </form>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Audit Notes & Purpose (Optional)
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows="2"
+              placeholder="Reason for transfer (e.g., Board resolution, ministry subsidy)..."
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
+            />
+          </div>
         </div>
-
-        <div className="p-6 border-t border-gray-100 shrink-0 bg-gray-50/50 rounded-b-3xl flex justify-end space-x-3">
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="px-6 py-2.5 text-church-slate hover:bg-gray-200 bg-gray-100 rounded-full text-sm font-bold transition-colors"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            form="transferForm"
-            className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold hover:bg-[#1E2E3D] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving...
-              </>
-            ) : (
-              'Execute Transfer'
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

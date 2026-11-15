@@ -23,7 +23,7 @@ export default function DonationAccountsList() {
       );
       const snap = await getDocs(q);
       const accountsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
+
       // Sort in memory by displayOrder, falling back to name
       accountsData.sort((a, b) => {
         const orderA = typeof a.displayOrder === 'number' ? a.displayOrder : 999;
@@ -125,7 +125,7 @@ export default function DonationAccountsList() {
                       Primary
                     </span>
                   </div>
-                  
+
                   <div className="space-y-3 mb-6">
                     <p className="text-gray-600 font-mono text-sm bg-gray-50 p-2 rounded-xl border border-gray-100 inline-block">
                       {maskAccountNumber(account.accountNumber)}
@@ -183,11 +183,10 @@ export default function DonationAccountsList() {
                         <p className="text-sm text-church-slate">{account.accountName}</p>
                       </div>
                       <div className="flex items-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold mr-3 ${
-                          account.isActive 
-                            ? 'bg-green-50 text-green-700 border border-green-200' 
-                            : 'bg-gray-50 text-gray-500 border border-gray-200'
-                        }`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold mr-3 ${account.isActive
+                          ? 'bg-green-50 text-green-700 border border-green-200'
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                          }`}>
                           {account.isActive ? 'Active' : 'Inactive'}
                         </span>
                         <button

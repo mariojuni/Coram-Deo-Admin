@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, onSnapshot, collection, query, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, getDocs, writeBatch, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { ArrowLeft, Search, CheckCircle, XCircle, Clock, FileWarning, Users, QrCode } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
@@ -30,6 +30,7 @@ export default function TakeAttendance() {
   // Save state
   const [isSaving, setIsSaving] = useState(false);
   const [filterType, setFilterType] = useState('All');
+  const [guestCount, setGuestCount] = useState(0);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -52,24 +53,52 @@ export default function TakeAttendance() {
       const recordsSnap = await getDocs(recordsQ);
       const initialMarks = {};
       const extraMembers = [];
+      let presentCount = 0;
+      let lateCount = 0;
+      let absentCount = 0;
+      let excusedCount = 0;
+      let directVisitors = 0;
       
       recordsSnap.forEach(r => {
         const data = r.data();
+        const rType = (data.type || '').toLowerCase();
+        const rRole = (data.role || '').toLowerCase();
+        const memberId = data.memberId || r.id;
+        const isDirectVisitor = 
+          rType === 'visitor' || 
+          rType === 'guest' || 
+          rRole.includes('visitor') || 
+          rRole.includes('guest') || 
+          r.id.startsWith('visitor_') || 
+          memberId.startsWith('visitor_') || 
+          r.id.startsWith('guest_') || 
+          memberId.startsWith('guest_') || 
+          data.isVisitor === true;
+
         if (data.status) {
           const rawStatus = data.status;
           const normalizedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
-          const memberId = data.memberId || r.id;
           initialMarks[memberId] = normalizedStatus;
+
+          if (isDirectVisitor) {
+            if (normalizedStatus === 'Present' || normalizedStatus === 'Late') directVisitors++;
+          } else {
+            if (normalizedStatus === 'Present') presentCount++;
+            else if (normalizedStatus === 'Late') lateCount++;
+            else if (normalizedStatus === 'Absent') absentCount++;
+            else if (normalizedStatus === 'Excused') excusedCount++;
+          }
           
           extraMembers.push({
             id: memberId,
             name: data.memberName || 'Unknown',
-            role: data.type || 'Member',
+            role: data.type || (isDirectVisitor ? 'Visitor' : 'Member'),
+            isVisitor: isDirectVisitor
           });
         }
       });
       setMarks(initialMarks);
-      return { extraMembers, initialMarks };
+      return { extraMembers, initialMarks, counts: { presentCount, lateCount, absentCount, excusedCount, directVisitors } };
     };
 
     const fetchMembers = async () => {
@@ -81,12 +110,12 @@ export default function TakeAttendance() {
         .filter(m => m.churchId === CHURCH_ID || (!m.churchId && !CHURCH_ID));
     };
 
-    Promise.all([fetchExistingRecords(), fetchMembers()]).then(([{ extraMembers, initialMarks }, activeMembers]) => {
+    Promise.all([fetchExistingRecords(), fetchMembers()]).then(([{ extraMembers, initialMarks, counts }, activeMembers]) => {
       const finalMembers = [...activeMembers];
       const existingIds = new Set(activeMembers.map(m => m.id));
       
       for (const extra of extraMembers) {
-        if (!existingIds.has(extra.id) && !extra.id.startsWith('visitor_')) {
+        if (!existingIds.has(extra.id) && !extra.id.startsWith('visitor_') && !extra.id.startsWith('guest_')) {
           finalMembers.push(extra);
         }
       }
@@ -95,6 +124,63 @@ export default function TakeAttendance() {
       dedupedMembers.sort((a, b) => formatStandardName(a).localeCompare(formatStandardName(b)));
       
       setMembers(dedupedMembers);
+
+      // Check if any marked member in users collection is registered as a visitor
+      const memberMap = new Map(dedupedMembers.map(m => [m.id, m]));
+      let memberPresent = 0;
+      let memberLate = 0;
+      let memberAbsent = 0;
+      let memberExcused = 0;
+      let totalVisitors = counts.directVisitors;
+
+      Object.entries(initialMarks).forEach(([mId, status]) => {
+        const m = memberMap.get(mId);
+        const mStatus = (m?.membershipStatus || '').toLowerCase();
+        const mRole = (m?.role || '').toLowerCase();
+        const isMemberVis = 
+          mId.startsWith('visitor_') || 
+          mId.startsWith('guest_') || 
+          mStatus === 'visitor' || 
+          mStatus === 'visitors' || 
+          mRole.includes('visitor') || 
+          mRole.includes('guest') || 
+          m?.status === 'new' || 
+          m?.isVisitor === true;
+
+        if (isMemberVis) {
+          if (status === 'Present' || status === 'Late') {
+            totalVisitors++;
+          }
+        } else if (!mId.startsWith('visitor_') && !mId.startsWith('guest_')) {
+          if (status === 'Present') memberPresent++;
+          else if (status === 'Late') memberLate++;
+          else if (status === 'Absent') memberAbsent++;
+          else if (status === 'Excused') memberExcused++;
+        }
+      });
+
+      const finalVisitors = Math.max(
+        totalVisitors, 
+        Number(session?.metrics?.visitors ?? session?.metrics?.firstTimeVisitors ?? session?.visitors ?? 0)
+      );
+      setGuestCount(finalVisitors);
+
+      // Auto-heal session metrics in Firestore if out of sync with actual records
+      if (memberPresent > 0 || memberLate > 0 || finalVisitors > 0) {
+        const sessionRef = doc(db, 'attendance_sessions', id);
+        setDoc(sessionRef, {
+          metrics: {
+            present: memberPresent,
+            late: memberLate,
+            absent: memberAbsent,
+            excused: memberExcused,
+            visitors: finalVisitors,
+            totalRoster: dedupedMembers.length
+          },
+          updatedAt: new Date().toISOString()
+        }, { merge: true }).catch(e => console.warn("Could not sync session metrics:", e));
+      }
+
       setLoading(false);
     });
     
@@ -119,14 +205,30 @@ export default function TakeAttendance() {
       let absentCount = 0;
       let lateCount = 0;
       let excusedCount = 0;
+      let visitorCount = 0;
 
       members.forEach(member => {
         const status = marks[member.id];
         if (status) {
-          if (status === 'Present') presentCount++;
-          else if (status === 'Absent') absentCount++;
-          else if (status === 'Late') lateCount++;
-          else if (status === 'Excused') excusedCount++;
+          const mStatus = (member.membershipStatus || '').toLowerCase();
+          const mRole = (member.role || '').toLowerCase();
+          const isVis = 
+            member.isVisitor === true ||
+            mStatus === 'visitor' || 
+            mStatus === 'visitors' || 
+            mRole.includes('visitor') || 
+            mRole.includes('guest') ||
+            member.id.startsWith('visitor_') ||
+            member.id.startsWith('guest_');
+
+          if (isVis) {
+            if (status === 'Present' || status === 'Late') visitorCount++;
+          } else {
+            if (status === 'Present') presentCount++;
+            else if (status === 'Absent') absentCount++;
+            else if (status === 'Late') lateCount++;
+            else if (status === 'Excused') excusedCount++;
+          }
 
           const docRef = doc(collection(db, 'attendance_sessions', id, 'records'), member.id);
           batch.set(docRef, {
@@ -134,7 +236,9 @@ export default function TakeAttendance() {
             memberId: member.id,
             memberName: formatStandardName(member),
             status: status,
-            type: 'member',
+            type: isVis ? 'visitor' : 'member',
+            role: member.role || (isVis ? 'Visitor' : 'Member'),
+            isVisitor: isVis,
             timestamp: now,
             checkInMethod: 'manual_web',
             checkedInAt: now,
@@ -151,15 +255,24 @@ export default function TakeAttendance() {
         }
       });
 
+      const finalSavedVisitors = Math.max(
+        visitorCount, 
+        guestCount, 
+        Number(session?.metrics?.visitors ?? session?.metrics?.firstTimeVisitors ?? session?.visitors ?? 0)
+      );
+
       const sessionRef = doc(db, 'attendance_sessions', id);
-      batch.update(sessionRef, {
-        'metrics.present': presentCount,
-        'metrics.absent': absentCount,
-        'metrics.late': lateCount,
-        'metrics.excused': excusedCount,
-        'metrics.totalRoster': members.length,
+      batch.set(sessionRef, {
+        metrics: {
+          present: presentCount,
+          absent: absentCount,
+          late: lateCount,
+          excused: excusedCount,
+          totalRoster: members.length,
+          visitors: finalSavedVisitors
+        },
         updatedAt: now
-      });
+      }, { merge: true });
 
       await batch.commit();
       alert('Attendance changes saved successfully!');
@@ -292,33 +405,54 @@ export default function TakeAttendance() {
               <QrCode size={14} className="mr-1.5" /> Fast QR Check-in
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const visitorName = prompt("Enter guest or visitor name:");
-                if(visitorName) {
+                if (visitorName && visitorName.trim()) {
                   const now = new Date().toISOString();
                   const visitorId = `visitor_${Date.now()}`;
                   const docRef = doc(collection(db, 'attendance_sessions', id, 'records'), visitorId);
-                  writeBatch(db).set(docRef, {
+                  const sessionRef = doc(db, 'attendance_sessions', id);
+                  const nextVisitors = guestCount + 1;
+
+                  const batch = writeBatch(db);
+                  batch.set(docRef, {
                     id: visitorId,
                     memberId: visitorId,
-                    memberName: visitorName,
+                    memberName: visitorName.trim(),
                     status: 'Present',
                     type: 'visitor',
+                    role: 'Visitor',
+                    isVisitor: true,
                     timestamp: now,
                     checkInMethod: 'manual_web',
                     checkedInAt: now,
                     checkedInBy: userProfile?.id || userProfile?.uid || '',
                     churchId: CHURCH_ID,
                     createdAt: now,
-                    eventDate: session.date || '',
-                    eventId: session.eventId || '',
-                    eventTitle: session.eventTitle || session.eventName || '',
+                    eventDate: session?.date || '',
+                    eventId: session?.eventId || '',
+                    eventTitle: session?.eventTitle || session?.eventName || '',
                     source: 'web',
                     updatedAt: now,
                     userId: visitorId
-                  }, { merge: true }).update(doc(db, 'attendance_sessions', id), {
-                    'metrics.visitors': (session.metrics?.visitors || 0) + 1
-                  }).commit();
+                  }, { merge: true });
+
+                  batch.set(sessionRef, {
+                    metrics: {
+                      ...(session?.metrics || {}),
+                      visitors: nextVisitors
+                    },
+                    updatedAt: now
+                  }, { merge: true });
+
+                  try {
+                    await batch.commit();
+                    setGuestCount(nextVisitors);
+                    alert(`Guest "${visitorName.trim()}" logged successfully!`);
+                  } catch (err) {
+                    console.error("Error logging guest:", err);
+                    alert("Failed to log guest. Check permissions.");
+                  }
                 }
               }}
               disabled={isClosed}
@@ -425,7 +559,7 @@ export default function TakeAttendance() {
             <span className="text-amber-600">Late: {Object.values(marks).filter(v => v === 'Late').length}</span>
             <span className="text-red-600">Absent: {Object.values(marks).filter(v => v === 'Absent').length}</span>
             <span className="text-church-violet">Excused: {Object.values(marks).filter(v => v === 'Excused').length}</span>
-            <span className="text-blue-600">Guests: {session.metrics?.visitors || 0}</span>
+            <span className="text-blue-600">Guests / Visitors: {guestCount || session?.metrics?.visitors || 0}</span>
           </div>
         </div>
       </SoftCard>

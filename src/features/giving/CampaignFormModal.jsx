@@ -3,11 +3,12 @@ import { collection, doc, setDoc, updateDoc, serverTimestamp, getDocs, query, wh
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { X, Save, Play, Pause, CheckCircle, Archive, AlertCircle, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Save, Play, Pause, CheckCircle, Archive, AlertCircle, Image as ImageIcon, Trash2, Target, DollarSign, Eye, Layers } from 'lucide-react';
 import ModernDropdown from '../../components/ui/ModernDropdown';
+import Modal from '../../components/ui/Modal';
 
 export default function CampaignFormModal({ isOpen, onClose, campaign }) {
-  const { userProfile, originalUserProfile } = useAuth();
+  const { userProfile } = useAuth();
   const CHURCH_ID = userProfile?.churchId ;
   const [formData, setFormData] = useState({
     title: '',
@@ -46,8 +47,22 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
       });
       setCoverImageFile(null);
       setUploadProgress(0);
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        goalAmount: '',
+        campaignType: 'building_project',
+        allowPublicProgress: true,
+        allowPublicExpenses: false,
+        coverImageUrl: '',
+        fundId: '',
+        fundType: '',
+      });
+      setCoverImageFile(null);
+      setUploadProgress(0);
     }
-  }, [campaign]);
+  }, [campaign, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,117 +76,64 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
             .map(d => ({ id: d.id, ...d.data() }))
             .sort((a, b) => a.name.localeCompare(b.name));
           setFunds(activeFunds);
-        } catch (e) {
-          console.error("Failed to fetch funds for dropdown", e);
+
+          if (!campaign && activeFunds.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              fundId: prev.fundId || activeFunds[0].id,
+              fundType: prev.fundType || activeFunds[0].type || 'special_project'
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching funds for campaign:", err);
         }
       };
-      
       fetchFunds();
     }
-  }, [isOpen, CHURCH_ID]);
+  }, [isOpen, CHURCH_ID, campaign]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
-  const compressImage = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-          let width = img.width;
-          let height = img.height;
+  const handleFundChange = (fundId) => {
+    const selected = funds.find(f => f.id === fundId);
+    setFormData(prev => ({
+      ...prev,
+      fundId,
+      fundType: selected ? (selected.type || 'special_project') : ''
+    }));
+  };
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Canvas to Blob failed'));
-                return;
-              }
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            },
-            'image/jpeg',
-            0.6 // Aggressive compression quality
-          );
-        };
-        img.onerror = (err) => reject(err);
+  const handleAction = async (newStatus) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const docRef = doc(db, 'givingCampaigns', campaign.id);
+      const updateData = {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
       };
-      reader.onerror = (err) => reject(err);
-    });
-  };
 
-  const handleFileChange = async (e) => {
-    if (e.target.files[0]) {
-      const originalFile = e.target.files[0];
-      if (originalFile.type.startsWith('image/')) {
-        try {
-          const compressedFile = await compressImage(originalFile);
-          setCoverImageFile(compressedFile);
-        } catch (err) {
-          console.error("Failed to compress image, using original:", err);
-          setCoverImageFile(originalFile);
-        }
-      } else {
-        setCoverImageFile(originalFile);
+      if (newStatus === 'paused') {
+        updateData.pauseReason = pauseReason;
       }
+
+      await updateDoc(docRef, updateData);
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update campaign status');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleRemoveImage = async () => {
-    if (formData.coverImageUrl) {
-      try {
-        const imageRef = ref(storage, formData.coverImageUrl);
-        await deleteObject(imageRef);
-      } catch (err) {
-        console.error("Error deleting image from storage:", err);
-      }
-    }
-    setCoverImageFile(null);
-    setFormData(prev => ({ ...prev, coverImageUrl: '' }));
-  };
-
-  const validateActivation = async () => {
-    if (!formData.title?.trim()) return "Title is required.";
-    if (!formData.description?.trim()) return "Description is required.";
-    if (!formData.goalAmount || Number(formData.goalAmount) <= 0) return "Goal amount must be greater than 0.";
-    if (!formData.campaignType) return "Campaign type is required.";
-    if (campaign?.status === 'archived') return "Cannot activate an archived campaign.";
-    if (campaign?.churchId && campaign.churchId !== CHURCH_ID) return "Invalid church context.";
-
-    return null;
   };
 
   const handleSubmit = async (e) => {
@@ -180,20 +142,15 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
     setError(null);
 
     try {
-      let campaignId = campaign?.id;
-      let campaignRef = null;
-      if (mode === 'create') {
-        campaignRef = doc(collection(db, 'givingCampaigns'));
-        campaignId = campaignRef.id;
-      } else {
-        campaignRef = doc(db, 'givingCampaigns', campaignId);
-      }
+      let finalCoverImageUrl = formData.coverImageUrl;
 
-      let imageUrl = formData.coverImageUrl;
+      // Handle Image Upload if a file was selected
       if (coverImageFile) {
-        const storageRef = ref(storage, `churches/${CHURCH_ID}/campaign/${campaignId}/${Date.now()}_${coverImageFile.name}`);
+        const fileExt = coverImageFile.name.split('.').pop();
+        const fileName = `campaign_${Date.now()}.${fileExt}`;
+        const storageRef = ref(storage, `campaigns/${CHURCH_ID}/${fileName}`);
         const uploadTask = uploadBytesResumable(storageRef, coverImageFile);
-        
+
         await new Promise((resolve, reject) => {
           uploadTask.on(
             'state_changed',
@@ -203,440 +160,40 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
             },
             (err) => reject(err),
             async () => {
-              imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              finalCoverImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
               resolve();
             }
           );
         });
       }
 
-      // Map final fundType for fallback
-      let finalFundType = formData.fundType;
-      if (formData.fundId) {
-        const selectedFund = funds.find(f => f.id === formData.fundId);
-        if (selectedFund) {
-          finalFundType = selectedFund.name;
-        }
-      }
-
-      if (mode === 'create') {
-        await setDoc(campaignRef, {
-          ...formData,
-          fundType: finalFundType,
-          coverImageUrl: imageUrl,
-          goalAmount: Number(formData.goalAmount),
-          churchId: CHURCH_ID,
-          status: 'draft',
-          raisedAmount: 0,
-          expenseAmount: 0,
-          createdBy: originalUserProfile.name || 'Unknown',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      } else if (mode === 'edit') {
-        await updateDoc(campaignRef, {
-          ...formData,
-          fundType: finalFundType,
-          coverImageUrl: imageUrl,
-          goalAmount: Number(formData.goalAmount),
-          updatedBy: originalUserProfile.name || 'Unknown',
-          updatedAt: serverTimestamp(),
-        });
-      }
-      
-      onClose();
-    } catch (err) {
-      console.error(err);
-      setError("Failed to save campaign. " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAction = async (targetStatus) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (targetStatus === 'active') {
-        const validationError = await validateActivation();
-        if (validationError) {
-          setError(validationError);
-          setLoading(false);
-          return;
-        }
-      }
-
-      const campaignRef = doc(db, 'givingCampaigns', campaign.id);
-      const updateData = {
-        status: targetStatus,
-        updatedBy: originalUserProfile.name || 'Unknown',
+      const campaignData = {
+        ...formData,
+        coverImageUrl: finalCoverImageUrl,
+        goalAmount: Number(formData.goalAmount) || 0,
+        status: campaign?.status || 'draft',
         updatedAt: serverTimestamp(),
+        churchId: CHURCH_ID
       };
 
-      if (targetStatus === 'active') {
-        updateData.activatedAt = serverTimestamp();
-        updateData.activatedBy = originalUserProfile.name || 'Unknown';
-      } else if (targetStatus === 'paused') {
-        updateData.pausedAt = serverTimestamp();
-        updateData.pausedBy = originalUserProfile.name || 'Unknown';
-        updateData.pauseReason = pauseReason;
-      } else if (targetStatus === 'completed') {
-        updateData.completedAt = serverTimestamp();
-        updateData.completedBy = originalUserProfile.name || 'Unknown';
-      } else if (targetStatus === 'archived') {
-        updateData.archivedAt = serverTimestamp();
-        updateData.archivedBy = originalUserProfile.name || 'Unknown';
-      }
-
-      await updateDoc(campaignRef, updateData);
-      
-      // Also save any form edits if we are activating from draft
-      if (targetStatus === 'active' && campaign.status === 'draft') {
-        await updateDoc(campaignRef, {
-          title: formData.title,
-          description: formData.description,
-          goalAmount: Number(formData.goalAmount),
-          campaignType: formData.campaignType,
-          allowPublicProgress: formData.allowPublicProgress,
-          allowPublicExpenses: formData.allowPublicExpenses,
-          coverImageUrl: formData.coverImageUrl,
-          fundId: formData.fundId,
-          fundType: formData.fundId ? funds.find(f => f.id === formData.fundId)?.name || formData.fundType : formData.fundType,
-        });
+      if (!campaign || !campaign.id) {
+        campaignData.createdAt = serverTimestamp();
+        campaignData.raisedAmount = 0;
+        campaignData.donorCount = 0;
+        const newDocRef = doc(collection(db, 'givingCampaigns'));
+        await setDoc(newDocRef, campaignData);
+      } else {
+        const docRef = doc(db, 'givingCampaigns', campaign.id);
+        await updateDoc(docRef, campaignData);
       }
 
       onClose();
     } catch (err) {
       console.error(err);
-      setError("Failed to update campaign status. " + err.message);
+      setError('Failed to save campaign. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const renderContent = () => {
-    if (mode === 'pause') {
-      return (
-        <div className="space-y-4">
-          <div className="bg-yellow-50 p-4 rounded-lg flex items-start">
-            <Pause className="text-yellow-600 mt-0.5 mr-3 flex-shrink-0" size={20} />
-            <div>
-              <h3 className="font-bold text-yellow-900">Pause Campaign?</h3>
-              <p className="text-yellow-800 text-sm mt-1">
-                Pausing this campaign will hide it from the mobile app. Members will not be able to give to it until it is resumed.
-              </p>
-            </div>
-          </div>
-          
-          <div className="mt-4">
-            <label className="block text-xs font-semibold text-church-slate mb-1">Reason for pausing (Optional)</label>
-            <textarea
-              value={pauseReason}
-              onChange={(e) => setPauseReason(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all min-h-[100px]"
-              placeholder="e.g. Temporarily halted while we review funds."
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-church-slate font-semibold hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAction('paused')}
-              disabled={loading}
-              className="px-5 py-2.5 bg-yellow-500 text-white font-bold rounded-xl shadow-md hover:bg-yellow-600 disabled:opacity-50"
-            >
-              {loading ? 'Pausing...' : 'Pause Campaign'}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (mode === 'resume') {
-      return (
-        <div className="space-y-4">
-          <div className="bg-green-50 p-4 rounded-lg flex items-start">
-            <Play className="text-green-600 mt-0.5 mr-3 flex-shrink-0" size={20} />
-            <div>
-              <h3 className="font-bold text-green-900">Resume Campaign?</h3>
-              <p className="text-green-800 text-sm mt-1">
-                This will reactivate the campaign and allow members to continue giving.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-church-slate font-semibold hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAction('active')}
-              disabled={loading}
-              className="px-5 py-2.5 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 disabled:opacity-50"
-            >
-              {loading ? 'Resuming...' : 'Resume Campaign'}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (mode === 'complete') {
-      return (
-        <div className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-lg flex items-start">
-            <CheckCircle className="text-blue-600 mt-0.5 mr-3 flex-shrink-0" size={20} />
-            <div>
-              <h3 className="font-bold text-blue-900">Mark as Completed?</h3>
-              <p className="text-blue-800 text-sm mt-1">
-                Marking this campaign as completed means you have reached your goal or ended the project. Members can no longer give to it.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-church-slate font-semibold hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAction('completed')}
-              disabled={loading}
-              className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Updating...' : 'Mark Completed'}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (mode === 'archive') {
-      return (
-        <div className="space-y-4">
-          <div className="bg-gray-100 p-4 rounded-lg flex items-start">
-            <Archive className="text-gray-600 mt-0.5 mr-3 flex-shrink-0" size={20} />
-            <div>
-              <h3 className="font-bold text-gray-900">Archive Campaign?</h3>
-              <p className="text-gray-800 text-sm mt-1">
-                Archiving will hide this campaign from all active views. It will not be accessible to members.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-church-slate font-semibold hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAction('archived')}
-              disabled={loading}
-              className="px-5 py-2.5 bg-gray-800 text-white font-bold rounded-xl shadow-md hover:bg-gray-900 disabled:opacity-50"
-            >
-              {loading ? 'Archiving...' : 'Archive Campaign'}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    // Default Edit / Create / Activate mode
-    return (
-      <form onSubmit={(e) => {
-        // If the form is submitted via the default submit button (Save), handle it.
-        // The Activate button will be a button type="button" that calls handleAction('active')
-        if (mode === 'activate') {
-          e.preventDefault();
-          handleAction('active');
-        } else {
-          handleSubmit(e);
-        }
-      }} className="space-y-4">
-        {mode === 'activate' && (
-          <div className="bg-green-50 p-4 rounded-lg flex items-start mb-4">
-            <Play className="text-green-600 mt-0.5 mr-3 flex-shrink-0" size={20} />
-            <div>
-              <h3 className="font-bold text-green-900">Activate Campaign?</h3>
-              <p className="text-green-800 text-sm mt-1">
-                Activating this campaign will make it visible in the mobile app, and members will be able to start giving towards it immediately. Please review the details below.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-xs font-semibold text-church-slate mb-1">Campaign Title</label>
-          <input
-            type="text"
-            name="title"
-            required
-            value={formData.title}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
-            placeholder="e.g., New Building Project"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-xs font-semibold text-church-slate mb-1">Description</label>
-          <textarea
-            name="description"
-            required
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all min-h-[100px] bg-white resize-none"
-            placeholder="Describe the purpose of this campaign..."
-          />
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-xs font-semibold text-church-slate mb-2">Cover Image (Optional)</label>
-          {(coverImageFile || formData.coverImageUrl) ? (
-            <div className="relative group rounded-xl overflow-hidden border border-gray-200">
-              <img 
-                src={coverImageFile ? URL.createObjectURL(coverImageFile) : formData.coverImageUrl} 
-                alt="Cover Preview" 
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium text-sm shadow flex items-center hover:bg-red-600 transition-colors"
-                >
-                  <Trash2 size={16} className="mr-2" />
-                  Remove Image
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <label htmlFor="cover-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImageIcon size={24} className="text-gray-400 mb-2" />
-                  <p className="mb-1 text-sm text-gray-500 font-medium">Click to upload cover image</p>
-                  <p className="text-xs text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                </div>
-                <input id="cover-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*" />
-              </label>
-            </div>
-          )}
-          {uploadProgress > 0 && uploadProgress < 100 && (
-            <div className="mt-3 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-[#2C4A60] transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-church-slate mb-1">Goal Amount (₱)</label>
-            <input
-              type="number"
-              name="goalAmount"
-              required
-              min="1"
-              value={formData.goalAmount}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
-              placeholder="0.00"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-church-slate mb-1">Campaign Type</label>
-            <ModernDropdown
-              value={formData.campaignType}
-              onChange={(val) => handleChange({ target: { name: 'campaignType', value: val } })}
-              options={[
-                { value: 'building_project', label: 'Building Project' },
-                { value: 'ministry_fundraising', label: 'Ministry Fundraising' },
-                { value: 'missions', label: 'Missions' },
-                { value: 'event', label: 'Event' },
-                { value: 'special_project', label: 'Special Project' }
-              ]}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-church-slate mb-1">Link to Fund (Optional)</label>
-          <ModernDropdown
-            value={formData.fundId}
-            onChange={(val) => handleChange({ target: { name: 'fundId', value: val } })}
-            options={[
-              { value: '', label: '-- None --' },
-              ...funds.map(f => ({ value: f.id, label: f.name }))
-            ]}
-          />
-          <p className="text-xs text-church-slate mt-1">If linked, funds raised will also report under this fund.</p>
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 text-church-slate font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-          
-          {mode === 'activate' ? (
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center px-5 py-2.5 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition-opacity disabled:opacity-50"
-            >
-              <Play size={18} className="mr-2" />
-              {loading ? 'Activating...' : 'Activate Campaign'}
-            </button>
-          ) : (
-            <>
-              {campaign && campaign.status === 'draft' && (
-                <button
-                  type="button"
-                  onClick={() => handleAction('active')}
-                  disabled={loading}
-                  className="flex items-center px-5 py-2.5 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition-opacity disabled:opacity-50"
-                >
-                  <Play size={18} className="mr-2" />
-                  {loading ? 'Activating...' : 'Activate Campaign'}
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center px-5 py-2.5 bg-[#162533] text-white font-bold rounded-xl shadow-sm hover:bg-[#1E2E3D] transition-all disabled:opacity-50"
-              >
-                <Save size={18} className="mr-2" />
-                {loading ? 'Saving...' : (!campaign || campaign.status === 'draft' ? 'Save Draft' : 'Save Changes')}
-              </button>
-            </>
-          )}
-        </div>
-      </form>
-    );
   };
 
   const getTitle = () => {
@@ -646,37 +203,391 @@ export default function CampaignFormModal({ isOpen, onClose, campaign }) {
       case 'resume': return 'Resume Campaign';
       case 'complete': return 'Complete Campaign';
       case 'archive': return 'Archive Campaign';
-      case 'edit': return 'Campaign Details';
-      default: return 'Create New Campaign';
+      case 'edit': return 'Campaign Settings';
+      default: return 'Create Giving Campaign';
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-white/95">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-church-navy">
-            {getTitle()}
-          </h2>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+  const getSubtitle = () => {
+    switch (mode) {
+      case 'activate': return 'Review and launch campaign for public and member donations';
+      case 'pause': return 'Temporarily halt active contributions to this campaign';
+      case 'resume': return 'Reopen contributions and restore mobile visibility';
+      case 'complete': return 'Mark campaign project goals as fulfilled and concluded';
+      case 'archive': return 'Remove campaign from active dashboards into audit archives';
+      case 'edit': return 'Update target objectives, fund assignment, and progress visibility';
+      default: return 'Configure a designated stewardship campaign or building drive';
+    }
+  };
+
+  const getIcon = () => {
+    switch (mode) {
+      case 'activate': return Play;
+      case 'pause': return Pause;
+      case 'resume': return Play;
+      case 'complete': return CheckCircle;
+      case 'archive': return Archive;
+      default: return Target;
+    }
+  };
+
+  // Lifecycle confirmation dialog screens
+  if (mode === 'pause' || mode === 'resume' || mode === 'complete' || mode === 'archive') {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={getTitle()}
+        subtitle={getSubtitle()}
+        icon={getIcon()}
+        maxWidth="md"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+            >
+              Cancel
+            </button>
+            {mode === 'pause' && (
+              <button
+                type="button"
+                onClick={() => handleAction('paused')}
+                disabled={loading}
+                className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50"
+              >
+                {loading ? 'Pausing...' : 'Confirm Pause'}
+              </button>
+            )}
+            {mode === 'resume' && (
+              <button
+                type="button"
+                onClick={() => handleAction('active')}
+                disabled={loading}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50"
+              >
+                {loading ? 'Resuming...' : 'Confirm Resume'}
+              </button>
+            )}
+            {mode === 'complete' && (
+              <button
+                type="button"
+                onClick={() => handleAction('completed')}
+                disabled={loading}
+                className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50"
+              >
+                {loading ? 'Updating...' : 'Mark Completed'}
+              </button>
+            )}
+            {mode === 'archive' && (
+              <button
+                type="button"
+                onClick={() => handleAction('archived')}
+                disabled={loading}
+                className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50"
+              >
+                {loading ? 'Archiving...' : 'Archive Campaign'}
+              </button>
+            )}
+          </>
+        }
+      >
+        <div className="space-y-4">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 flex items-start">
-              <AlertCircle size={16} className="mt-0.5 mr-2 flex-shrink-0" />
-              <span>{error}</span>
+            <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+              {error}
             </div>
           )}
 
-          {renderContent()}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+            <h4 className="text-sm font-bold text-slate-900">{campaign?.title}</h4>
+            {mode === 'pause' && (
+              <>
+                <p className="text-xs text-slate-500">
+                  Pausing this campaign will hide donation options in the member mobile app until resumed.
+                </p>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Reason for pause (Optional)</label>
+                  <input
+                    type="text"
+                    value={pauseReason}
+                    onChange={(e) => setPauseReason(e.target.value)}
+                    placeholder="e.g., Temporarily awaiting permits, seasonal pause"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs sm:text-sm font-medium text-slate-900"
+                  />
+                </div>
+              </>
+            )}
+            {mode === 'resume' && (
+              <p className="text-xs text-slate-500">
+                This will reactivate the campaign and allow members to resume giving towards this goal.
+              </p>
+            )}
+            {mode === 'complete' && (
+              <p className="text-xs text-slate-500">
+                Marking this campaign completed indicates that the target milestone was reached. Giving will be locked.
+              </p>
+            )}
+            {mode === 'archive' && (
+              <p className="text-xs text-slate-500">
+                Archiving will hide this campaign from all active views. Historical giving records remain preserved.
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </Modal>
+    );
+  }
+
+  // Standard Create / Edit / Activate Modal
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={getTitle()}
+      subtitle={getSubtitle()}
+      icon={getIcon()}
+      maxWidth="xl"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
+            Cancel
+          </button>
+          
+          {mode === 'activate' ? (
+            <button
+              type="submit"
+              form="campaign-form"
+              disabled={loading}
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Play size={14} />
+              <span>{loading ? 'Activating...' : 'Activate Campaign'}</span>
+            </button>
+          ) : (
+            <>
+              {campaign && campaign.status === 'draft' && (
+                <button
+                  type="button"
+                  onClick={() => handleAction('active')}
+                  disabled={loading}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Play size={14} />
+                  <span>Activate</span>
+                </button>
+              )}
+              <button
+                type="submit"
+                form="campaign-form"
+                disabled={loading}
+                className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : (!campaign || campaign.status === 'draft' ? 'Save Draft' : 'Save Changes')}
+              </button>
+            </>
+          )}
+        </>
+      }
+    >
+      <form id="campaign-form" onSubmit={(e) => {
+        if (mode === 'activate') {
+          e.preventDefault();
+          handleAction('active');
+        } else {
+          handleSubmit(e);
+        }
+      }} className="space-y-4">
+        {error && (
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* Section 1: Campaign Overview */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Target size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Campaign Overview
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">General objective and target financial milestone</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Campaign Title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+              placeholder="e.g. New Church Building & Sanctuary Expansion"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Description <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              name="description"
+              required
+              rows="3"
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
+              placeholder="Describe the purpose, vision, and prayer needs of this campaign..."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Target Goal (₱) <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs sm:text-sm">₱</span>
+                <input
+                  type="number"
+                  name="goalAmount"
+                  required
+                  min="1"
+                  step="1"
+                  value={formData.goalAmount}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-bold text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
+                  placeholder="100000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Associated Fund *</label>
+              <ModernDropdown
+                value={formData.fundId}
+                onChange={handleFundChange}
+                options={funds.map(f => ({ value: f.id, label: `${f.name} (${f.type || 'special_project'})` }))}
+                placeholder="Select designated fund"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Media & Cover */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <ImageIcon size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Cover Photo & Presentation
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Visual banner displayed in congregation portals</p>
+            </div>
+          </div>
+
+          {(coverImageFile || formData.coverImageUrl) ? (
+            <div className="relative group rounded-xl overflow-hidden border border-slate-200">
+              <img 
+                src={coverImageFile ? URL.createObjectURL(coverImageFile) : formData.coverImageUrl} 
+                alt="Cover Preview" 
+                className="w-full h-36 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setCoverImageFile(null);
+                  setFormData(prev => ({ ...prev, coverImageUrl: '' }));
+                }}
+                className="absolute top-2 right-2 p-1.5 bg-rose-600 text-white rounded-lg shadow-sm hover:bg-rose-700 transition-colors"
+                title="Remove Image"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+              <ImageIcon className="text-[#2C4A60] mb-1.5" size={24} />
+              <span className="text-xs font-bold text-[#2C4A60]">Upload Cover Photo</span>
+              <span className="text-[11px] text-slate-400 mt-0.5">PNG, JPG or WebP up to 5MB</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setCoverImageFile(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+          )}
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+              <div className="bg-[#2C4A60] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+            </div>
+          )}
+        </div>
+
+        {/* Section 3: Transparency & Public Visibility */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Eye size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Transparency & Visibility
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Control progress and disbursement disclosures</p>
+            </div>
+          </div>
+
+          <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50/50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              name="allowPublicProgress"
+              checked={formData.allowPublicProgress}
+              onChange={handleChange}
+              className="mt-0.5 rounded border-slate-300 text-[#2C4A60] focus:ring-[#2C4A60]"
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Show Progress Bar on Public Link</span>
+              <span className="text-[11px] text-slate-400">Allows donors to view raised amount vs. goal in real-time</span>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50/50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              name="allowPublicExpenses"
+              checked={formData.allowPublicExpenses}
+              onChange={handleChange}
+              className="mt-0.5 rounded border-slate-300 text-[#2C4A60] focus:ring-[#2C4A60]"
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">Public Expense Transparency</span>
+              <span className="text-[11px] text-slate-400">Allows public donors to audit project expenditures deducted from this fund</span>
+            </div>
+          </label>
+        </div>
+      </form>
+    </Modal>
   );
 }

@@ -48,12 +48,12 @@ export default function ExpenseCategoryFormModal({ isOpen, onClose, category = n
 
       // Check for duplicate name
       const q = query(
-        collection(db, 'expenseCategories'), 
+        collection(db, 'expenseCategories'),
         where('churchId', '==', CHURCH_ID),
         where('name', '==', formData.name.trim())
       );
       const snap = await getDocs(q);
-      
+
       const isDuplicate = snap.docs.some(d => d.id !== category?.id);
       if (isDuplicate) {
         throw new Error('A category with this name already exists.');
@@ -99,21 +99,21 @@ export default function ExpenseCategoryFormModal({ isOpen, onClose, category = n
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="overflow-y-auto">
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>}
-            
+
             <div>
               <label className="block text-sm font-medium text-church-navy mb-1.5">Category Name *</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g. Utilities"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white" 
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] transition-all bg-white"
               />
             </div>
 
@@ -130,16 +130,16 @@ export default function ExpenseCategoryFormModal({ isOpen, onClose, category = n
             </div>
 
             <div className="pt-6 border-t border-gray-100 flex justify-end space-x-3">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={onClose}
                 disabled={loading}
                 className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-medium hover:bg-[#1E2E3D] transition-all disabled:opacity-50 shadow-sm"
               >

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, query, getDocs, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
-import { X } from 'lucide-react';
+import { collection, query, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { CalendarCheck } from 'lucide-react';
 import ModernDropdown from '../ui/ModernDropdown';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Modal from '../ui/Modal';
 
 export default function NewAttendanceSessionModal({ isOpen, onClose }) {
   const { userProfile } = useAuth();
@@ -32,7 +33,7 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
         // Filter for church
         docs = docs.filter(d => d.churchId === CHURCH_ID || (!d.churchId && !CHURCH_ID));
         
-        // Filter upcoming events (optional, but requested "upcoming events")
+        // Filter upcoming events
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -70,7 +71,7 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
       const sessionRef = doc(db, 'attendance_sessions', selectedEvent.id);
       await setDoc(sessionRef, {
         eventTitle: selectedEvent.title,
-        eventId: selectedEvent.id, // reference to the event
+        eventId: selectedEvent.id,
         date: selectedEvent.date,
         status: 'Open',
         metrics: {
@@ -99,50 +100,56 @@ export default function NewAttendanceSessionModal({ isOpen, onClose }) {
   }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-church-soft flex flex-col my-8" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-xl font-black text-church-charcoal">New Attendance Session</h2>
-          <button onClick={onClose} className="text-church-slate hover:text-church-charcoal transition-colors">
-            <X size={22} />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="New Attendance Session"
+      subtitle="Open attendance check-in for an upcoming church service or event"
+      icon={CalendarCheck}
+      maxWidth="md"
+      footer={
+        <>
+          <button 
+            type="button" 
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
+          >
+            Cancel
           </button>
+          <button 
+            type="submit" 
+            form="attendance-session-form"
+            disabled={isSubmitting || !selectedEventId || loading}
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+          >
+            {isSubmitting ? 'Opening Session...' : 'Open Session'}
+          </button>
+        </>
+      }
+    >
+      <form id="attendance-session-form" onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Select Upcoming Church Service / Event *
+          </label>
+          {loading ? (
+            <div className="text-xs text-slate-400 py-3 font-medium">Loading upcoming calendar events...</div>
+          ) : events.length === 0 ? (
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-500 font-medium text-center">
+              No upcoming events found. Please create an event in the calendar first.
+            </div>
+          ) : (
+            <ModernDropdown
+              value={selectedEventId}
+              onChange={(val) => setSelectedEventId(val)}
+              options={eventOptions}
+              placeholder="Select an upcoming event"
+              searchable={true}
+            />
+          )}
         </div>
-
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-church-charcoal mb-1.5">Select Event</label>
-            {loading ? (
-              <div className="text-xs text-church-slate py-2 font-medium">Loading upcoming events...</div>
-            ) : (
-              <ModernDropdown
-                value={selectedEventId}
-                onChange={(val) => setSelectedEventId(val)}
-                options={eventOptions}
-                placeholder="Select an upcoming event"
-                searchable={true}
-              />
-            )}
-          </div>
-
-          <div className="pt-6 flex justify-end space-x-3 border-t border-gray-100 mt-4">
-            <button 
-              type="button" 
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-xs font-bold text-church-slate hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={isSubmitting || !selectedEventId || loading}
-              className="px-6 py-2.5 bg-gradient-coram text-white rounded-full text-xs font-bold shadow-church-glow hover:opacity-95 active:scale-95 transition-all disabled:opacity-50"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Session'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

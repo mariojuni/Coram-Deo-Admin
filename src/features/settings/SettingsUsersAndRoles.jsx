@@ -13,6 +13,7 @@ import {
 } from '../../utils/permissions';
 import SettingsHeader from './SettingsHeader';
 import SoftCard from '../../components/ui/SoftCard';
+import Modal from '../../components/ui/Modal';
 
 export default function SettingsUsersAndRoles({ embedded = false, onUserCountChange, churchId = null }) {
   const { userProfile, activeChurchId } = useAuth();
@@ -243,100 +244,97 @@ export default function SettingsUsersAndRoles({ embedded = false, onUserCountCha
 
       {/* Edit Roles Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="glass-light-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-white/95">
-            <div className="p-6 border-b border-gray-100/80 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-church-navy">Change System Roles</h2>
-                <p className="text-sm text-gray-500 mt-1">For {editingUser.name}</p>
-              </div>
-              <button onClick={() => setEditingUser(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4 bg-gray-50/50">
-              <div className="bg-amber-50/80 text-amber-900 p-4 rounded-2xl text-sm flex items-start border border-amber-200/60 shadow-sm">
-                <AlertCircle size={18} className="mr-2 flex-shrink-0 mt-0.5 text-amber-600" />
-                <p>
-                  You are changing this user's system roles. Users can hold multiple roles simultaneously.
-                  The <strong>first selected role</strong> becomes the primary (display) role.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-church-navy mb-3">
-                  System Roles
-                  <span className="ml-2 text-xs font-normal text-gray-400">(select one or more)</span>
-                </label>
-                <div className="space-y-2">
-                  {availableRoles.map(role => {
-                    const isChecked = selectedRoles.includes(role);
-                    const isFirst = selectedRoles[0] === role;
-                    return (
-                      <label
-                        key={role}
-                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          isChecked
-                            ? 'bg-[#2C4A60]/5 border-[#2C4A60]/40 shadow-xs'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleRole(role)}
-                          className="w-4 h-4 rounded text-[#2C4A60] accent-[#2C4A60]"
-                        />
-                        <span className="text-sm font-medium text-church-navy capitalize flex-1">
-                          {role.replace(/_/g, ' ')}
-                        </span>
-                        {isFirst && isChecked && (
-                          <span className="text-[10px] font-bold text-[#2C4A60] bg-[#2C4A60]/10 px-2.5 py-0.5 rounded-full">
-                            PRIMARY
-                          </span>
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-                {selectedRoles.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-2">
-                    Primary role: <strong>{selectedRoles[0].replace(/_/g, ' ')}</strong>
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-church-navy mb-2">Reason (Optional)</label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Why are these roles being changed?"
-                  rows="2"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] resize-none bg-white transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-100 flex justify-end space-x-3 bg-white/80">
+        <Modal
+          isOpen={Boolean(editingUser)}
+          onClose={() => setEditingUser(null)}
+          title="Change System Roles"
+          subtitle={`Assign system roles and access levels for ${editingUser.name}`}
+          icon={Shield}
+          maxWidth="md"
+          footer={
+            <>
               <button 
+                type="button"
                 onClick={() => setEditingUser(null)}
                 disabled={saving}
-                className="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
               >
                 Cancel
               </button>
               <button 
+                type="button"
                 onClick={handleSaveRole}
                 disabled={saving || selectedRoles.length === 0}
-                className="px-6 py-2.5 rounded-full font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] transition-colors disabled:opacity-50 shadow-sm"
+                className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Confirm Change'}
               </button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <div className="bg-amber-50 text-amber-900 p-3.5 rounded-xl text-xs flex items-start border border-amber-200/70">
+              <AlertCircle size={15} className="mr-2 shrink-0 mt-0.5 text-amber-600" />
+              <p>
+                Users can hold multiple roles simultaneously. The <strong>first selected role</strong> acts as their primary display role.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                System Roles
+                <span className="ml-1.5 text-[11px] font-normal text-slate-400 lowercase">(select one or more)</span>
+              </label>
+              <div className="space-y-2">
+                {availableRoles.map(role => {
+                  const isChecked = selectedRoles.includes(role);
+                  const isFirst = selectedRoles[0] === role;
+                  return (
+                    <label
+                      key={role}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        isChecked
+                          ? 'bg-[#EBF2F7]/50 border-[#2C4A60] shadow-2xs'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleRole(role)}
+                        className="w-4 h-4 rounded text-[#2C4A60] accent-[#2C4A60]"
+                      />
+                      <span className="text-xs font-bold text-slate-800 capitalize flex-1">
+                        {role.replace(/_/g, ' ')}
+                      </span>
+                      {isFirst && isChecked && (
+                        <span className="text-[10px] font-bold text-[#2C4A60] bg-[#EBF2F7] px-2 py-0.5 rounded-full border border-[#D5E3EC]">
+                          PRIMARY
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+              {selectedRoles.length > 0 && (
+                <p className="text-[11px] text-slate-500 pt-1">
+                  Primary role: <strong className="text-slate-800 capitalize">{selectedRoles[0].replace(/_/g, ' ')}</strong>
+                </p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">Audit Reason (Optional)</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Reason for role change (e.g. joined sound tech ministry)..."
+                rows="2"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#2C4A60] resize-none transition-all"
+              />
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

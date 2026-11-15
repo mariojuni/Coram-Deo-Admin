@@ -56,8 +56,8 @@ export default function CampaignProgressReport({ data }) {
               <td className="py-4 px-4">
                 <div className="flex items-center justify-center">
                   <div className="w-full bg-gray-100 rounded-full h-2.5 max-w-[100px] mr-2">
-                    <div 
-                      className={`h-2.5 rounded-full ${row.progressPercent >= 100 ? 'bg-emerald-500' : 'bg-[#2C4A60]'}`} 
+                    <div
+                      className={`h-2.5 rounded-full ${row.progressPercent >= 100 ? 'bg-emerald-500' : 'bg-[#2C4A60]'}`}
                       style={{ width: `${Math.min(row.progressPercent, 100)}%` }}
                     ></div>
                   </div>

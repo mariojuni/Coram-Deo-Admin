@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, MapPin, Calendar, Clock, BookOpen, Check } from 'lucide-react';
+import { Users, BookOpen, Clock, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { createDiscipleshipGroup, updateDiscipleshipGroup } from './discipleshipGroupService';
 import { getDiscipleshipPlans, getDiscipleshipWeeks } from './discipleshipService';
+import ModernDropdown from '../../components/ui/ModernDropdown';
+import ModernTimePicker from '../../components/ui/ModernTimePicker';
+import Modal from '../../components/ui/Modal';
 
 const GROUP_TYPES = [
   { value: 'small_group', label: 'Small Group' },
@@ -73,11 +76,6 @@ export default function DiscipleshipGroupFormModal({ isOpen, onClose, group = nu
         currentWeekNumber: group.currentWeekNumber || 1,
         currentLessonId: group.currentLessonId || '',
       });
-      if (group.planId && CHURCH_ID) {
-        getDiscipleshipWeeks(CHURCH_ID, group.planId).then((weeks) => {
-          setPlanLessons(weeks);
-        });
-      }
     } else {
       setFormData({
         name: '',
@@ -92,60 +90,42 @@ export default function DiscipleshipGroupFormModal({ isOpen, onClose, group = nu
         currentWeekNumber: 1,
         currentLessonId: '',
       });
-      setPlanLessons([]);
     }
     setError('');
-  }, [group, isOpen, CHURCH_ID]);
+  }, [group, isOpen]);
+
+  useEffect(() => {
+    const fetchLessons = async () => {
+      if (!formData.planId) {
+        setPlanLessons([]);
+        return;
+      }
+      try {
+        const weeks = await getDiscipleshipWeeks(formData.planId);
+        setPlanLessons(weeks);
+      } catch (err) {
+        console.warn('Failed to fetch plan lessons:', err);
+      }
+    };
+    fetchLessons();
+  }, [formData.planId]);
 
   if (!isOpen) return null;
-
-  const handlePlanChange = async (e) => {
-    const selectedPlanId = e.target.value;
-    if (!selectedPlanId) {
-      setFormData((prev) => ({
-        ...prev,
-        planId: '',
-        planTitle: '',
-        currentWeekNumber: 1,
-        currentLessonId: '',
-      }));
-      setPlanLessons([]);
-      return;
-    }
-
-    const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-    const planTitle = selectedPlan ? selectedPlan.title : '';
-
-    try {
-      const weeks = await getDiscipleshipWeeks(CHURCH_ID, selectedPlanId);
-      setPlanLessons(weeks);
-      const firstWeek = weeks.find((w) => w.weekNumber === 1) || weeks[0];
-
-      setFormData((prev) => ({
-        ...prev,
-        planId: selectedPlanId,
-        planTitle,
-        currentWeekNumber: 1,
-        currentLessonId: firstWeek ? firstWeek.id : '',
-      }));
-    } catch (err) {
-      console.warn('Failed to load plan weeks:', err);
-    }
-  };
-
-  const handleWeekNumberChange = (e) => {
-    const weekNum = parseInt(e.target.value, 10) || 1;
-    const matchingLesson = planLessons.find((w) => w.weekNumber === weekNum) || planLessons[0];
-    setFormData((prev) => ({
-      ...prev,
-      currentWeekNumber: weekNum,
-      currentLessonId: matchingLesson ? matchingLesson.id : prev.currentLessonId,
-    }));
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePlanChange = (planId) => {
+    const selectedPlan = plans.find((p) => p.id === planId);
+    setFormData((prev) => ({
+      ...prev,
+      planId,
+      planTitle: selectedPlan ? selectedPlan.title : '',
+      currentWeekNumber: 1,
+      currentLessonId: '',
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -179,218 +159,205 @@ export default function DiscipleshipGroupFormModal({ isOpen, onClose, group = nu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-church-navy/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-church-green/10 text-church-green flex items-center justify-center">
-              <Users size={20} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-church-navy">
-                {group ? 'Edit Group' : 'Create New Group'}
-              </h2>
-              <p className="text-xs text-gray-500">Configure small group details, plan, and schedule</p>
-            </div>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={group ? 'Edit Discipleship Group' : 'Create Discipleship Group'}
+      subtitle="Configure small group meetings, curriculum track, and gathering schedule"
+      icon={Users}
+      maxWidth="xl"
+      footer={
+        <>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            disabled={saving}
+            className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
           >
-            <X size={20} />
+            Cancel
           </button>
-        </div>
-
+          <button
+            type="submit"
+            form="discipleship-group-form"
+            disabled={saving}
+            className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : group ? 'Save Changes' : 'Create Group'}
+          </button>
+        </>
+      }
+    >
+      <form id="discipleship-group-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm font-medium">
+          <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Section 1: Group Basics */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Users size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Group Profile
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Naming and ministry classification</p>
+            </div>
+          </div>
+
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Group Name *
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Group Name *</label>
             <input
               type="text"
               name="name"
+              required
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g. Young Adults Discipleship"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
-              required
+              placeholder="e.g. Young Professionals Discipleship"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Group Type
-              </label>
-              <select
-                name="groupType"
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Group Type</label>
+              <ModernDropdown
                 value={formData.groupType}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
-              >
-                {GROUP_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleChange({ target: { name: 'groupType', value: val } })}
+                options={GROUP_TYPES}
+              />
             </div>
-
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Status
-              </label>
-              <select
-                name="status"
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Status</label>
+              <ModernDropdown
                 value={formData.status}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Discipleship Plan Section */}
-          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-            <div className="flex items-center space-x-2">
-              <BookOpen size={16} className="text-church-green" />
-              <span className="text-xs font-bold text-church-navy uppercase tracking-wider">
-                Discipleship Plan
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                  Select Discipleship Plan
-                </label>
-                <select
-                  value={formData.planId || ''}
-                  onChange={handlePlanChange}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:outline-none"
-                >
-                  <option value="">-- No Plan Attached --</option>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title} ({p.totalWeeks || 0} Wks)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.planId && (
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                    Current Week
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={planLessons.length || 52}
-                    value={formData.currentWeekNumber}
-                    onChange={handleWeekNumberChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-church-navy focus:outline-none"
-                  />
-                </div>
-              )}
-            </div>
-
-            {formData.planId && planLessons.length > 0 && (
-              <div className="text-[11px] text-gray-500 bg-white p-2.5 rounded-lg border border-gray-200">
-                <span className="font-bold text-church-navy">Current Lesson Preview:</span>{' '}
-                {planLessons.find((w) => w.weekNumber === Number(formData.currentWeekNumber))?.title ||
-                  planLessons[0]?.title ||
-                  'Lesson 1'}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              rows={3}
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Brief description of the group's purpose and activities..."
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Meeting Day
-              </label>
-              <select
-                name="meetingDay"
-                value={formData.meetingDay}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
-              >
-                {DAYS_OF_WEEK.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Meeting Time
-              </label>
-              <input
-                type="time"
-                name="meetingTime"
-                value={formData.meetingTime}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
+                onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
+                options={[
+                  { value: 'active', label: 'Active Group' },
+                  { value: 'inactive', label: 'Inactive' },
+                  { value: 'archived', label: 'Archived' }
+                ]}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Meeting Location
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Description</label>
+            <textarea
+              name="description"
+              rows="2"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Brief description of the group's purpose and member cohort..."
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Section 2: Curriculum & Plan Attachment */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <BookOpen size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Discipleship Curriculum
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Link a teaching plan and manage lesson progression</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Attached Plan</label>
+              <ModernDropdown
+                value={formData.planId}
+                onChange={handlePlanChange}
+                options={[
+                  { value: '', label: '-- No Plan Attached --' },
+                  ...plans.map(p => ({ value: p.id, label: `${p.title} (${p.totalWeeks || 0} Wks)` }))
+                ]}
+              />
+            </div>
+
+            {formData.planId && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Current Week</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={planLessons.length || 52}
+                  name="currentWeekNumber"
+                  value={formData.currentWeekNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, currentWeekNumber: Number(e.target.value) }))}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs sm:text-sm font-bold text-slate-900"
+                />
+              </div>
+            )}
+          </div>
+
+          {formData.planId && planLessons.length > 0 && (
+            <div className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span className="font-bold text-slate-800">Current Lesson Preview:</span>{' '}
+              {planLessons.find((w) => w.weekNumber === Number(formData.currentWeekNumber))?.title ||
+                planLessons[0]?.title ||
+                'Lesson 1'}
+            </div>
+          )}
+        </div>
+
+        {/* Section 3: Meeting Cadence & Location */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+              <Calendar size={14} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Meeting Cadence & Venue
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">Regular gathering schedule and physical/virtual location</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Meeting Day</label>
+              <ModernDropdown
+                value={formData.meetingDay}
+                onChange={(val) => handleChange({ target: { name: 'meetingDay', value: val } })}
+                options={DAYS_OF_WEEK.map(d => ({ value: d, label: d }))}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Meeting Time</label>
+              <input
+                type="time"
+                name="meetingTime"
+                value={formData.meetingTime}
+                onChange={handleChange}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs sm:text-sm font-medium text-slate-900"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">Meeting Location / Link</label>
             <input
               type="text"
               name="meetingLocation"
               value={formData.meetingLocation}
               onChange={handleChange}
-              placeholder="e.g. Room 204 or Leader's Home"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-church-green/20 focus:border-church-green font-medium text-sm text-church-navy"
+              placeholder="e.g. Room 204 or https://zoom.us/j/..."
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs sm:text-sm font-medium text-slate-900"
             />
           </div>
-
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-church-navy transition-colors rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2.5 bg-church-green text-white font-bold text-sm rounded-xl shadow-lg shadow-church-green/20 hover:bg-church-green/90 transition-all flex items-center"
-            >
-              {saving ? 'Saving...' : (group ? 'Update Group' : 'Create Group')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

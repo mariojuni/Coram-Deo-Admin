@@ -9,6 +9,7 @@ import ModernDatePicker from '../../components/ui/ModernDatePicker';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import { useStorageQuota } from '../subscription/hooks/useStorageQuota';
 import StorageQuotaModal from '../subscription/components/StorageQuotaModal';
+import Modal from '../../components/ui/Modal';
 
 const STEPS = ['Details', 'Upload', 'Trim', 'Thumbnail', 'Optimize', 'Review'];
 const EDIT_STEPS = ['Details', 'Thumbnail', 'Review'];
@@ -445,29 +446,88 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="glass-light-card rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] border border-white/95">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-church-navy">
-              {isEditMode ? 'Edit Sermon' : 'Sermon Upload Studio'}
-            </h2>
-            <p className="text-sm text-church-slate mt-1">
-              {isEditMode ? 'Update sermon details without re-uploading media.' : 'Easily process and publish your sermons.'}
-            </p>
-          </div>
-          <button onClick={onClose} disabled={isPublishing || isOptimizing} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
-          </button>
-        </div>
-        
-        {/* Content Area */}
-        <div className="overflow-y-auto p-8 flex-1">
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={isEditMode ? 'Edit Sermon' : 'Sermon Upload Studio'}
+        subtitle={isEditMode ? 'Update sermon details without re-uploading media' : 'Easily process, optimize, and publish your sermons'}
+        icon={Film}
+        maxWidth="4xl"
+        footer={
+          isEditMode ? (
+            <div className="flex justify-between items-center w-full">
+              <button 
+                type="button" 
+                onClick={onClose}
+                disabled={isPublishing}
+                className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={() => handleSaveDetails()}
+                disabled={isPublishing}
+                className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+              >
+                {isPublishing ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center w-full">
+              <div>
+                {activeStepIndex > 0 && activeStep !== 'Review' && (
+                  <button 
+                    type="button" 
+                    onClick={prevStep}
+                    disabled={isPublishing || isOptimizing}
+                    className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+                  >
+                    ← Back
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2.5">
+                {activeStep !== 'Review' ? (
+                  <button 
+                    type="button" 
+                    onClick={nextStep}
+                    disabled={loading || isOptimizing || (activeStep === 'Optimize' && !optimizedFile)}
+                    className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+                  >
+                    Continue
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => handlePublish('draft')}
+                      disabled={isPublishing || uploadStatus === 'processing'}
+                      className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs disabled:opacity-50"
+                    >
+                      Save as Draft
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handlePublish('published')}
+                      disabled={isPublishing || uploadStatus === 'processing'}
+                      className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#162533] hover:bg-[#1E2E3D] rounded-xl transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
+                    >
+                      {isPublishing ? 'Publishing...' : 'Publish Sermon'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        }
+      >
+        <div className="space-y-6">
           {renderStepIndicator()}
           
-          {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">{error}</div>}
+          {error && <div className="p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-semibold border border-red-200/70">{error}</div>}
           
           {/* STEP 1: DETAILS */}
           {activeStep === 'Details' && (
@@ -810,81 +870,8 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
               )}
             </div>
           )}
-
         </div>
-
-        {/* Footer Actions */}
-        {isEditMode ? (
-          <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0 rounded-b-3xl">
-            <button 
-              type="button" 
-              onClick={onClose}
-              disabled={isPublishing}
-              className="px-6 py-2.5 text-church-slate font-medium hover:bg-white rounded-xl transition-colors border border-transparent hover:border-gray-200"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={() => handleSaveDetails()}
-              disabled={isPublishing}
-              className="px-8 py-2.5 bg-church-navy text-white rounded-xl font-bold shadow-md hover:bg-church-navy/90 disabled:opacity-50 transition-colors"
-            >
-              {isPublishing ? (
-                <span className="flex items-center">
-                  <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></span>
-                  Saving...
-                </span>
-              ) : 'Save Changes'}
-            </button>
-          </div>
-        ) : (
-          <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0 rounded-b-3xl">
-            <div>
-              {activeStepIndex > 0 && activeStep !== 'Review' && (
-                <button 
-                  type="button" 
-                  onClick={prevStep}
-                  disabled={isPublishing || isOptimizing}
-                  className="px-4 py-2 text-sm font-medium text-church-slate hover:text-church-navy"
-                >
-                  ← Back
-                </button>
-              )}
-            </div>
-            
-            <div className="flex space-x-3">
-              {activeStep !== 'Review' ? (
-                <button 
-                  type="button" 
-                  onClick={nextStep}
-                  disabled={loading || isOptimizing || (activeStep === 'Optimize' && !optimizedFile)}
-                  className="px-6 py-2 bg-church-navy text-white rounded-full text-sm font-medium hover:bg-church-navy/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Continue
-                </button>
-              ) : (
-                <>
-                  <button 
-                    onClick={() => handlePublish('draft')}
-                    disabled={isPublishing || uploadStatus === 'processing'}
-                    className="px-5 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium text-church-slate hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Save as Draft
-                  </button>
-                  <button 
-                    onClick={() => handlePublish('published')}
-                    disabled={isPublishing || uploadStatus === 'processing'}
-                    className="px-6 py-2.5 bg-[#162533] text-white rounded-full text-sm font-bold shadow-sm hover:bg-[#1E2E3D] disabled:opacity-50 transition-all"
-                  >
-                    {isPublishing ? 'Publishing...' : 'Publish Sermon'}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-      </div>
+      </Modal>
 
       <StorageQuotaModal
         isOpen={isStorageModalOpen}
@@ -892,6 +879,6 @@ export default function SermonFormModal({ isOpen, onClose, sermon = null }) {
         fileSizeFormatted={storageModalInfo.fileSizeFormatted}
         targetTier={storageModalInfo.targetTier}
       />
-    </div>
+    </>
   );
 }

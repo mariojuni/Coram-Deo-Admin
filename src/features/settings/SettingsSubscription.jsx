@@ -49,6 +49,7 @@ import InvoiceDetailModal from '../subscription/components/InvoiceDetailModal';
 import { generateSubscriptionReceiptPdf } from '../../utils/subscriptionReceiptPdfGenerator';
 import { useAuth } from '../../context/AuthContext';
 import { UploadCloud, Eye, Building2 } from 'lucide-react';
+import Modal from '../../components/ui/Modal';
 
 export default function SettingsSubscription({ churchId }) {
   const { userProfile, currentUser } = useAuth();
@@ -1123,128 +1124,116 @@ export default function SettingsSubscription({ churchId }) {
           : 'Immediately';
 
         return (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden relative p-6">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center">
-                    <ArrowDownRight size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-base text-church-navy">
-                      Schedule Plan Downgrade
-                    </h3>
-                    <span className="text-xs text-church-slate">
-                      Transitioning from {sub.tierConfig.name} to {targetConfig.name}
-                    </span>
-                  </div>
-                </div>
+          <Modal
+            isOpen={Boolean(downgradeModalTarget)}
+            onClose={() => setDowngradeModalTarget(null)}
+            title="Schedule Plan Downgrade"
+            subtitle={`Transitioning from ${sub.tierConfig.name} to ${targetConfig.name}`}
+            icon={ArrowDownRight}
+            maxWidth="lg"
+            badge={
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                Effective {effectiveDateStr}
+              </span>
+            }
+            footer={
+              <div className="flex items-center justify-end gap-2.5 w-full">
                 <button
                   type="button"
                   onClick={() => setDowngradeModalTarget(null)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-gray-600"
+                  disabled={isSchedulingDowngrade}
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
                 >
-                  <X size={18} />
+                  Keep Current Plan
+                </button>
+                <button
+                  type="button"
+                  disabled={isSchedulingDowngrade}
+                  onClick={handleConfirmDowngrade}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-all shadow-2xs disabled:opacity-50"
+                >
+                  <ArrowDownRight size={14} />
+                  <span>{isSchedulingDowngrade ? 'Scheduling...' : `Confirm Downgrade for ${effectiveDateStr}`}</span>
                 </button>
               </div>
-
-              <div className="space-y-4 text-xs">
-                {/* Timing Information */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200 text-blue-950 flex items-start gap-2.5">
-                  <Calendar size={18} className="shrink-0 text-blue-600 mt-0.5" />
-                  <div>
-                    <strong className="block font-bold">Effective Date: {effectiveDateStr}</strong>
-                    <span>
-                      You retain full access to all {sub.tierConfig.name} tools and quotas until this billing cycle ends. You will not be charged again.
-                    </span>
-                  </div>
-                </div>
-
-                {/* Pre-flight Quota Checks */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-church-navy uppercase tracking-wider text-[11px]">
-                    Pre-Flight Quota Audit
-                  </h4>
-
-                  {/* Members Audit */}
-                  <div className={`p-3 rounded-2xl border flex items-start gap-2.5 ${
-                    isMembersOver ? 'bg-amber-50/70 border-amber-300' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    {isMembersOver ? (
-                      <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                    ) : (
-                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <strong className="text-church-navy">Congregation Members</strong>
-                        <span className="font-bold text-church-charcoal">
-                          {memberCount} / {targetMaxMembers >= 999999 ? 'Unlimited' : targetMaxMembers}
-                        </span>
-                      </div>
-                      {isMembersOver && (
-                        <p className="text-[11px] text-amber-900 mt-1">
-                          ⚠️ You currently have {memberCount} members (Target limit: {targetMaxMembers}). Existing profiles will remain safe, but adding new members will be paused until member count is within limits.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Media Storage Audit */}
-                  <div className={`p-3 rounded-2xl border flex items-start gap-2.5 ${
-                    isStorageOver ? 'bg-amber-50/70 border-amber-300' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    {isStorageOver ? (
-                      <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                    ) : (
-                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <strong className="text-church-navy">Cloud Sermon Storage</strong>
-                        <span className="font-bold text-church-charcoal">
-                          {storage.totalGbFormatted} / {targetStorageGb} GB
-                        </span>
-                      </div>
-                      {isStorageOver && (
-                        <p className="text-[11px] text-amber-900 mt-1">
-                          ⚠️ Your storage exceeds {targetStorageGb} GB. No sermon videos or files will be deleted, but uploading new video files will be paused upon downgrade.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Non-Destructive Data Guarantee */}
-                <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-emerald-950 flex items-start gap-2">
-                  <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                  <span className="text-[11px]">
-                    <strong>Coram Deo Zero Data Loss Guarantee:</strong> We never delete your church's records, sermons, tithes, or member directories during any plan transition.
+            }
+          >
+            <div className="space-y-4">
+              {/* Timing Information */}
+              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200 text-blue-950 flex items-start gap-2.5 text-xs">
+                <Calendar size={16} className="shrink-0 text-blue-600 mt-0.5" />
+                <div>
+                  <strong className="block font-bold">Effective Date: {effectiveDateStr}</strong>
+                  <span className="text-slate-600">
+                    You retain full access to all {sub.tierConfig.name} tools and quotas until this billing cycle ends. You will not be charged again.
                   </span>
                 </div>
+              </div>
 
-                {/* Buttons */}
-                <div className="pt-3 flex items-center justify-end gap-2 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => setDowngradeModalTarget(null)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-church-slate hover:bg-gray-100"
-                  >
-                    Keep Current Plan
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSchedulingDowngrade}
-                    onClick={handleConfirmDowngrade}
-                    className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-colors"
-                  >
-                    <ArrowDownRight size={14} />
-                    <span>{isSchedulingDowngrade ? 'Scheduling...' : `Confirm Downgrade for ${effectiveDateStr}`}</span>
-                  </button>
+              {/* Pre-flight Quota Checks */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Pre-Flight Quota Audit
+                </h4>
+
+                {/* Members Audit */}
+                <div className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs ${
+                  isMembersOver ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50 border-slate-200/80'
+                }`}>
+                  {isMembersOver ? (
+                    <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-slate-900 font-bold">Congregation Members</strong>
+                      <span className="font-bold text-slate-700">
+                        {memberCount} / {targetMaxMembers >= 999999 ? 'Unlimited' : targetMaxMembers}
+                      </span>
+                    </div>
+                    {isMembersOver && (
+                      <p className="text-[11px] text-amber-900 mt-1">
+                        ⚠️ You currently have {memberCount} members (Target limit: {targetMaxMembers}). Existing profiles will remain safe, but adding new members will be paused until member count is within limits.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Media Storage Audit */}
+                <div className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs ${
+                  isStorageOver ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50 border-slate-200/80'
+                }`}>
+                  {isStorageOver ? (
+                    <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-slate-900 font-bold">Cloud Sermon Storage</strong>
+                      <span className="font-bold text-slate-700">
+                        {storage.totalGbFormatted} / {targetStorageGb} GB
+                      </span>
+                    </div>
+                    {isStorageOver && (
+                      <p className="text-[11px] text-amber-900 mt-1">
+                        ⚠️ Your storage exceeds {targetStorageGb} GB. No sermon videos or files will be deleted, but uploading new video files will be paused upon downgrade.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {/* Non-Destructive Data Guarantee */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 flex items-start gap-2 text-xs">
+                <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span className="text-[11px] text-emerald-900">
+                  <strong>Coram Deo Zero Data Loss Guarantee:</strong> We never delete your church's records, sermons, tithes, or member directories during any plan transition.
+                </span>
+              </div>
             </div>
-          </div>
+          </Modal>
         );
       })()}
     </div>

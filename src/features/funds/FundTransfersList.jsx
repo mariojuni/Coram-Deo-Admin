@@ -12,12 +12,12 @@ export default function FundTransfersList() {
   const [transfers, setTransfers] = useState([]);
   const [funds, setFunds] = useState({});
   const [loading, setLoading] = useState(true);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!CHURCH_ID) return;
-    
+
     // Fetch Funds to get names
     const qFunds = query(collection(db, 'givingFunds'), where('churchId', '==', CHURCH_ID));
     const unsubscribeFunds = onSnapshot(qFunds, (snapshot) => {
@@ -35,7 +35,7 @@ export default function FundTransfersList() {
         id: doc.id,
         ...doc.data()
       }));
-      
+
       // Sort by date descending
       docs.sort((a, b) => new Date(b.date || b.createdAt).getTime() - new Date(a.date || a.createdAt).getTime());
 
@@ -85,7 +85,7 @@ export default function FundTransfersList() {
           <h1 className="text-3xl font-bold text-church-navy">Fund Transfers</h1>
           <p className="text-sm text-church-slate mt-1">Manage reallocation of funds within your church.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center px-5 py-2.5 bg-[#162533] text-white rounded-full shadow-sm text-sm font-bold hover:bg-[#1E2E3D] transition-all"
         >
@@ -100,7 +100,7 @@ export default function FundTransfersList() {
             Transfer History
           </h2>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -130,34 +130,34 @@ export default function FundTransfersList() {
               ) : (
                 transfers.map((transfer) => {
                   return (
-                  <tr key={transfer.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap text-church-slate">
-                      {formatDate(transfer.date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                       <span className="font-medium text-red-600">{funds[transfer.sourceFundId] || 'Unknown Fund'}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                       <span className="font-medium text-green-600">{funds[transfer.destinationFundId] || 'Unknown Fund'}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-church-navy">
-                      {formatCurrency(transfer.amount)}
-                    </td>
-                    <td className="px-6 py-4 text-xs text-church-slate max-w-xs truncate">
-                      {transfer.notes || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => handleDeleteClick(transfer)}
-                          className="text-red-500 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    <tr key={transfer.id} className="hover:bg-gray-50 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap text-church-slate">
+                        {formatDate(transfer.date)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="font-medium text-red-600">{funds[transfer.sourceFundId] || 'Unknown Fund'}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="font-medium text-green-600">{funds[transfer.destinationFundId] || 'Unknown Fund'}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-church-navy">
+                        {formatCurrency(transfer.amount)}
+                      </td>
+                      <td className="px-6 py-4 text-xs text-church-slate max-w-xs truncate">
+                        {transfer.notes || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleDeleteClick(transfer)}
+                            className="text-red-500 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -166,9 +166,9 @@ export default function FundTransfersList() {
         </div>
       </div>
 
-      <FundTransferModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <FundTransferModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </div>
   );
