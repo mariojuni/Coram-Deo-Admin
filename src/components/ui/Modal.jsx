@@ -5,11 +5,11 @@ import { X } from 'lucide-react';
  * CoramDeo Design System — Canonical Modal
  * 
  * Implements the Soft Glass & Calm Light aesthetic:
- * - Backdrop: Atmospheric slate with blur (bg-slate-900/40 backdrop-blur-sm)
- * - Container: Frosted glass shell (glass-light-shell / border-white/95 / shadow-2xl)
- * - Header: Frosted sticky header with optional icon badge, title, subtitle & close button
- * - Body: Scrollable contained viewport with smooth scrolling
- * - Footer: Frosted sticky footer for primary (Obsidian #162533) and secondary actions
+ * - Backdrop: Focused slate-950 with blur (bg-slate-950/50 backdrop-blur-md)
+ * - Container: Crisp white luminous shell (bg-white / border-slate-200/80 / shadow-2xl / rounded-[28px])
+ * - Header: Frosted white sticky header with branded Nordic steel icon badge, title, subtitle & close button
+ * - Body: Gentle slate-50/50 canvas with smooth custom scrollbar
+ * - Footer: Crisp sticky footer for Obsidian (#162533) primary action and white secondary actions
  * - Accessibility: Escape key listener, body scroll locking, click-outside handling, and ARIA attributes
  */
 
@@ -87,18 +87,20 @@ export default function Modal({
       aria-labelledby={title ? titleId.current : undefined}
       aria-label={!title ? ariaLabel : undefined}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/50 backdrop-blur-md animate-fade-in"
     >
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         className={`
-          glass-light-shell rounded-2xl md:rounded-3xl
+          bg-white rounded-2xl md:rounded-[28px]
           w-full ${maxWidthClass}
-          flex flex-col max-h-[92vh] sm:max-h-[88vh]
-          border border-white/95 shadow-2xl
+          flex flex-col max-h-[90vh] sm:max-h-[86vh]
+          border border-slate-200/80
+          shadow-[0_25px_70px_-15px_rgba(15,23,42,0.25)]
           overflow-hidden relative
           transition-all duration-200
+          animate-in zoom-in-[0.98] duration-150
           ${className}
         `}
       >
@@ -106,17 +108,17 @@ export default function Modal({
         {(title || Icon || !hideCloseButton) && (
           <div
             className={`
-              px-5 py-4 sm:px-6 sm:py-4.5
-              bg-white/85 backdrop-blur-md
+              px-6 py-4.5 sm:px-7 sm:py-5
+              bg-white
               border-b border-slate-100
               flex items-center justify-between
               shrink-0 select-none
               ${headerClassName}
             `}
           >
-            <div className="flex items-center gap-3 min-w-0 pr-2">
+            <div className="flex items-center gap-3.5 min-w-0 pr-2">
               {Icon && (
-                <div className="w-10 h-10 rounded-2xl bg-[#EBF2F7] flex items-center justify-center text-[#2C4A60] border border-[#D5E3EC]/70 shadow-2xs shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC] flex items-center justify-center shadow-xs shrink-0">
                   <Icon size={20} strokeWidth={2.2} />
                 </div>
               )}
@@ -133,7 +135,7 @@ export default function Modal({
                   {badge && <div className="shrink-0">{badge}</div>}
                 </div>
                 {subtitle && (
-                  <p className="text-xs text-slate-500 truncate mt-0.5 font-normal">
+                  <p className="text-xs text-slate-500 truncate mt-0.5 font-medium">
                     {subtitle}
                   </p>
                 )}
@@ -147,7 +149,7 @@ export default function Modal({
                   type="button"
                   onClick={onClose}
                   aria-label="Close dialog"
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20"
                 >
                   <X size={18} strokeWidth={2.2} />
                 </button>
@@ -160,7 +162,8 @@ export default function Modal({
         <div
           className={`
             flex-1 overflow-y-auto overscroll-contain
-            px-5 py-5 sm:px-6 sm:py-6
+            px-6 py-6 sm:px-7 sm:py-6
+            bg-slate-50/50 custom-scrollbar
             ${bodyClassName}
           `}
         >
@@ -171,8 +174,8 @@ export default function Modal({
         {footer && (
           <div
             className={`
-              px-5 py-3.5 sm:px-6 sm:py-4
-              bg-white/85 backdrop-blur-md
+              px-6 py-4 sm:px-7 sm:py-4.5
+              bg-white
               border-t border-slate-100
               flex items-center justify-end gap-3
               shrink-0
@@ -192,7 +195,7 @@ export default function Modal({
  */
 export function ModalHeader({ children, className = '' }) {
   return (
-    <div className={`px-5 py-4 sm:px-6 sm:py-4.5 bg-white/85 backdrop-blur-md border-b border-slate-100 flex items-center justify-between shrink-0 ${className}`}>
+    <div className={`px-6 py-4.5 sm:px-7 sm:py-5 bg-white border-b border-slate-100 flex items-center justify-between shrink-0 ${className}`}>
       {children}
     </div>
   );
@@ -200,7 +203,7 @@ export function ModalHeader({ children, className = '' }) {
 
 export function ModalBody({ children, className = '' }) {
   return (
-    <div className={`flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6 ${className}`}>
+    <div className={`flex-1 overflow-y-auto overscroll-contain px-6 py-6 sm:px-7 sm:py-6 bg-slate-50/50 custom-scrollbar ${className}`}>
       {children}
     </div>
   );
@@ -208,7 +211,7 @@ export function ModalBody({ children, className = '' }) {
 
 export function ModalFooter({ children, className = '' }) {
   return (
-    <div className={`px-5 py-3.5 sm:px-6 sm:py-4 bg-white/85 backdrop-blur-md border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 ${className}`}>
+    <div className={`px-6 py-4 sm:px-7 sm:py-4.5 bg-white border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 ${className}`}>
       {children}
     </div>
   );

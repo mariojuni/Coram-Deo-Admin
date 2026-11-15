@@ -172,10 +172,10 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
   return (
     <div className="relative" ref={dropdownRef}>
       <div 
-        className={`w-full px-4 py-2 bg-white border ${isOpen ? 'border-brand-primary ring-2 ring-brand-primary/20 text-brand-dark shadow-sm' : 'border-slate-200/90'} rounded-2xl text-left focus-within:ring-2 focus-within:ring-brand-primary/20 focus-within:border-brand-primary transition-all hover:border-slate-300 flex items-center justify-between`}
+        className={`w-full px-3.5 py-2.5 bg-white border ${isOpen ? 'border-[#2C4A60] ring-4 ring-[#2C4A60]/10 text-slate-900 shadow-xs' : 'border-slate-200/90'} rounded-xl text-left shadow-2xs focus-within:ring-4 focus-within:ring-[#2C4A60]/10 focus-within:border-[#2C4A60] transition-all hover:border-slate-300 flex items-center justify-between`}
       >
         <div className="flex items-center gap-3 w-full">
-          <Clock size={18} className={value ? "text-brand-primary shrink-0" : "text-slate-400 shrink-0"} />
+          <Clock size={18} className={value ? "text-[#2C4A60] shrink-0" : "text-slate-400 shrink-0"} />
           <input
             type="text"
             name={name}
@@ -187,13 +187,13 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
               setIsOpen(true);
             }}
             placeholder={placeholder}
-            className={`w-full block truncate text-xs sm:text-sm font-bold focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
+            className={`w-full block truncate text-xs sm:text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-slate-900 font-semibold' : 'text-slate-400'}`}
           />
         </div>
         <ChevronDown 
           size={16} 
           onClick={handleToggle}
-          className={`text-slate-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 hover:text-brand-primary ${isOpen ? 'rotate-180' : ''}`} 
+          className={`text-slate-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 hover:text-[#2C4A60] ${isOpen ? 'rotate-180' : ''}`} 
         />
       </div>
 

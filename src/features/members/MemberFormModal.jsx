@@ -5,7 +5,6 @@ import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import ModernDropdown from '../../components/ui/ModernDropdown';
 import ModernDatePicker from '../../components/ui/ModernDatePicker';
-import GradientButton from '../../components/ui/GradientButton';
 import Modal from '../../components/ui/Modal';
 import {
   getMembershipCategory,
@@ -148,85 +147,39 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
         churchId: targetChurchId
       };
 
-      // Firestore throws an error if any field is explicitly undefined
-      const cleanData = Object.fromEntries(
-        Object.entries(baseData).filter(([_, v]) => v !== undefined)
-      );
-
-      let matchingPendingUser = null;
-      
-      // Try to match pending users safely without crashing if unpermitted
-      try {
-        if (cleanData.email) {
-          const emailQ = query(collection(db, 'users'), where('email', '==', cleanData.email), where('status', '==', 'pendingChurchLink'));
-          const emailSnap = await getDocs(emailQ);
-          if (!emailSnap.empty) {
-            matchingPendingUser = { id: emailSnap.docs[0].id, ...emailSnap.docs[0].data() };
-          }
-        }
-        
-        if (!matchingPendingUser && cleanData.phoneNumber) {
-          const phoneQ = query(collection(db, 'users'), where('phoneNumber', '==', cleanData.phoneNumber), where('status', '==', 'pendingChurchLink'));
-          const phoneSnap = await getDocs(phoneQ);
-          if (!phoneSnap.empty) {
-            matchingPendingUser = { id: phoneSnap.docs[0].id, ...phoneSnap.docs[0].data() };
-          }
-        }
-      } catch (matchErr) {
-        console.warn("Could not check pendingChurchLink user (non-fatal):", matchErr);
-      }
-
-      if (member) {
-        if (matchingPendingUser) {
-          // Merge imported data into registered user's doc
-          const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
-          await updateDoc(registeredUserRef, {
-            ...cleanData,
-            churchId: member.churchId || targetChurchId,
-            status: 'Active',
-            birthday: deleteField(),
-            phone: deleteField(),
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser?.uid || null
-          });
-          
-          try {
-            const oldMemberRef = doc(db, 'users', member.id);
-            await deleteDoc(oldMemberRef);
-          } catch (delErr) {
-            console.warn("Could not delete old member doc (non-fatal):", delErr);
-          }
-        } else {
-          // Update existing member normally
-          const docRef = doc(db, 'users', member.id);
-          await updateDoc(docRef, {
-            ...cleanData,
-            churchId: member.churchId || targetChurchId,
-            birthday: deleteField(),
-            phone: deleteField(),
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser?.uid || null
-          });
-        }
+      if (!member) {
+        await addDoc(collection(db, 'members'), {
+          ...baseData,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
       } else {
-        if (matchingPendingUser) {
-          const registeredUserRef = doc(db, 'users', matchingPendingUser.id);
-          await updateDoc(registeredUserRef, {
-            ...cleanData,
-            churchId: targetChurchId,
-            status: 'Active',
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser?.uid || null
-          });
-        } else {
-          await addDoc(collection(db, 'users'), {
-            ...cleanData,
-            createdAt: serverTimestamp(),
-            createdBy: currentUser?.uid || null,
-            churchId: targetChurchId
+        const memberRef = doc(db, 'members', member.id);
+        const updates = {
+          ...baseData,
+          updatedAt: serverTimestamp()
+        };
+
+        if (formData.membershipCategory !== 'Full Member') {
+          updates.membershipStatus = category;
+        }
+        if (!isBaptized) {
+          updates.baptismDate = deleteField();
+        }
+
+        await updateDoc(memberRef, updates);
+
+        if (member.householdId) {
+          const householdRef = doc(db, 'households', member.householdId);
+          await updateDoc(householdRef, {
+            members: member.householdMembers.map(m => 
+              m.memberId === member.id ? { ...m, name: computedName, role: formData.role } : m
+            ),
+            updatedAt: serverTimestamp()
           });
         }
       }
+
       onClose();
     } catch (err) {
       console.error("Save Member Error:", err);
@@ -251,7 +204,7 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
               type="button" 
               onClick={onClose} 
               disabled={loading} 
-              className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
+              className="px-5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-98"
             >
               Cancel
             </button>
@@ -259,262 +212,303 @@ export default function MemberFormModal({ isOpen, onClose, member = null, existi
               type="submit" 
               form="member-form" 
               disabled={loading}
-              className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm disabled:opacity-50"
+              className="px-6 py-2.5 bg-[#162533] hover:bg-[#1E2E3D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-[#162533]/20 active:scale-98 disabled:opacity-50"
             >
               {loading ? 'Saving...' : member ? 'Save Changes' : 'Create Member'}
             </button>
           </>
         }
       >
-        <form id="member-form" onSubmit={handleSubmit} className="space-y-6">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-medium">{error}</div>}
+        <form id="member-form" onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="p-3.5 bg-red-50/80 border border-red-200/80 text-red-600 rounded-xl text-xs sm:text-sm font-medium">
+              {error}
+            </div>
+          )}
             
-            {/* Personal Details */}
+          {/* Section 1: Personal Details */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <User size={14} strokeWidth={2.4} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Personal Details
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Basic identifying demographics</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">First Name <span className="text-rose-500">*</span></label>
+                <input 
+                  type="text" 
+                  name="firstName" 
+                  required 
+                  value={formData.firstName || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Aaron"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Middle Name</label>
+                <input 
+                  type="text" 
+                  name="middleName" 
+                  value={formData.middleName || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. V."
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Last Name <span className="text-rose-500">*</span></label>
+                <input 
+                  type="text" 
+                  name="lastName" 
+                  required 
+                  value={formData.lastName || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Lunario"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Birth Date</label>
+                <ModernDatePicker 
+                  name="birthDate" 
+                  value={formData.birthDate || ''} 
+                  onChange={handleChange} 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Gender</label>
+                <ModernDropdown
+                  value={formData.gender || 'Male'}
+                  onChange={(val) => handleChange({ target: { name: 'gender', value: val } })}
+                  options={GENDER_OPTIONS}
+                />
+              </div>
+            </div>
+
             <div>
-              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-slate-100 flex items-center gap-1.5">
-                <User size={14} /> Personal Details
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">First Name *</label>
-                    <input 
-                      type="text" 
-                      name="firstName" 
-                      required 
-                      value={formData.firstName || ''} 
-                      onChange={handleChange} 
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Middle Name</label>
-                    <input 
-                      type="text" 
-                      name="middleName" 
-                      value={formData.middleName || ''} 
-                      onChange={handleChange} 
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Last Name *</label>
-                    <input 
-                      type="text" 
-                      name="lastName" 
-                      required 
-                      value={formData.lastName || ''} 
-                      onChange={handleChange} 
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                    />
-                  </div>
-                </div>
-                
+              <label className="flex items-center gap-3 p-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-xl cursor-pointer transition-colors group">
+                <input
+                  type="checkbox"
+                  name="isAbroad"
+                  checked={Boolean(formData.isAbroad)}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
+                  className="w-4 h-4 rounded accent-[#2C4A60] text-[#2C4A60] focus:ring-[#2C4A60] border-slate-300"
+                />
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Birth Date</label>
+                  <span className="text-xs font-bold text-slate-800 group-hover:text-slate-900">
+                    Living or Working Abroad
+                  </span>
+                  <p className="text-[11px] text-slate-400 font-medium">Flag member for overseas diaspora fellowship</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Section 2: Contact Information */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <Phone size={14} strokeWidth={2.4} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Contact Information
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Channels to connect and communicate</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address</label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  value={formData.email || ''} 
+                  onChange={handleChange} 
+                  placeholder="name@example.com"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number</label>
+                <input 
+                  type="tel" 
+                  name="phoneNumber" 
+                  value={formData.phoneNumber || ''} 
+                  onChange={handleChange} 
+                  placeholder="+63 900 000 0000"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Residential Address</label>
+                <input 
+                  type="text" 
+                  name="address" 
+                  value={formData.address || ''} 
+                  onChange={handleChange} 
+                  placeholder="Street, City, Country"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Emergency Contact (Name & Phone)</label>
+                <input 
+                  type="text" 
+                  name="emergencyContact" 
+                  value={formData.emergencyContact || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Maria Lunario (+63 912 345 6789)"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Church Status & Milestones */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <CheckCircle size={14} strokeWidth={2.4} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Church Status & Milestones
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Membership classification and spiritual milestones</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Membership Category</label>
+                <ModernDropdown
+                  value={formData.membershipCategory || 'Full Member'}
+                  onChange={(val) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      membershipCategory: val,
+                      membershipStatus: val === 'Full Member'
+                        ? (prev.membershipStatus === 'Inactive' ? 'Inactive' : 'Active')
+                        : val
+                    }));
+                  }}
+                  options={MEMBERSHIP_CATEGORIES}
+                />
+              </div>
+
+              {formData.membershipCategory === 'Full Member' ? (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Member Status</label>
+                  <ModernDropdown
+                    value={formData.membershipStatus || 'Active'}
+                    onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
+                    options={FULL_MEMBER_SUBSTATUSES}
+                  />
+                </div>
+              ) : null}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">System Role</label>
+                <ModernDropdown
+                  value={formData.role || 'member'}
+                  onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
+                  options={ROLE_OPTIONS}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Status</label>
+                <ModernDropdown
+                  value={formData.baptismStatus || 'Not Baptized'}
+                  onChange={(val) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      baptismStatus: val,
+                      baptismDate: val === 'Baptized' ? prev.baptismDate : ''
+                    }));
+                  }}
+                  options={BAPTISM_STATUSES}
+                />
+              </div>
+
+              {formData.baptismStatus === 'Baptized' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Date</label>
                   <ModernDatePicker 
-                    name="birthDate" 
-                    value={formData.birthDate || ''} 
+                    name="baptismDate" 
+                    value={formData.baptismDate || ''} 
                     onChange={handleChange} 
+                    placeholder="Select baptism date"
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Gender</label>
-                  <ModernDropdown
-                    value={formData.gender || 'Male'}
-                    onChange={(val) => handleChange({ target: { name: 'gender', value: val } })}
-                    options={GENDER_OPTIONS}
-                  />
-                </div>
-                
-                <div className="flex items-center md:mt-2">
-                  <label className="flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="isAbroad"
-                      checked={Boolean(formData.isAbroad)}
-                      onChange={(e) => setFormData(prev => ({ ...prev, isAbroad: e.target.checked }))}
-                      className="mr-2 w-4 h-4 rounded accent-[#2C4A60] text-[#2C4A60] focus:ring-[#2C4A60] border-slate-300"
-                    />
-                    Currently Living / Working Abroad
-                  </label>
-                </div>
+              )}
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Family Group</label>
+                <input 
+                  type="text" 
+                  name="familyGroup" 
+                  value={formData.familyGroup || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. Grace Group" 
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs" 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Pastoral & Admin Notes */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#EBF2F7] to-[#DFECF5] text-[#2C4A60] border border-[#D5E3EC]/70 flex items-center justify-center shrink-0">
+                <HeartHandshake size={14} strokeWidth={2.4} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Pastoral & Admin Notes
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium">Confidential ministry records and observations</p>
               </div>
             </div>
 
-            {/* Contact Information */}
-            <div>
-              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-slate-100 flex items-center gap-1.5">
-                <Phone size={14} /> Contact Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address</label>
-                  <input 
-                    type="email" 
-                    name="email" 
-                    value={formData.email || ''} 
-                    onChange={handleChange} 
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    name="phoneNumber" 
-                    value={formData.phoneNumber || ''} 
-                    onChange={handleChange} 
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                  />
-                </div>
+            <textarea 
+              name="notes" 
+              rows="3" 
+              value={formData.notes || ''} 
+              onChange={handleChange} 
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200/90 hover:border-slate-300 focus:border-[#2C4A60] focus:ring-4 focus:ring-[#2C4A60]/10 rounded-xl text-xs sm:text-sm font-medium text-slate-900 transition-all placeholder-slate-400 shadow-2xs resize-none" 
+              placeholder="Any additional pastoral care notes, testimony notes, or ministry observations..."
+            />
+          </div>
+        </form>
+      </Modal>
 
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Residential Address</label>
-                  <input 
-                    type="text" 
-                    name="address" 
-                    value={formData.address || ''} 
-                    onChange={handleChange} 
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Emergency Contact (Name & Phone)</label>
-                  <input 
-                    type="text" 
-                    name="emergencyContact" 
-                    value={formData.emergencyContact || ''} 
-                    onChange={handleChange} 
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Church Information */}
-            <div>
-              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-slate-100 flex items-center gap-1.5">
-                <CheckCircle size={14} /> Church Status & Milestones
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Membership Category</label>
-                  <ModernDropdown
-                    value={formData.membershipCategory || 'Full Member'}
-                    onChange={(val) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        membershipCategory: val,
-                        membershipStatus: val === 'Full Member'
-                          ? (prev.membershipStatus === 'Inactive' ? 'Inactive' : 'Active')
-                          : val
-                      }));
-                    }}
-                    options={MEMBERSHIP_CATEGORIES}
-                  />
-                </div>
-
-                {formData.membershipCategory === 'Full Member' ? (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Member Status</label>
-                    <ModernDropdown
-                      value={formData.membershipStatus || 'Active'}
-                      onChange={(val) => handleChange({ target: { name: 'membershipStatus', value: val } })}
-                      options={FULL_MEMBER_SUBSTATUSES}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">System Role</label>
-                    <ModernDropdown
-                      value={formData.role || 'member'}
-                      onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
-                      options={ROLE_OPTIONS}
-                    />
-                  </div>
-                )}
-                
-                {formData.membershipCategory === 'Full Member' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">System Role</label>
-                    <ModernDropdown
-                      value={formData.role || 'member'}
-                      onChange={(val) => handleChange({ target: { name: 'role', value: val } })}
-                      options={ROLE_OPTIONS}
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Status</label>
-                  <ModernDropdown
-                    value={formData.baptismStatus || 'Not Baptized'}
-                    onChange={(val) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        baptismStatus: val,
-                        baptismDate: val === 'Baptized' ? prev.baptismDate : ''
-                      }));
-                    }}
-                    options={BAPTISM_STATUSES}
-                  />
-                </div>
-
-                {formData.baptismStatus === 'Baptized' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Baptism Date</label>
-                    <ModernDatePicker 
-                      name="baptismDate" 
-                      value={formData.baptismDate || ''} 
-                      onChange={handleChange} 
-                      placeholder="Select baptism date"
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Family Group</label>
-                  <input 
-                    type="text" 
-                    name="familyGroup" 
-                    value={formData.familyGroup || ''} 
-                    onChange={handleChange} 
-                    placeholder="e.g. Grace Group" 
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400" 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <h3 className="text-xs font-bold text-[#2C4A60] uppercase tracking-wider mb-3.5 pb-1.5 border-b border-slate-100 flex items-center gap-1.5">
-                <HeartHandshake size={14} /> Pastoral & Admin Notes
-              </h3>
-              <textarea 
-                name="notes" 
-                rows="3" 
-                value={formData.notes || ''} 
-                onChange={handleChange} 
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2C4A60]/20 focus:border-[#2C4A60] text-xs font-medium text-slate-900 transition-all placeholder-slate-400 resize-none" 
-                placeholder="Any additional pastoral or administrative notes..."
-              />
-            </div>
-          </form>
-        </Modal>
-
-        {/* Subscription Quota Upgrade Gate Modal */}
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          onClose={() => setShowUpgradeModal(false)}
-          title="Member Limit Reached"
-          message={upgradeReason?.reason}
-          targetTier={upgradeReason?.targetPlan || 'growth'}
-        />
-      </>
-    );
-  }
+      {/* Subscription Quota Upgrade Gate Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        title="Member Limit Reached"
+        message={upgradeReason?.reason}
+        targetTier={upgradeReason?.targetPlan || 'growth'}
+      />
+    </>
+  );
+}

@@ -201,7 +201,7 @@ export default function ModernDatePicker({
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <div
-        className={`w-full flex items-center justify-between px-4 py-2 bg-white border border-slate-200/90 rounded-2xl text-left focus-within:ring-2 focus-within:ring-brand-primary/20 focus-within:border-brand-primary transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300'}`}
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-slate-200/90 rounded-xl text-left shadow-2xs focus-within:ring-4 focus-within:ring-[#2C4A60]/10 focus-within:border-[#2C4A60] transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300'}`}
       >
         <input
           type="text"
@@ -217,9 +217,9 @@ export default function ModernDatePicker({
             }
           }}
           placeholder={placeholder}
-          className={`w-full block truncate text-xs sm:text-sm font-bold focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
+          className={`w-full block truncate text-xs sm:text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-slate-900 font-semibold' : 'text-slate-400'}`}
         />
-        <CalendarIcon onClick={handleToggle} size={18} className="text-slate-400 shrink-0 ml-2 cursor-pointer hover:text-brand-primary transition-colors" />
+        <CalendarIcon onClick={handleToggle} size={18} className="text-slate-400 shrink-0 ml-2 cursor-pointer hover:text-[#2C4A60] transition-colors" />
       </div>
 
       {isOpen && typeof document !== 'undefined' && createPortal(

@@ -130,13 +130,13 @@ export default function ModernDropdown({
       <button
         type="button"
         onClick={handleToggle}
-        className={`w-full px-4 py-2 border rounded-2xl text-xs sm:text-sm focus:outline-none flex justify-between items-center transition-all bg-white font-bold ${
+        className={`w-full px-3.5 py-2.5 border rounded-xl text-xs sm:text-sm focus:outline-none flex justify-between items-center transition-all bg-white font-medium shadow-2xs ${
           isOpen 
-            ? 'border-brand-primary ring-2 ring-brand-primary/20 text-brand-dark shadow-sm' 
-            : 'border-slate-200/80 hover:border-slate-300 text-brand-dark hover:bg-slate-50/50'
+            ? 'border-[#2C4A60] ring-4 ring-[#2C4A60]/10 text-slate-900 shadow-xs' 
+            : 'border-slate-200/90 hover:border-slate-300 text-slate-900 hover:bg-slate-50/50'
         }`}
       >
-        <span className={`block truncate ${!selectedOption ? 'text-slate-400' : 'text-brand-dark font-bold'}`}>
+        <span className={`block truncate ${!selectedOption ? 'text-slate-400' : 'text-slate-900 font-semibold'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown 
