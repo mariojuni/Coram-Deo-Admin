@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ModernDatePicker({
@@ -11,7 +12,15 @@ export default function ModernDatePicker({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
+  const popupRef = useRef(null);
   
+  const [coords, setCoords] = useState({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    openUpwards: false
+  });
+
   // Track currently viewed month/year in the calendar
   const [viewDate, setViewDate] = useState(() => {
     if (value) {
@@ -31,6 +40,29 @@ export default function ModernDatePicker({
   const [isYearPickingMode, setIsYearPickingMode] = useState(false);
   const [yearPageStart, setYearPageStart] = useState(() => new Date().getFullYear() - (new Date().getFullYear() % 12));
 
+  const updateCoords = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const pickerEstimatedHeight = 360;
+    const openUpwards = spaceBelow < pickerEstimatedHeight && spaceAbove > spaceBelow;
+
+    const pickerWidth = 288; // w-72
+    let left = rect.left;
+    if (left + pickerWidth > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - pickerWidth - 8);
+    }
+    if (left < 8) left = 8;
+
+    setCoords({
+      top: rect.bottom + 6,
+      bottom: window.innerHeight - rect.top + 6,
+      left,
+      openUpwards
+    });
+  };
+
   useEffect(() => {
     if (value) {
       const parts = value.split('-');
@@ -46,15 +78,50 @@ export default function ModernDatePicker({
     }
   }, [value]);
 
+  // Handle clicking outside & Escape key
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      const inContainer = containerRef.current && containerRef.current.contains(event.target);
+      const inPopup = popupRef.current && popupRef.current.contains(event.target);
+      if (!inContainer && !inPopup) {
         setIsOpen(false);
       }
     };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  // Track position on scroll or window resize
+  useEffect(() => {
+    if (!isOpen) return;
+
+    updateCoords();
+
+    const handleScrollOrResize = () => {
+      updateCoords();
+    };
+
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+    };
+  }, [isOpen]);
 
   const handlePrevMonth = (e) => {
     e.stopPropagation();
@@ -109,6 +176,14 @@ export default function ModernDatePicker({
     }
   };
 
+  const handleToggle = () => {
+    if (disabled) return;
+    if (!isOpen) {
+      updateCoords();
+    }
+    setIsOpen(prev => !prev);
+  };
+
   const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
 
@@ -120,21 +195,13 @@ export default function ModernDatePicker({
     days.push(i);
   }
 
-  const selectedDateStr = useMemo(() => {
-    if (!value) return null;
-    const parts = value.split('-');
-    if (parts.length !== 3) return null;
-    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }, [value]);
-
   const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <div
-        className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-left focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-transparent transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand-primary/50'}`}
+        className={`w-full flex items-center justify-between px-4 py-2 bg-white border border-slate-200/90 rounded-2xl text-left focus-within:ring-2 focus-within:ring-brand-primary/20 focus-within:border-brand-primary transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300'}`}
       >
         <input
           type="text"
@@ -143,15 +210,30 @@ export default function ModernDatePicker({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onBlur={handleInputBlur}
-          onFocus={() => !disabled && setIsOpen(true)}
+          onFocus={() => {
+            if (!disabled) {
+              updateCoords();
+              setIsOpen(true);
+            }
+          }}
           placeholder={placeholder}
-          className={`w-full block truncate text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-church-navy' : 'text-gray-400'}`}
+          className={`w-full block truncate text-xs sm:text-sm font-bold focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
         />
-        <CalendarIcon onClick={() => !disabled && setIsOpen(!isOpen)} size={18} className="text-gray-400 shrink-0 ml-2 cursor-pointer" />
+        <CalendarIcon onClick={handleToggle} size={18} className="text-slate-400 shrink-0 ml-2 cursor-pointer hover:text-brand-primary transition-colors" />
       </div>
 
-      {isOpen && (
-        <div className="absolute z-50 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={popupRef}
+          style={{
+            position: 'fixed',
+            ...(coords.openUpwards ? { bottom: `${coords.bottom}px` } : { top: `${coords.top}px` }),
+            left: `${coords.left}px`,
+            width: '288px',
+            zIndex: 9999
+          }}
+          className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="flex items-center justify-between mb-4">
             <button 
               type="button" 
@@ -163,12 +245,12 @@ export default function ModernDatePicker({
                   handlePrevMonth(e);
                 }
               }} 
-              className="p-1 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
+              className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
             <div 
-              className="font-bold text-church-navy text-sm flex items-center justify-center space-x-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors" 
+              className="font-bold text-brand-dark text-sm flex items-center justify-center space-x-1 cursor-pointer hover:bg-slate-100 rounded-lg px-2 py-1 transition-colors" 
               onClick={() => {
                 if (!isYearPickingMode) {
                   setYearPageStart(viewDate.getFullYear() - (viewDate.getFullYear() % 12));
@@ -195,7 +277,7 @@ export default function ModernDatePicker({
                   handleNextMonth(e);
                 }
               }} 
-              className="p-1 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
+              className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
             >
               <ChevronRight size={20} />
             </button>
@@ -209,7 +291,7 @@ export default function ModernDatePicker({
                   type="button"
                   onClick={() => handleYearClick(year)}
                   className={`
-                    py-2 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                    py-2 w-full flex items-center justify-center rounded-xl text-xs sm:text-sm font-bold transition-colors
                     ${year === viewDate.getFullYear()
                       ? 'bg-brand-primary text-white shadow-sm'
                       : 'text-slate-700 hover:bg-slate-100'
@@ -263,11 +345,11 @@ export default function ModernDatePicker({
                       type="button"
                       onClick={() => handleSelect(day)}
                       className={`
-                        h-8 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                        h-8 w-full flex items-center justify-center rounded-xl text-xs sm:text-sm font-semibold transition-colors
                         ${isSelected 
-                          ? 'bg-brand-primary text-white shadow-sm' 
+                          ? 'bg-brand-primary text-white shadow-sm font-bold' 
                           : isToday 
-                            ? 'text-brand-primary bg-blue-50 hover:bg-blue-100' 
+                            ? 'text-brand-primary bg-blue-50 hover:bg-blue-100 font-bold' 
                             : 'text-slate-700 hover:bg-slate-100'
                         }
                       `}
@@ -280,7 +362,7 @@ export default function ModernDatePicker({
             </>
           )}
           
-          <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
             <button 
               type="button" 
               onClick={() => {
@@ -305,12 +387,13 @@ export default function ModernDatePicker({
                 }
                 setIsOpen(false);
               }}
-              className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
             >
               Clear
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

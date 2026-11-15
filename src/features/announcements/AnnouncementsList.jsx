@@ -158,7 +158,7 @@ export default function AnnouncementsList() {
                 <SoftCard 
                   key={post.id} 
                   hover
-                  className="p-6 flex flex-col relative group"
+                  className={`p-6 flex flex-col relative group ${activeMenuId === post.id ? 'z-30' : 'z-0'}`}
                 >
                   {/* Action Menu */}
                   <div className="absolute top-4 right-4 z-10">

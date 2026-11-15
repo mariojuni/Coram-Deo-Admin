@@ -628,7 +628,7 @@ export default function MembersList() {
                     </td>
                   </tr>
                 ) : (
-                  filteredMembers.map((member) => (
+                  filteredMembers.map((member, index) => (
                     <tr key={member.id} className="hover:bg-gray-50/60 transition-colors group">
                       <td className="p-4 pl-6">
                         <div className="flex items-center cursor-pointer" onClick={() => handleViewProfile(member)}>
@@ -698,7 +698,7 @@ export default function MembersList() {
                               className="fixed inset-0 z-10" 
                               onClick={() => setActiveMenuId(null)}
                             />
-                            <div className="absolute right-8 top-10 mt-1 w-40 bg-white rounded-xl shadow-church-elevated border border-gray-100 z-20 py-1 text-left overflow-hidden">
+                            <div className={`absolute right-8 ${index >= filteredMembers.length - 2 && filteredMembers.length > 2 ? 'bottom-10 mb-1' : 'top-10 mt-1'} w-40 bg-white rounded-xl shadow-church-elevated border border-gray-100 z-20 py-1 text-left overflow-hidden`}>
                               <button 
                                 onClick={() => handleViewProfile(member)}
                                 className="w-full flex items-center px-4 py-2 text-xs font-semibold text-church-charcoal hover:bg-gray-50"

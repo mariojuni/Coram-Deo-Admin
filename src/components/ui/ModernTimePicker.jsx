@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Clock, ChevronDown } from 'lucide-react';
 
 const generateTimeOptions = () => {
@@ -25,7 +26,40 @@ const formatTime12h = (time24) => {
 export default function ModernTimePicker({ name, value, onChange, placeholder = "Select time" }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const popupRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
+
+  const [coords, setCoords] = useState({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 0,
+    openUpwards: false
+  });
+
+  const updateCoords = () => {
+    if (!dropdownRef.current) return;
+    const rect = dropdownRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const pickerEstimatedHeight = 280;
+    const openUpwards = spaceBelow < pickerEstimatedHeight && spaceAbove > spaceBelow;
+
+    const width = Math.max(rect.width, 200);
+    let left = rect.left;
+    if (left + width > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - width - 8);
+    }
+    if (left < 8) left = 8;
+
+    setCoords({
+      top: rect.bottom + 6,
+      bottom: window.innerHeight - rect.top + 6,
+      left,
+      width,
+      openUpwards
+    });
+  };
 
   useEffect(() => {
     if (value) {
@@ -37,15 +71,50 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
 
   const timeOptions = generateTimeOptions();
 
+  // Close on outside click or Escape
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const inTrigger = dropdownRef.current && dropdownRef.current.contains(event.target);
+      const inPopup = popupRef.current && popupRef.current.contains(event.target);
+      if (!inTrigger && !inPopup) {
         setIsOpen(false);
       }
     };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  // Track position on scroll or resize
+  useEffect(() => {
+    if (!isOpen) return;
+
+    updateCoords();
+
+    const handleScrollOrResize = () => {
+      updateCoords();
+    };
+
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+    };
+  }, [isOpen]);
 
   const handleSelect = (timeStr) => {
     if (onChange) {
@@ -93,10 +162,17 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
     }
   };
 
+  const handleToggle = () => {
+    if (!isOpen) {
+      updateCoords();
+    }
+    setIsOpen(prev => !prev);
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <div 
-        className={`w-full px-4 py-2.5 bg-white border ${isOpen ? 'border-brand-primary ring-1 ring-brand-primary' : 'border-slate-300'} rounded-xl text-left focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-transparent transition-all hover:border-brand-primary/50 flex items-center justify-between shadow-xs`}
+        className={`w-full px-4 py-2 bg-white border ${isOpen ? 'border-brand-primary ring-2 ring-brand-primary/20 text-brand-dark shadow-sm' : 'border-slate-200/90'} rounded-2xl text-left focus-within:ring-2 focus-within:ring-brand-primary/20 focus-within:border-brand-primary transition-all hover:border-slate-300 flex items-center justify-between`}
       >
         <div className="flex items-center gap-3 w-full">
           <Clock size={18} className={value ? "text-brand-primary shrink-0" : "text-slate-400 shrink-0"} />
@@ -106,48 +182,62 @@ export default function ModernTimePicker({ name, value, onChange, placeholder = 
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onBlur={handleInputBlur}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => {
+              updateCoords();
+              setIsOpen(true);
+            }}
             placeholder={placeholder}
-            className={`w-full block truncate text-sm font-medium focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
+            className={`w-full block truncate text-xs sm:text-sm font-bold focus:outline-none bg-transparent ${inputValue ? 'text-brand-dark' : 'text-slate-400'}`}
           />
         </div>
         <ChevronDown 
-          size={18} 
-          onClick={() => setIsOpen(!isOpen)}
-          className={`text-slate-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} 
+          size={16} 
+          onClick={handleToggle}
+          className={`text-slate-400 transition-transform duration-200 cursor-pointer shrink-0 ml-2 hover:text-brand-primary ${isOpen ? 'rotate-180' : ''}`} 
         />
       </div>
 
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={popupRef}
+          style={{
+            position: 'fixed',
+            ...(coords.openUpwards ? { bottom: `${coords.bottom}px` } : { top: `${coords.top}px` }),
+            left: `${coords.left}px`,
+            width: `${coords.width}px`,
+            zIndex: 9999
+          }}
+          className="bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="max-h-60 overflow-y-auto py-2 custom-scrollbar">
             {timeOptions.map((time) => (
               <div 
                 key={time}
                 onClick={() => handleSelect(time)}
-                className={`px-4 py-2.5 mx-2 my-0.5 rounded-xl cursor-pointer transition-colors ${
+                className={`px-4 py-2 mx-2 my-0.5 rounded-xl cursor-pointer text-xs sm:text-sm transition-colors ${
                   value === time 
-                    ? 'bg-brand-primary text-white font-semibold' 
-                    : 'text-slate-600 hover:bg-slate-50'
+                    ? 'bg-blue-50 text-brand-primary font-bold' 
+                    : 'text-brand-dark hover:bg-slate-50 font-medium'
                 }`}
               >
                 {formatTime12h(time)}
               </div>
             ))}
           </div>
-          <div className="p-2 border-t border-gray-100">
+          <div className="p-2 border-t border-slate-100 bg-slate-50/50">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleSelect('');
               }}
-              className="w-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              className="w-full px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
               Clear
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

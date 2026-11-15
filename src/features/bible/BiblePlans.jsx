@@ -314,7 +314,7 @@ export default function BiblePlans() {
               <SoftCard 
                 key={plan.id} 
                 hover
-                className={`overflow-hidden flex flex-col relative group ${
+                className={`overflow-hidden flex flex-col relative group ${activeMenuId === plan.id ? 'z-30' : 'z-0'} ${
                   isSelected ? 'ring-2 ring-brand-primary border-brand-primary/40' : ''
                 }`}
               >

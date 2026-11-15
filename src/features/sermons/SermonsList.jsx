@@ -181,7 +181,7 @@ export default function SermonsList() {
             <SoftCard 
               key={sermon.id} 
               hover
-              className="overflow-hidden flex flex-col relative group"
+              className={`overflow-hidden flex flex-col relative group ${activeMenuId === sermon.id ? 'z-30' : 'z-0'}`}
             >
               {/* Thumbnail / Header Area */}
               <div 
